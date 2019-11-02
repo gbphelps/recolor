@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <script src="./javascripts.js"></script>
+    </head>
+
+    <svg id="rgb-svg">
+        <defs>
+            <linearGradient id="red-gradient" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="black"/>
+                <stop offset="1" stop-color="red"/>
+            </linearGradient>
+            
+            <linearGradient id="green-gradient" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="black"/>
+                <stop offset="1" stop-color="lime"/>
+            </linearGradient>
+            
+            <linearGradient id="blue-gradient" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="black"/>
+                <stop offset="1" stop-color="blue"/>
+            </linearGradient>
+            
+            <linearGradient id="saturation-gradient" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="black"/>
+                <stop offset="1" stop-color="blue"/>
+            </linearGradient>
+            
+            <linearGradient id="value-gradient" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="black"/>
+                <stop offset="1" stop-color="blue"/>
+            </linearGradient>
+            
+            <filter height="200%" width="200%" x="-50%" y="-50%" id="shadow">
+                <feDropShadow dy="1" dx="0" stdDeviation="1" flood-opacity=".3"/>
+            </filter>
+        
+        </defs>
+        
+        <rect id="red" fill="url(#red-gradient)"/>
+        <rect id="red-pip"/>
+        
+        <rect id="green" fill="url(#green-gradient)"/>
+        <rect id="green-pip"/>
+        
+        <rect id="blue" fill="url(#blue-gradient)"/>
+        <rect id="blue-pip"/>
+        
+        <rect id="saturation" fill="url(#saturation-gradient)"/>
+        <rect id="saturation-pip"/>
+        
+        <rect id="value" fill="url(#value-gradient)"/>
+        <rect id="value-pip"/>
+        
+    </svg>
+    
+        
+    <canvas id="c" style="display:none;"></canvas>
+    <svg id="hue-svg" filter="url(#shadow)">
+        <defs>
+            
+            <pattern 
+              id="conic-gradient-pattern" 
+              width="100%" 
+              height="100%">	
+                    <image id="conic-gradient"/>	
+            </pattern>
+            
+            <mask id="mask">
+                <rect id="mask-background" fill="white"/>
+                <circle id="inner-circle" fill="black"/>
+            </mask>
+            
+            <filter id="shadow">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".1"/>
+            </filter>
+            
+            <filter id="shadow2" height="200%" width="200%" dy="-50%" dx="-50%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".2"/>
+            </filter>
+            
+            
+            <filter id="shadow3" height="200%" width="200%" dy="-50%" dx="-50%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".3"/>
+            </filter>
+            
+        </defs>
+        
+        <g transform="translate(10 10)" id="svg-body">
+    
+        <circle
+          id="hue-track"
+            fill="url(#conic-gradient-pattern)" 
+            mask="url(#mask)"
+        />
+            
+        <g id="pc" filter="url(#shadow2)">
+            <rect 
+                    id="hue-pip" 
+                    width="16" 
+                    height="20"
+                  rx="5"
+                    stroke-width="3"
+                    fill="transparent"
+                    stroke="white"
+                    vector-effect="non-scaling-stroke"
+            />
+        </g>    
+    </svg>
+
+</html>
