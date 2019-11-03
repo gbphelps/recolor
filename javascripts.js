@@ -353,8 +353,8 @@ function hueSlider(){
 	    .getElementById('conic-gradient')
         .setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',conicGradient());
 
-    const RADIUS = 150;
-    const thickness = 10;
+    const RADIUS = 100;
+    const thickness = 8;
 
 function set(id,props){
 	const el = document.getElementById(id);
@@ -396,8 +396,8 @@ huePip.addEventListener('mousedown',e=>{
 		const delx = e.clientX - x; //note that this needs scaling if svg space is diff from user space
 		const dely = e.clientY - y;
 		
-		const xnew = Math.cos((Color.value.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + delx;
-		const ynew = Math.sin((Color.value.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + dely;
+		const xnew = Math.cos((mainColor.color.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + delx;
+		const ynew = Math.sin((mainColor.color.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + dely;
 		
 		
 		
@@ -407,7 +407,7 @@ huePip.addEventListener('mousedown',e=>{
 		
 
 		
-		Color.setHSV({hue: angle/Math.PI*180 + 90});
+		mainColor.setHSV({hue: angle/Math.PI*180 + 90});
 		
 		
 		x = e.clientX;
