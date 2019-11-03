@@ -3,52 +3,58 @@ document.addEventListener('DOMContentLoaded',()=>{
 })
 
 
-const Color = (function ColorObserver(){
-	const COLOR = {
-		red: 0,
-		green: 0,
-		blue: 0,
-		
-		hue: 0,
-		saturation: 100,
-		value: 0
+
+
+class Color{
+    constructor(){
+        this.color = {
+            red: 0,
+            green: 0,
+            blue: 0,
+            
+            hue: 0,
+            saturation: 100,
+            value: 0,
+        }
+
+        this.subscriptions = [];
+    }
+	
+	subscribe = (callback) => {
+		this.subscriptions.push(callback);
 	}
 	
-	const subscriptions = [];
-	
-	function subscribe(callback){
-		subscriptions.push(callback);
-	}
-	
-	function setRGB(rgb){
-		Object.assign(COLOR, rgb);
-		const {red,green,blue} = COLOR;
-		const {max, min} = extrema({red,green,blue});
-		
-		const saturation = COLOR[max] === 0 ? 0 : (1-COLOR[min]/COLOR[max]) * 100;
-		const value = COLOR[max]/255 * 100;
-		const hue = hueFromRGB({red, green, blue});
+	setRGB(rgb){
+        Object.assign(this.color, rgb);
+        const {red,green,blue} = this.color;
+        const {max, min} = extrema({red,green,blue});
+        
+        const saturation = this.color[max] === 0 ? 0 : (1-this.color[min]/this.color[max]) * 100;
+        const value = this.color[max]/255 * 100;
+        const hue = hueFromRGB({red, green, blue});
 			
 
-		Object.assign(COLOR,{hue, saturation, value})
-		console.log(COLOR)
-		subscriptions.forEach(subscription => subscription(COLOR));
+		Object.assign(this.color,{hue, saturation, value})
+		console.log(this.color)
+		this.subscriptions.forEach(subscription => subscription(this.color));
 	}
 	
-	function setHSV(channelObject){
-		Object.assign(COLOR,channelObject);
-		const {hue, saturation, value} = COLOR;
+	setHSV(channelObject){
+		Object.assign(this.color,channelObject);
+		const {hue, saturation, value} = this.color;
 		
-		const newRGB = rgb({hue, saturation, value});
-		Object.assign(COLOR, newRGB);
+		const newRGB = rgbFromHSV({hue, saturation, value});
+		Object.assign(this.color, newRGB);
 		
-		subscriptions.forEach(subscription => subscription(COLOR));
+		this.subscriptions.forEach(subscription => subscription(this.color));
 	}
-	
-	return {subscribe, setRGB, setHSV, value: COLOR}
-})();
+}
 
 
+
+
+const mainColor = new Color();
+console.log(mainColor)
 
 
 
@@ -74,13 +80,10 @@ function setup(){
     hueSlider();
 
     set('rgb-svg',{
-        viewBox: `0 0 ${width + 2*margin} ${height + 2* margin}`,
-        height: height + 2*margin
+        viewBox: `0 0 300 300`,//`0 0 ${width + 2*margin} ${height + 2* margin}`,
+        height: '300' //height + 2*margin
     });
-    
-    const channels = ['red','green', 'blue'];
-    
-    
+     
     function buildChannels(channels, startHeight){
         channels.forEach((channel,i) => {
         let maxValue, type;
@@ -124,18 +127,50 @@ function setup(){
         
         const pip = document.getElementById(`${channel}-pip`);
         
-        Color.subscribe(COLOR=>{
+        mainColor.subscribe(COLOR=>{
             const grad = document.getElementById(`${channel}-gradient`);
             const stops = grad.getElementsByTagName('stop');
             
             
-            const leftColor = Object.assign({},COLOR,{[channel]:0});
-            const rightColor = Object.assign({},COLOR,{[channel]:maxValue});
+            let left;
+            let right;
+
+            if (type === 'hsv'){
+                const base = {
+                    hue: COLOR.hue, 
+                    saturation: COLOR.saturation, 
+                    value: COLOR.value, 
+                }
+
+                left = new Color();
+                left.setHSV({ ...base, [channel]: 0 });
+                left = { 
+                    red: left.color.red, 
+                    green: left.color.green, 
+                    blue: left.color.blue 
+                }
+
+                right = new Color();
+                right.setHSV({ ...base, [channel]: maxValue });
+                right = {
+                    red: right.color.red,
+                    green: right.color.green,
+                    blue: right.color.blue
+                }
+            } else {
+                const base = { 
+                    red: COLOR.red, 
+                    green: COLOR.green, 
+                    blue: COLOR.blue 
+                }
+                left = { ...base , [channel]: 0  }
+                right = { ...base , [channel]: maxValue }
+            }
             
             
-            const l = type === 'rgb' ? `rgb(${leftColor.red},${leftColor.green},${leftColor.blue})` : `hsv(${leftColor.hue}, ${leftColor.saturation}), ${leftColor.value}`
+            const l = `rgb(${left.red},${left.green},${left.blue})`;
             
-            const r = type === 'rgb' ? `rgb(${rightColor.red},${rightColor.green},${rightColor.blue})` : `hsv(${rightColor.hue}, ${rightColor.saturation}), ${rightColor.value}`
+            const r = `rgb(${right.red},${right.green},${right.blue})`;
             
             
             
@@ -147,7 +182,7 @@ function setup(){
         
         pip.addEventListener('mousedown',e=>{
             let x = e.clientX;
-            let rawProgress = Color.value[channel];
+            let rawProgress = mainColor.color[channel];
             
             function move(e){
                 const delx = e.clientX - x; //note need to scale if svg space is diff from user space;
@@ -157,7 +192,7 @@ function setup(){
                 newVal = Math.max(newVal, 0);
             
                 const setter = `set${type.toUpperCase()}`;
-                Color[setter]({[channel]: newVal});
+                mainColor[setter]({[channel]: newVal});
                 x = e.clientX;
             }
             
@@ -171,7 +206,7 @@ function setup(){
     
     
     buildChannels(['red','green','blue'], 0, 'rgb');
-    buildChannels(['saturation', 'value'], 50, 'hsv');
+    buildChannels(['saturation', 'value'], 90, 'hsv');
 }
 
 
@@ -203,7 +238,7 @@ function hueFromRGB(rgb){
 	return hue/6 * 360;
 }
 
-function rgb(hsv){
+function rgbFromHSV(hsv){
 	let max, min, mid;
 	if ((hsv.hue + 60)%360 <= 120){
 		max = 'red';
@@ -349,7 +384,7 @@ huePip.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -thi
 
 
 
-Color.subscribe(COLOR => {
+mainColor.subscribe(COLOR => {
 	huePip.setAttribute('transform', `rotate(${COLOR.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
 })
 
