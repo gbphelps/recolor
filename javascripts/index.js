@@ -78,96 +78,117 @@ function set(id,props){
 		})
 }
 
+
+function createSVG(type,props){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', type);
+    el.id = createSVG.id++;
+    Object.keys(props).forEach(key => {
+        el.setAttribute(key,props[key]);
+    })
+    return el;
+}
+createSVG.id = 0;
+
 function setup(){
     hueSlider();
-
-    set('rgb-svg',{
-        viewBox: `0 0 300 300`,//`0 0 ${width + 2*margin} ${height + 2* margin}`,
-        height: '300' //height + 2*margin
-    });
-     
-    function buildChannels(channels, startHeight){
-        channels.forEach((channel,i) => {
-        let maxValue, type;
-        switch (channel){
-            case 'red':
-            case 'green':
-            case 'blue':
-                maxValue = 255;
-                type = 'rgb';
-                break;
-            default:
-                maxValue = 100;
-                type = 'hsv';
-        }
-            
-            
-        set(channel,{
-            width: width,
-            height: trackH,
-            y: (trackH + 25)*i + startHeight,
-            rx: 2
-        })
-        
-        set(`${channel}-pip`,{
-            height: trackH + 2,
-            width: pipW,
-            fill: 'transparent',
-            y: (trackH + 25)*i - 1 + startHeight,
-            stroke: 'white',
-            'stroke-width': 3,
-            'vector-effect': 'non-scaling-stroke',
-            filter: 'url(#shadow)',
-            rx: 2
-        })
-        
-        set(`${channel}-gradient`,{
-            x1:pipW/2,
-            x2:width-pipW/2
-        })
     
-        
-        const pip = document.getElementById(`${channel}-pip`);
-        
-        mainColor.subscribe(COLOR=>{
-            const grad = document.getElementById(`${channel}-gradient`);
-            const stops = grad.getElementsByTagName('stop');
-            
-            
-            let left;
-            let right;
-
-            if (type === 'hsv'){
-                const base = {
-                    hue: COLOR.hue, 
-                    saturation: COLOR.saturation, 
-                    value: COLOR.value, 
-                }
-
-                left = new Color();
-                left.setHSV({ ...base, [channel]: 0 });
-                left = { 
-                    red: left.color.red, 
-                    green: left.color.green, 
-                    blue: left.color.blue 
-                }
-
-                right = new Color();
-                right.setHSV({ ...base, [channel]: maxValue });
-                right = {
-                    red: right.color.red,
-                    green: right.color.green,
-                    blue: right.color.blue
-                }
-            } else {
-                const base = { 
-                    red: COLOR.red, 
-                    green: COLOR.green, 
-                    blue: COLOR.blue 
-                }
-                left = { ...base , [channel]: 0  }
-                right = { ...base , [channel]: maxValue }
+    function buildChannels(channels, startHeight){
+        const container = createSVG('svg',{
+            height,
+            width,
+        })
+        document.body.appendChild(container);
+        channels.forEach((channel,i) => {    
+            let maxValue, type;
+            switch (channel){
+                case 'red':
+                case 'green':
+                case 'blue':
+                    maxValue = 255;
+                    type = 'rgb';
+                    break;
+                default:
+                    maxValue = 100;
+                    type = 'hsv';
             }
+
+            const gradient = createSVG('linearGradient',{
+                x1:pipW/2,
+                x2:width-pipW/2,
+                gradientUnits: 'userSpaceOnUse',
+            })
+
+            const stop1 = createSVG('stop',{
+                offset: 0,
+                'stop-color': 'black',
+            })
+
+            const stop2 = createSVG('stop',{
+                offset: 1,
+                'stop-color': 'red',
+            })
+
+            const track_ = createSVG('rect',{
+                width,
+                height: trackH,
+                y: (trackH + 25)*i,
+                rx: 2,
+                fill: `url(#${gradient.id})`
+            })
+    
+            const pip_ = createSVG('rect',{
+                height: trackH + 2,
+                width: pipW,
+                fill: 'transparent',
+                y: (trackH + 25)*i - 1,
+                stroke: 'white',
+                'stroke-width': 3,
+                'vector-effect': 'non-scaling-stroke',
+                filter: 'url(#shadow)',
+                rx: 2
+            })
+ 
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            container.appendChild(gradient);
+            container.appendChild(track_);
+            container.appendChild(pip_);
+    
+            mainColor.subscribe(COLOR=>{  
+                let left;
+                let right;
+
+                if (type === 'hsv'){
+                    const base = {
+                        hue: COLOR.hue, 
+                        saturation: COLOR.saturation, 
+                        value: COLOR.value, 
+                    }
+
+                    left = new Color();
+                    left.setHSV({ ...base, [channel]: 0 });
+                    left = { 
+                        red: left.color.red, 
+                        green: left.color.green, 
+                        blue: left.color.blue 
+                    }
+
+                    right = new Color();
+                    right.setHSV({ ...base, [channel]: maxValue });
+                    right = {
+                        red: right.color.red,
+                        green: right.color.green,
+                        blue: right.color.blue
+                    }
+                } else {
+                    const base = { 
+                        red: COLOR.red, 
+                        green: COLOR.green, 
+                        blue: COLOR.blue 
+                    }
+                    left = { ...base , [channel]: 0  }
+                    right = { ...base , [channel]: maxValue }
+                }
             
             
             const l = `rgb(${left.red},${left.green},${left.blue})`;
@@ -175,14 +196,13 @@ function setup(){
             const r = `rgb(${right.red},${right.green},${right.blue})`;
             
             
-            
-            stops[0].setAttribute('stop-color', l);		
-            stops[1].setAttribute('stop-color', r);
-            pip.setAttribute('x', COLOR[channel]/maxValue*(width-pipW));		
+            stop1.setAttribute('stop-color', l);
+            stop2.setAttribute('stop-color', r);
+            pip_.setAttribute('x',COLOR[channel]/maxValue*(width-pipW));		
         })
         
         
-        pip.addEventListener('mousedown',e=>{
+        pip_.addEventListener('mousedown',e=>{
             let x = e.clientX;
             let rawProgress = mainColor.color[channel];
             
@@ -205,7 +225,7 @@ function setup(){
         })	
     })
     }
-    
+    buildChannels.counter = 0;
     
     buildChannels(['red','green','blue'], 0, 'rgb');
     buildChannels(['saturation', 'value'], 90, 'hsv');

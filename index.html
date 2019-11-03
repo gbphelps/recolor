@@ -2,58 +2,7 @@
     <head>
         <script src="./dist/bundle.js"></script>
     </head>
-
-    <svg id="rgb-svg">
-        <defs>
-            <linearGradient id="red-gradient" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stop-color="black"/>
-                <stop offset="1" stop-color="red"/>
-            </linearGradient>
-            
-            <linearGradient id="green-gradient" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stop-color="black"/>
-                <stop offset="1" stop-color="lime"/>
-            </linearGradient>
-            
-            <linearGradient id="blue-gradient" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stop-color="black"/>
-                <stop offset="1" stop-color="blue"/>
-            </linearGradient>
-            
-            <linearGradient id="saturation-gradient" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stop-color="black"/>
-                <stop offset="1" stop-color="blue"/>
-            </linearGradient>
-            
-            <linearGradient id="value-gradient" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stop-color="black"/>
-                <stop offset="1" stop-color="blue"/>
-            </linearGradient>
-            
-            <filter height="200%" width="200%" x="-50%" y="-50%" id="shadow">
-                <feDropShadow dy="1" dx="0" stdDeviation="1" flood-opacity=".3"/>
-            </filter>
-        
-        </defs>
-        
-        <rect id="red" fill="url(#red-gradient)"/>
-        <rect id="red-pip"/>
-        
-        <rect id="green" fill="url(#green-gradient)"/>
-        <rect id="green-pip"/>
-        
-        <rect id="blue" fill="url(#blue-gradient)"/>
-        <rect id="blue-pip"/>
-        
-        <rect id="saturation" fill="url(#saturation-gradient)"/>
-        <rect id="saturation-pip"/>
-        
-        <rect id="value" fill="url(#value-gradient)"/>
-        <rect id="value-pip"/>
-        
-    </svg>
     
-        
     <canvas id="c" style="display:none;"></canvas>
     <svg id="hue-svg" filter="url(#shadow)">
         <defs>
