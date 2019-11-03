@@ -1,8 +1,10 @@
+import rgbFromHSV from './colorMethods/rgbFromHSV';
+import hueFromRGB from './colorMethods/hueFromRGB';
+import extrema from './utils/extrema';
+
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
 })
-
-
 
 
 class Color{
@@ -20,7 +22,7 @@ class Color{
         this.subscriptions = [];
     }
 	
-	subscribe = (callback) => {
+	subscribe(callback){
 		this.subscriptions.push(callback);
 	}
 	
@@ -32,7 +34,7 @@ class Color{
         const saturation = this.color[max] === 0 ? 0 : (1-this.color[min]/this.color[max]) * 100;
         const value = this.color[max]/255 * 100;
         const hue = hueFromRGB({red, green, blue});
-			
+		console.log(hue)	
 
 		Object.assign(this.color,{hue, saturation, value})
 		console.log(this.color)
@@ -211,62 +213,11 @@ function setup(){
 
 
 
-function extrema(obj){
-	let max = null;
-	let min = null;
-	Object.keys(obj).forEach(channel => {
-		if (!min) min = channel;
-		if (!max) max = channel;
-		if (obj[channel] < obj[min]) min = channel;
-		if (obj[channel] > obj[max]) max = channel;
-	});
-	return {max, min};
-}
 
-function hueFromRGB(rgb){
-	const { max, min } = extrema(rgb);
-	const c = rgb[max] - rgb[min];
-	let hue = null
-	if (max === 'red'){
-		hue = ((rgb.green - rgb.blue)/c + 6)%6
-	} else if (max === 'green') {
-		hue = (rgb.blue - rgb.red)/c + 2;
-	} else if (max === 'blue'){
-		hue = (rgb.red - rgb.green)/c + 4;
-	}
-	
-	return hue/6 * 360;
-}
 
-function rgbFromHSV(hsv){
-	let max, min, mid;
-	if ((hsv.hue + 60)%360 <= 120){
-		max = 'red';
-		[min, mid] = hsv.hue <= 60 ? ['blue', 'green'] : ['green', 'blue'];	
-	} else if (hsv.hue <= 180) {
-		max = 'green';
-		[min, mid] = hsv.hue <= 120 ? ['blue', 'red'] : ['red', 'blue'] 
-	} else {
-		max = 'blue';
-		[min, mid] = hsv.hue <= 240 ? ['red', 'green'] : ['green', 'red']
-	}
-	
-	let progress = (hsv.hue%60) / 60;
-	if (Math.floor(hsv.hue/60)%2 === 1){
-		progress = 1 - progress
-	};
-	
-	
-	const maxval = 255/100 * hsv.value;
-	const minval = (100 - hsv.saturation) * maxval / 100;
-	const midval = minval + (maxval - minval)*progress;
-	
-	return {
-		[max]: maxval,
-		[min]: minval,
-		[mid]: midval,
-	}
-}
+
+
+
 
 
 
