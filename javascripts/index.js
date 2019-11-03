@@ -64,19 +64,8 @@ console.log(mainColor)
 
 
 
-const margin = 10;
 const width = 300;
 const height = 100;
-const trackH = 8;
-const pipW = 12;
-
-
-function set(id,props){
-		const el = document.getElementById(id);
-		Object.keys(props).forEach(key => {
-			el.setAttribute(key, props[key])
-		})
-}
 
 
 function createSVG(type,props){
@@ -92,7 +81,12 @@ createSVG.id = 0;
 function setup(){
     hueSlider();
     
-    function buildChannels(channels, startHeight){
+    function buildChannels(channels, {
+        trackLength = 300,
+        trackThickness = 8,
+        pipWidth = 12,
+        orientation = 'horizontal'
+    }={}){
         const container = createSVG('svg',{
             height,
             width,
@@ -113,34 +107,36 @@ function setup(){
             }
 
             const gradient = createSVG('linearGradient',{
-                x1:pipW/2,
-                x2:width-pipW/2,
+                [orientation === 'horizontal' ? 'x1' : 'y1' ]: pipWidth/2,
+                [orientation === 'horizontal' ? 'x2' : 'y2' ]: trackLength-pipWidth/2,
+                [orientation === 'horizontal' ? 'y1' : 'x1' ]: 0,
+                [orientation === 'horizontal' ? 'y2' : 'x2' ]: 0,
                 gradientUnits: 'userSpaceOnUse',
             })
 
             const stop1 = createSVG('stop',{
                 offset: 0,
-                'stop-color': 'black',
+                'stop-color': 'black', //TODO: initialize
             })
 
             const stop2 = createSVG('stop',{
                 offset: 1,
-                'stop-color': 'red',
+                'stop-color': 'red', //TODO: initialize
             })
 
             const track_ = createSVG('rect',{
-                width,
-                height: trackH,
-                y: (trackH + 25)*i,
+                [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
+                [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
+                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + 25)*i,
                 rx: 2,
                 fill: `url(#${gradient.id})`
             })
     
             const pip_ = createSVG('rect',{
-                height: trackH + 2,
-                width: pipW,
+                [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
+                [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
                 fill: 'transparent',
-                y: (trackH + 25)*i - 1,
+                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + 25)*i - 1,
                 stroke: 'white',
                 'stroke-width': 3,
                 'vector-effect': 'non-scaling-stroke',
@@ -196,26 +192,32 @@ function setup(){
             const r = `rgb(${right.red},${right.green},${right.blue})`;
             
             
-            stop1.setAttribute('stop-color', l);
-            stop2.setAttribute('stop-color', r);
-            pip_.setAttribute('x',COLOR[channel]/maxValue*(width-pipW));		
+            stop1.setAttribute('stop-color', orientation === "horizontal" ? l : r);
+            stop2.setAttribute('stop-color', orientation === "horizontal" ? r : l);
+            pip_.setAttribute(
+                orientation === 'horizontal' ? 'x' : 'y',
+                orientation === 'horizontal' ?
+                    COLOR[channel]/maxValue*(trackLength-pipWidth) :
+                    (1-COLOR[channel]/maxValue)*(trackLength-pipWidth)
+            );		
         })
         
         
         pip_.addEventListener('mousedown',e=>{
-            let x = e.clientX;
+            let x = orientation === 'horizontal' ? e.clientX : e.clientY;
             let rawProgress = mainColor.color[channel];
             
             function move(e){
-                const delx = e.clientX - x; //note need to scale if svg space is diff from user space;
-                rawProgress += delx/(width-pipW)*maxValue;
+                const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
+                const delx = orientation === 'horizontal' ? newX - x : x - newX; //note need to scale if svg space is diff from user space;
+                rawProgress += delx/(trackLength-pipWidth)*maxValue;
                 
                 let newVal = Math.min(rawProgress, maxValue);
                 newVal = Math.max(newVal, 0);
             
                 const setter = `set${type.toUpperCase()}`;
                 mainColor[setter]({[channel]: newVal});
-                x = e.clientX;
+                x = orientation === 'horizontal' ? e.clientX : e.clientY;
             }
             
             document.addEventListener('mousemove',move);
@@ -227,8 +229,8 @@ function setup(){
     }
     buildChannels.counter = 0;
     
-    buildChannels(['red','green','blue'], 0, 'rgb');
-    buildChannels(['saturation', 'value'], 90, 'hsv');
+    buildChannels(['red','green','blue']);
+    buildChannels(['saturation', 'value'], {trackLength: 100, trackThickness: 20, orientation: 'vertical' });
 }
 
 
