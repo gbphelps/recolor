@@ -4,7 +4,7 @@
     </head>
     
     <canvas id="c" style="display:none;"></canvas>
-    <svg id="hue-svg" filter="url(#shadow)">
+    <svg id="hue-svg">
         <defs>
             
             <pattern 
@@ -19,17 +19,8 @@
                 <circle id="inner-circle" fill="black"/>
             </mask>
             
-            <filter id="shadow">
-                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".1"/>
-            </filter>
-            
-            <filter id="shadow2" height="200%" width="200%" dy="-50%" dx="-50%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".2"/>
-            </filter>
-            
-            
-            <filter id="shadow3" height="200%" width="200%" dy="-50%" dx="-50%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".3"/>
+            <filter id="shadow" height="200%" width="200%" x="-50%" y="-50%">
+                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-opacity=".5"/>
             </filter>
             
         </defs>
@@ -40,14 +31,15 @@
           id="hue-track"
             fill="url(#conic-gradient-pattern)" 
             mask="url(#mask)"
+
         />
             
-        <g id="pc" filter="url(#shadow2)">
+        <g id="pc"  filter="url(#shadow)">
             <rect 
                     id="hue-pip" 
-                    width="16" 
-                    height="20"
-                  rx="5"
+                    width="12" 
+                    height="16"
+                  rx="2"
                     stroke-width="3"
                     fill="transparent"
                     stroke="white"

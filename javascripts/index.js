@@ -10,13 +10,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 class Color{
     constructor(){
         this.color = {
-            red: 0,
-            green: 0,
-            blue: 0,
+            rgb: {
+                red: 0,
+                green: 0,
+                blue: 0,
+            },
+
+            hsv: {
+                hue: 0,
+                saturation: 100,
+                value: 0,
+            },
+
+            hsl:{
+                saturation: 0,
+                lightness: 0,
+            }
             
-            hue: 0,
-            saturation: 100,
-            value: 0,
         }
 
         this.subscriptions = [];
@@ -27,27 +37,20 @@ class Color{
 	}
 	
 	setRGB(rgb){
-        Object.assign(this.color, rgb);
-        const {red,green,blue} = this.color;
-        const {max, min} = extrema({red,green,blue});
+        Object.assign(this.color.rgb, rgb);
+        const {max, min} = extrema(this.color.rgb);
         
-        const saturation = this.color[max] === 0 ? 0 : (1-this.color[min]/this.color[max]) * 100;
-        const value = this.color[max]/255 * 100;
-        const hue = hueFromRGB({red, green, blue});
-		console.log(hue)	
+        const saturation = this.color.rgb[max] === 0 ? 0 : (1-this.color.rgb[min]/this.color.rgb[max]) * 100;
+        const value = this.color.rgb[max]/255 * 100;
+        const hue  = hueFromRGB(this.color.rgb);
 
-		Object.assign(this.color,{hue, saturation, value})
-		console.log(this.color)
+		this.color.hsv = {hue, saturation, value};
 		this.subscriptions.forEach(subscription => subscription(this.color));
 	}
 	
 	setHSV(channelObject){
-		Object.assign(this.color,channelObject);
-		const {hue, saturation, value} = this.color;
-		
-		const newRGB = rgbFromHSV({hue, saturation, value});
-		Object.assign(this.color, newRGB);
-		
+        Object.assign(this.color.hsv, channelObject);	
+		this.color.rgb = rgbFromHSV(this.color.hsv);
 		this.subscriptions.forEach(subscription => subscription(this.color));
 	}
 }
@@ -85,12 +88,15 @@ function setup(){
         trackLength = 300,
         trackThickness = 8,
         pipWidth = 12,
-        orientation = 'horizontal'
+        orientation = 'horizontal',
+        margin = 24,
     }={}){
         const container = createSVG('svg',{
             height,
             width,
         })
+        container.style.margin=4;
+
         document.body.appendChild(container);
         channels.forEach((channel,i) => {    
             let maxValue, type;
@@ -127,7 +133,7 @@ function setup(){
             const track_ = createSVG('rect',{
                 [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
                 [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
-                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + 25)*i,
+                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i,
                 rx: 2,
                 fill: `url(#${gradient.id})`
             })
@@ -136,7 +142,7 @@ function setup(){
                 [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
                 [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
                 fill: 'transparent',
-                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + 25)*i - 1,
+                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1,
                 stroke: 'white',
                 'stroke-width': 3,
                 'vector-effect': 'non-scaling-stroke',
@@ -156,32 +162,28 @@ function setup(){
 
                 if (type === 'hsv'){
                     const base = {
-                        hue: COLOR.hue, 
-                        saturation: COLOR.saturation, 
-                        value: COLOR.value, 
+                        hue: COLOR.hsv.hue, 
+                        saturation: COLOR.hsv.saturation, 
+                        value: COLOR.hsv.value, 
                     }
 
                     left = new Color();
                     left.setHSV({ ...base, [channel]: 0 });
                     left = { 
-                        red: left.color.red, 
-                        green: left.color.green, 
-                        blue: left.color.blue 
+                        red: left.color.rgb.red, 
+                        green: left.color.rgb.green, 
+                        blue: left.color.rgb.blue 
                     }
 
                     right = new Color();
                     right.setHSV({ ...base, [channel]: maxValue });
                     right = {
-                        red: right.color.red,
-                        green: right.color.green,
-                        blue: right.color.blue
+                        red: right.color.rgb.red,
+                        green: right.color.rgb.green,
+                        blue: right.color.rgb.blue
                     }
                 } else {
-                    const base = { 
-                        red: COLOR.red, 
-                        green: COLOR.green, 
-                        blue: COLOR.blue 
-                    }
+                    const base = COLOR.rgb;
                     left = { ...base , [channel]: 0  }
                     right = { ...base , [channel]: maxValue }
                 }
@@ -197,15 +199,15 @@ function setup(){
             pip_.setAttribute(
                 orientation === 'horizontal' ? 'x' : 'y',
                 orientation === 'horizontal' ?
-                    COLOR[channel]/maxValue*(trackLength-pipWidth) :
-                    (1-COLOR[channel]/maxValue)*(trackLength-pipWidth)
+                    COLOR[type][channel]/maxValue*(trackLength-pipWidth) :
+                    (1-COLOR[type][channel]/maxValue)*(trackLength-pipWidth)
             );		
         })
         
         
         pip_.addEventListener('mousedown',e=>{
             let x = orientation === 'horizontal' ? e.clientX : e.clientY;
-            let rawProgress = mainColor.color[channel];
+            let rawProgress = mainColor.color[type][channel];
             
             function move(e){
                 const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
@@ -230,7 +232,13 @@ function setup(){
     buildChannels.counter = 0;
     
     buildChannels(['red','green','blue']);
-    buildChannels(['saturation', 'value'], {trackLength: 100, trackThickness: 20, orientation: 'vertical' });
+    buildChannels(['saturation', 'value'], {
+        trackLength: 100, 
+        trackThickness: 24, 
+        orientation: 'vertical',
+        margin: 8,
+        pipWidth: 8
+    });
 }
 
 
@@ -358,7 +366,7 @@ huePip.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -thi
 
 
 mainColor.subscribe(COLOR => {
-	huePip.setAttribute('transform', `rotate(${COLOR.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
+	huePip.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
 })
 
 huePip.addEventListener('mousedown',e=>{
@@ -369,8 +377,8 @@ huePip.addEventListener('mousedown',e=>{
 		const delx = e.clientX - x; //note that this needs scaling if svg space is diff from user space
 		const dely = e.clientY - y;
 		
-		const xnew = Math.cos((mainColor.color.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + delx;
-		const ynew = Math.sin((mainColor.color.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + dely;
+		const xnew = Math.cos((mainColor.color.hsv.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + delx;
+		const ynew = Math.sin((mainColor.color.hsv.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + dely;
 		
 		
 		
