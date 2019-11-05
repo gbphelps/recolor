@@ -1,6 +1,8 @@
 import rgbFromHSV from './colorMethods/rgbFromHSV';
-import hueFromRGB from './colorMethods/hueFromRGB';
-import extrema from './utils/extrema';
+import hslFromRGB from './colorMethods/hslFromRGB';
+import rgbFromHSL from './colorMethods/rgbFromHSL';
+import hsvFromRGB from './colorMethods/hsvFromRGB';
+
 
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
@@ -23,6 +25,7 @@ class Color{
             },
 
             hsl:{
+                hue: 0,
                 saturation: 0,
                 lightness: 0,
             }
@@ -38,21 +41,27 @@ class Color{
 	
 	setRGB(rgb){
         Object.assign(this.color.rgb, rgb);
-        const {max, min} = extrema(this.color.rgb);
-        
-        const saturation = this.color.rgb[max] === 0 ? 0 : (1-this.color.rgb[min]/this.color.rgb[max]) * 100;
-        const value = this.color.rgb[max]/255 * 100;
-        const hue  = hueFromRGB(this.color.rgb);
 
-		this.color.hsv = {hue, saturation, value};
+        this.color.hsv = hsvFromRGB(this.color.rgb);
+        this.color.hsl = hslFromRGB(this.color.rgb);
 		this.subscriptions.forEach(subscription => subscription(this.color));
 	}
 	
-	setHSV(channelObject){
-        Object.assign(this.color.hsv, channelObject);	
-		this.color.rgb = rgbFromHSV(this.color.hsv);
+	setHSV(hsvPartial){
+        Object.assign(this.color.hsv, hsvPartial);	
+        this.color.rgb = rgbFromHSV(this.color.hsv);
+        this.color.hsl = hslFromRGB(this.color.rgb);
+
 		this.subscriptions.forEach(subscription => subscription(this.color));
-	}
+    }
+    
+    setHSL(hslPartial){
+        Object.assign(this.color.hsl, hslPartial);
+        this.color.rgb = rgbFromHSL(this.color.hsl);
+        this.color.hsv = hsvFromRGB(this.color.rgb);
+
+        this.subscriptions.forEach(subscription => subscription(this.color));
+    }
 }
 
 
@@ -92,24 +101,20 @@ function setup(){
         margin = 24,
     }={}){
         const container = createSVG('svg',{
-            height,
-            width,
+            [orientation === 'horizontal' ? 'width' : 'height']: trackLength,
+            [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin
         })
         container.style.margin=4;
 
         document.body.appendChild(container);
-        channels.forEach((channel,i) => {    
-            let maxValue, type;
-            switch (channel){
-                case 'red':
-                case 'green':
-                case 'blue':
+        channels.forEach((param,i) => {    
+            let maxValue;
+            switch (param.type){
+                case 'rgb':
                     maxValue = 255;
-                    type = 'rgb';
                     break;
                 default:
                     maxValue = 100;
-                    type = 'hsv';
             }
 
             const gradient = createSVG('linearGradient',{
@@ -126,6 +131,11 @@ function setup(){
             })
 
             const stop2 = createSVG('stop',{
+                offset: .5,
+                'stop-color': 'red', //TODO: initialize
+            })
+
+            const stop3 = createSVG('stop',{
                 offset: 1,
                 'stop-color': 'red', //TODO: initialize
             })
@@ -152,62 +162,61 @@ function setup(){
  
             gradient.appendChild(stop1);
             gradient.appendChild(stop2);
+            gradient.appendChild(stop3);
+            
             container.appendChild(gradient);
             container.appendChild(track_);
             container.appendChild(pip_);
     
             mainColor.subscribe(COLOR=>{  
                 let left;
+                let middle;
                 let right;
 
-                if (type === 'hsv'){
-                    const base = {
-                        hue: COLOR.hsv.hue, 
-                        saturation: COLOR.hsv.saturation, 
-                        value: COLOR.hsv.value, 
-                    }
+                if (param.type !== 'rgb'){
+                    const base = COLOR[param.type];
 
                     left = new Color();
-                    left.setHSV({ ...base, [channel]: 0 });
-                    left = { 
-                        red: left.color.rgb.red, 
-                        green: left.color.rgb.green, 
-                        blue: left.color.rgb.blue 
-                    }
+                    const setter = `set${param.type.toUpperCase()}`;
+                    left[setter]({ ...base, [param.channel]: 0 });
+                    left = left.color.rgb;
 
                     right = new Color();
-                    right.setHSV({ ...base, [channel]: maxValue });
-                    right = {
-                        red: right.color.rgb.red,
-                        green: right.color.rgb.green,
-                        blue: right.color.rgb.blue
-                    }
+                    right[setter]({ ...base, [param.channel]: maxValue });
+                    right = right.color.rgb;
+
+                    middle = new Color();
+                    middle[setter]({...base, [param.channel]: maxValue/2 });
+                    middle = middle.color.rgb;
+
                 } else {
                     const base = COLOR.rgb;
-                    left = { ...base , [channel]: 0  }
-                    right = { ...base , [channel]: maxValue }
+                    left = { ...base , [param.channel]: 0  }
+                    right = { ...base , [param.channel]: maxValue }
+                    middle = { ...base , [param.channel]: maxValue/2 }
                 }
-            
-            
+
             const l = `rgb(${left.red},${left.green},${left.blue})`;
-            
+            const m = `rgb(${middle.red},${middle.green},${middle.blue})`;
             const r = `rgb(${right.red},${right.green},${right.blue})`;
             
             
             stop1.setAttribute('stop-color', orientation === "horizontal" ? l : r);
-            stop2.setAttribute('stop-color', orientation === "horizontal" ? r : l);
+            stop2.setAttribute('stop-color', m);
+            stop3.setAttribute('stop-color', orientation === "horizontal" ? r : l);
+           
             pip_.setAttribute(
                 orientation === 'horizontal' ? 'x' : 'y',
                 orientation === 'horizontal' ?
-                    COLOR[type][channel]/maxValue*(trackLength-pipWidth) :
-                    (1-COLOR[type][channel]/maxValue)*(trackLength-pipWidth)
+                    COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) :
+                    (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth)
             );		
         })
         
         
         pip_.addEventListener('mousedown',e=>{
             let x = orientation === 'horizontal' ? e.clientX : e.clientY;
-            let rawProgress = mainColor.color[type][channel];
+            let rawProgress = mainColor.color[param.type][param.channel];
             
             function move(e){
                 const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
@@ -217,8 +226,8 @@ function setup(){
                 let newVal = Math.min(rawProgress, maxValue);
                 newVal = Math.max(newVal, 0);
             
-                const setter = `set${type.toUpperCase()}`;
-                mainColor[setter]({[channel]: newVal});
+                const setter = `set${param.type.toUpperCase()}`;
+                mainColor[setter]({[param.channel]: newVal});
                 x = orientation === 'horizontal' ? e.clientX : e.clientY;
             }
             
@@ -229,10 +238,27 @@ function setup(){
         })	
     })
     }
-    buildChannels.counter = 0;
     
-    buildChannels(['red','green','blue']);
-    buildChannels(['saturation', 'value'], {
+    buildChannels([
+        {type: 'rgb', channel: 'red'},
+        {type: 'rgb', channel: 'green'},
+        {type: 'rgb', channel: 'blue'},
+    ]);
+    buildChannels([
+        {type: 'hsv', channel: 'saturation'},
+        {type: 'hsv', channel: 'value' },
+    ],{
+        trackLength: 100, 
+        trackThickness: 24, 
+        orientation: 'vertical',
+        margin: 8,
+        pipWidth: 8
+    });
+
+    buildChannels([
+        {type: 'hsl', channel: 'saturation'},
+        {type: 'hsl', channel: 'lightness' },
+    ],{
         trackLength: 100, 
         trackThickness: 24, 
         orientation: 'vertical',
