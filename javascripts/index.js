@@ -3,9 +3,25 @@ import hslFromRGB from './colorMethods/hslFromRGB';
 import rgbFromHSL from './colorMethods/rgbFromHSL';
 import hsvFromRGB from './colorMethods/hsvFromRGB';
 
+import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
+import makeGradient from './nonlinearGradient';
+
 
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
+    makeGradient({
+        color: {
+            hue: 0, 
+            saturation: 100, 
+            lightness: 50
+        }, 
+        channel: {
+            name: 'lightness',
+            max: 100
+        },
+        rgbFunc: rgbFromHSLUV,
+        direction: 'vertical'
+    });
 })
 
 
@@ -163,7 +179,7 @@ function setup(){
             gradient.appendChild(stop1);
             gradient.appendChild(stop2);
             gradient.appendChild(stop3);
-            
+
             container.appendChild(gradient);
             container.appendChild(track_);
             container.appendChild(pip_);
