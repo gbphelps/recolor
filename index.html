@@ -2,7 +2,7 @@
     <head>
         <script src="./dist/bundle.js"></script>
     </head>
-    
+    <body style="background:#444">
     <canvas id="c" style="display:none;"></canvas>
     <svg id="hue-svg">
         <defs>
@@ -20,7 +20,7 @@
             </mask>
             
             <filter id="shadow" height="200%" width="200%" x="-50%" y="-50%">
-                <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-opacity=".5"/>
+                <feDropShadow dx="0" dy="2" stdDeviation="1" flood-opacity=".5"/>
             </filter>
             
         </defs>
@@ -39,13 +39,13 @@
                     id="hue-pip" 
                     width="12" 
                     height="16"
-                  rx="2"
-                    stroke-width="3"
+                  rx="0"
+                    stroke-width="2"
                     fill="transparent"
                     stroke="white"
                     vector-effect="non-scaling-stroke"
             />
         </g>    
     </svg>
-
+    </body>
 </html>

@@ -13,36 +13,6 @@ import makePattern from './makePattern';
 
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
-    const grad = makeGradient({
-        color: {
-            hue: 0, 
-            saturation: 100, 
-            lightness: 50
-        }, 
-        channel: {
-            name: 'saturation',
-            max: 100
-        },
-        rgbFunc: rgbFromHSLUV,
-        direction: 'vertical'
-    });
-    const s = createSVG('svg',{
-        height: 200,
-        width: 100,
-        viewBox: `0 0 100 200`
-    });
-    document.body.appendChild(s);
-    const p = makePattern();
-    s.appendChild(p);
-    p.firstElementChild.setAttribute('href',grad);
-
-    const r = createSVG('rect',{
-        height: 100,
-        width: 20,
-        fill: `url(#${p.id})`,
-        rx: 2,
-    })
-    s.appendChild(r);
 })
 
 
@@ -196,10 +166,11 @@ function buildChannels(channels, {
     pipWidth = 12,
     orientation = 'horizontal',
     margin = 24,
+    outerMargin=10,
 }={}){
     const container = createSVG('svg',{
-        [orientation === 'horizontal' ? 'width' : 'height']: trackLength,
-        [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin
+        [orientation === 'horizontal' ? 'width' : 'height']: trackLength + 2*outerMargin,
+        [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
     container.style.margin=4;
 
@@ -240,7 +211,8 @@ function buildChannels(channels, {
         const track_ = createSVG('rect',{
             [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
             [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
-            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i,
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i + outerMargin,
+            [ orientation === 'horizontal' ? 'x' : 'y']: outerMargin,
             rx: 2,
             fill: `url(#${gradient.id})`
         })
@@ -249,12 +221,12 @@ function buildChannels(channels, {
             [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
             [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
             fill: 'transparent',
-            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1,
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1 + outerMargin,
             stroke: 'white',
-            'stroke-width': 3,
+            'stroke-width': 2,
             'vector-effect': 'non-scaling-stroke',
             filter: 'url(#shadow)',
-            rx: 2
+            rx: 0
         })
 
         gradient.appendChild(stop1);
@@ -305,8 +277,8 @@ function buildChannels(channels, {
         pip_.setAttribute(
             orientation === 'horizontal' ? 'x' : 'y',
             orientation === 'horizontal' ?
-                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) :
-                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth)
+                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) + outerMargin :
+                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth) + outerMargin
         );		
     })
     
@@ -345,10 +317,11 @@ function buildNonlinearChannels(channels, {
     pipWidth = 12,
     orientation = 'horizontal',
     margin = 24,
+    outerMargin = 10
 }={}){
     const container = createSVG('svg',{
-        [orientation === 'horizontal' ? 'width' : 'height']: trackLength,
-        [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin
+        [orientation === 'horizontal' ? 'width' : 'height']: trackLength + 2*outerMargin,
+        [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
     container.style.margin=4;
 
@@ -367,7 +340,8 @@ function buildNonlinearChannels(channels, {
         const track_ = createSVG('rect',{
             [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
             [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
-            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i,
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i + outerMargin,
+            [ orientation === 'horizontal' ? 'x' : 'y']: outerMargin,
             rx: 2,
             fill: `url(#${pattern.id})`
         })
@@ -376,12 +350,12 @@ function buildNonlinearChannels(channels, {
             [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
             [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
             fill: 'transparent',
-            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1,
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1 + outerMargin,
             stroke: 'white',
-            'stroke-width': 3,
+            'stroke-width': 2,
             'vector-effect': 'non-scaling-stroke',
             filter: 'url(#shadow)',
-            rx: 2
+            rx: 0
         })
 
         document.body.appendChild(container);
@@ -408,8 +382,8 @@ function buildNonlinearChannels(channels, {
         pip_.setAttribute(
             orientation === 'horizontal' ? 'x' : 'y',
             orientation === 'horizontal' ?
-                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) :
-                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth)
+                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) + outerMargin :
+                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth) + outerMargin
         );		
     })
     
