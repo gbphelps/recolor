@@ -2,26 +2,47 @@ import rgbFromHSV from './colorMethods/rgbFromHSV';
 import hslFromRGB from './colorMethods/hslFromRGB';
 import rgbFromHSL from './colorMethods/rgbFromHSL';
 import hsvFromRGB from './colorMethods/hsvFromRGB';
+import hsluvFromRGB from './colorMethods/hsluvFromRGB';
 
 import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
 import makeGradient from './nonlinearGradient';
 
+import createSVG from './createSVG';
+import makePattern from './makePattern';
+
 
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
-    makeGradient({
+    const grad = makeGradient({
         color: {
             hue: 0, 
             saturation: 100, 
             lightness: 50
         }, 
         channel: {
-            name: 'lightness',
+            name: 'saturation',
             max: 100
         },
         rgbFunc: rgbFromHSLUV,
         direction: 'vertical'
     });
+    const s = createSVG('svg',{
+        height: 200,
+        width: 100,
+        viewBox: `0 0 100 200`
+    });
+    document.body.appendChild(s);
+    const p = makePattern();
+    s.appendChild(p);
+    p.firstElementChild.setAttribute('href',grad);
+
+    const r = createSVG('rect',{
+        height: 100,
+        width: 20,
+        fill: `url(#${p.id})`,
+        rx: 2,
+    })
+    s.appendChild(r);
 })
 
 
@@ -44,10 +65,15 @@ class Color{
                 hue: 0,
                 saturation: 0,
                 lightness: 0,
-            }
-            
-        }
+            },
 
+            hsluv:{
+                hue: 0,
+                saturation: 0,
+                lightness: 0
+            }
+
+        }
         this.subscriptions = [];
     }
 	
@@ -60,21 +86,37 @@ class Color{
 
         this.color.hsv = hsvFromRGB(this.color.rgb);
         this.color.hsl = hslFromRGB(this.color.rgb);
+        this.color.hsluv = hsluvFromRGB(this.color.rgb);
+
 		this.subscriptions.forEach(subscription => subscription(this.color));
 	}
 	
 	setHSV(hsvPartial){
-        Object.assign(this.color.hsv, hsvPartial);	
+        Object.assign(this.color.hsv, hsvPartial);
+
         this.color.rgb = rgbFromHSV(this.color.hsv);
         this.color.hsl = hslFromRGB(this.color.rgb);
+        this.color.hsluv = hsluvFromRGB(this.color.rgb);
 
 		this.subscriptions.forEach(subscription => subscription(this.color));
     }
     
     setHSL(hslPartial){
         Object.assign(this.color.hsl, hslPartial);
+
         this.color.rgb = rgbFromHSL(this.color.hsl);
         this.color.hsv = hsvFromRGB(this.color.rgb);
+        this.color.hsluv = hsluvFromRGB(this.color.rgb);
+
+        this.subscriptions.forEach(subscription => subscription(this.color));
+    }
+
+    setHSLUV(hsluvPartial){
+        Object.assign(this.color.hsluv, hsluvPartial);
+
+        this.color.rgb = rgbFromHSLUV(this.color.hsluv);
+        this.color.hsv = hsvFromRGB(this.color.rgb);
+        this.color.hsl = hslFromRGB(this.color.rgb);
 
         this.subscriptions.forEach(subscription => subscription(this.color));
     }
@@ -84,7 +126,6 @@ class Color{
 
 
 const mainColor = new Color();
-console.log(mainColor)
 
 
 
@@ -96,165 +137,10 @@ const width = 300;
 const height = 100;
 
 
-function createSVG(type,props){
-    const el = document.createElementNS('http://www.w3.org/2000/svg', type);
-    el.id = createSVG.id++;
-    Object.keys(props).forEach(key => {
-        el.setAttribute(key,props[key]);
-    })
-    return el;
-}
-createSVG.id = 0;
+
 
 function setup(){
     hueSlider();
-    
-    function buildChannels(channels, {
-        trackLength = 300,
-        trackThickness = 8,
-        pipWidth = 12,
-        orientation = 'horizontal',
-        margin = 24,
-    }={}){
-        const container = createSVG('svg',{
-            [orientation === 'horizontal' ? 'width' : 'height']: trackLength,
-            [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin
-        })
-        container.style.margin=4;
-
-        document.body.appendChild(container);
-        channels.forEach((param,i) => {    
-            let maxValue;
-            switch (param.type){
-                case 'rgb':
-                    maxValue = 255;
-                    break;
-                default:
-                    maxValue = 100;
-            }
-
-            const gradient = createSVG('linearGradient',{
-                [orientation === 'horizontal' ? 'x1' : 'y1' ]: pipWidth/2,
-                [orientation === 'horizontal' ? 'x2' : 'y2' ]: trackLength-pipWidth/2,
-                [orientation === 'horizontal' ? 'y1' : 'x1' ]: 0,
-                [orientation === 'horizontal' ? 'y2' : 'x2' ]: 0,
-                gradientUnits: 'userSpaceOnUse',
-            })
-
-            const stop1 = createSVG('stop',{
-                offset: 0,
-                'stop-color': 'black', //TODO: initialize
-            })
-
-            const stop2 = createSVG('stop',{
-                offset: .5,
-                'stop-color': 'red', //TODO: initialize
-            })
-
-            const stop3 = createSVG('stop',{
-                offset: 1,
-                'stop-color': 'red', //TODO: initialize
-            })
-
-            const track_ = createSVG('rect',{
-                [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
-                [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
-                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i,
-                rx: 2,
-                fill: `url(#${gradient.id})`
-            })
-    
-            const pip_ = createSVG('rect',{
-                [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
-                [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
-                fill: 'transparent',
-                [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1,
-                stroke: 'white',
-                'stroke-width': 3,
-                'vector-effect': 'non-scaling-stroke',
-                filter: 'url(#shadow)',
-                rx: 2
-            })
- 
-            gradient.appendChild(stop1);
-            gradient.appendChild(stop2);
-            gradient.appendChild(stop3);
-
-            container.appendChild(gradient);
-            container.appendChild(track_);
-            container.appendChild(pip_);
-    
-            mainColor.subscribe(COLOR=>{  
-                let left;
-                let middle;
-                let right;
-
-                if (param.type !== 'rgb'){
-                    const base = COLOR[param.type];
-
-                    left = new Color();
-                    const setter = `set${param.type.toUpperCase()}`;
-                    left[setter]({ ...base, [param.channel]: 0 });
-                    left = left.color.rgb;
-
-                    right = new Color();
-                    right[setter]({ ...base, [param.channel]: maxValue });
-                    right = right.color.rgb;
-
-                    middle = new Color();
-                    middle[setter]({...base, [param.channel]: maxValue/2 });
-                    middle = middle.color.rgb;
-
-                } else {
-                    const base = COLOR.rgb;
-                    left = { ...base , [param.channel]: 0  }
-                    right = { ...base , [param.channel]: maxValue }
-                    middle = { ...base , [param.channel]: maxValue/2 }
-                }
-
-            const l = `rgb(${left.red},${left.green},${left.blue})`;
-            const m = `rgb(${middle.red},${middle.green},${middle.blue})`;
-            const r = `rgb(${right.red},${right.green},${right.blue})`;
-            
-            
-            stop1.setAttribute('stop-color', orientation === "horizontal" ? l : r);
-            stop2.setAttribute('stop-color', m);
-            stop3.setAttribute('stop-color', orientation === "horizontal" ? r : l);
-           
-            pip_.setAttribute(
-                orientation === 'horizontal' ? 'x' : 'y',
-                orientation === 'horizontal' ?
-                    COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) :
-                    (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth)
-            );		
-        })
-        
-        
-        pip_.addEventListener('mousedown',e=>{
-            let x = orientation === 'horizontal' ? e.clientX : e.clientY;
-            let rawProgress = mainColor.color[param.type][param.channel];
-            
-            function move(e){
-                const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
-                const delx = orientation === 'horizontal' ? newX - x : x - newX; //note need to scale if svg space is diff from user space;
-                rawProgress += delx/(trackLength-pipWidth)*maxValue;
-                
-                let newVal = Math.min(rawProgress, maxValue);
-                newVal = Math.max(newVal, 0);
-            
-                const setter = `set${param.type.toUpperCase()}`;
-                mainColor[setter]({[param.channel]: newVal});
-                x = orientation === 'horizontal' ? e.clientX : e.clientY;
-            }
-            
-            document.addEventListener('mousemove',move);
-            document.addEventListener('mouseup',()=>{
-                document.removeEventListener('mousemove',move);
-            },{once:true})	
-        })	
-    })
-    }
-    
     buildChannels([
         {type: 'rgb', channel: 'red'},
         {type: 'rgb', channel: 'green'},
@@ -270,7 +156,7 @@ function setup(){
         margin: 8,
         pipWidth: 8
     });
-
+    
     buildChannels([
         {type: 'hsl', channel: 'saturation'},
         {type: 'hsl', channel: 'lightness' },
@@ -281,6 +167,18 @@ function setup(){
         margin: 8,
         pipWidth: 8
     });
+
+    buildNonlinearChannels([
+        {type: 'hsluv', channel: 'saturation'},
+        {type: 'hsluv', channel: 'lightness'},
+    ],{
+        trackLength: 100, 
+        trackThickness: 24, 
+        orientation: 'vertical',
+        margin: 8,
+        pipWidth: 8
+    })
+    mainColor.setRGB({red: 50, green: 100, blue: 200 });
 }
 
 
@@ -292,10 +190,254 @@ function setup(){
 
 
 
+function buildChannels(channels, {
+    trackLength = 300,
+    trackThickness = 8,
+    pipWidth = 12,
+    orientation = 'horizontal',
+    margin = 24,
+}={}){
+    const container = createSVG('svg',{
+        [orientation === 'horizontal' ? 'width' : 'height']: trackLength,
+        [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin
+    })
+    container.style.margin=4;
+
+    document.body.appendChild(container);
+    channels.forEach((param,i) => {    
+        let maxValue;
+        switch (param.type){
+            case 'rgb':
+                maxValue = 255;
+                break;
+            default:
+                maxValue = 100;
+        }
+
+        const gradient = createSVG('linearGradient',{
+            [orientation === 'horizontal' ? 'x1' : 'y1' ]: pipWidth/2,
+            [orientation === 'horizontal' ? 'x2' : 'y2' ]: trackLength-pipWidth/2,
+            [orientation === 'horizontal' ? 'y1' : 'x1' ]: 0,
+            [orientation === 'horizontal' ? 'y2' : 'x2' ]: 0,
+            gradientUnits: 'userSpaceOnUse',
+        })
+
+        const stop1 = createSVG('stop',{
+            offset: 0,
+            'stop-color': 'black', //TODO: initialize
+        })
+
+        const stop2 = createSVG('stop',{
+            offset: .5,
+            'stop-color': 'red', //TODO: initialize
+        })
+
+        const stop3 = createSVG('stop',{
+            offset: 1,
+            'stop-color': 'red', //TODO: initialize
+        })
+
+        const track_ = createSVG('rect',{
+            [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
+            [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i,
+            rx: 2,
+            fill: `url(#${gradient.id})`
+        })
+
+        const pip_ = createSVG('rect',{
+            [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
+            [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
+            fill: 'transparent',
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1,
+            stroke: 'white',
+            'stroke-width': 3,
+            'vector-effect': 'non-scaling-stroke',
+            filter: 'url(#shadow)',
+            rx: 2
+        })
+
+        gradient.appendChild(stop1);
+        gradient.appendChild(stop2);
+        gradient.appendChild(stop3);
+
+        container.appendChild(gradient);
+        container.appendChild(track_);
+        container.appendChild(pip_);
+
+        mainColor.subscribe(COLOR=>{  
+            let left;
+            let middle;
+            let right;
+
+            if (param.type !== 'rgb'){
+                const base = COLOR[param.type];
+
+                left = new Color();
+                const setter = `set${param.type.toUpperCase()}`;
+                left[setter]({ ...base, [param.channel]: 0 });
+                left = left.color.rgb;
+
+                right = new Color();
+                right[setter]({ ...base, [param.channel]: maxValue });
+                right = right.color.rgb;
+
+                middle = new Color();
+                middle[setter]({...base, [param.channel]: maxValue/2 });
+                middle = middle.color.rgb;
+
+            } else {
+                const base = COLOR.rgb;
+                left = { ...base , [param.channel]: 0  }
+                right = { ...base , [param.channel]: maxValue }
+                middle = { ...base , [param.channel]: maxValue/2 }
+            }
+
+        const l = `rgb(${left.red},${left.green},${left.blue})`;
+        const m = `rgb(${middle.red},${middle.green},${middle.blue})`;
+        const r = `rgb(${right.red},${right.green},${right.blue})`;
+        
+        
+        stop1.setAttribute('stop-color', orientation === "horizontal" ? l : r);
+        stop2.setAttribute('stop-color', m);
+        stop3.setAttribute('stop-color', orientation === "horizontal" ? r : l);
+       
+        pip_.setAttribute(
+            orientation === 'horizontal' ? 'x' : 'y',
+            orientation === 'horizontal' ?
+                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) :
+                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth)
+        );		
+    })
+    
+    
+    pip_.addEventListener('mousedown',e=>{
+        let x = orientation === 'horizontal' ? e.clientX : e.clientY;
+        let rawProgress = mainColor.color[param.type][param.channel];
+        
+        function move(e){
+            const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
+            const delx = orientation === 'horizontal' ? newX - x : x - newX; //note need to scale if svg space is diff from user space;
+            rawProgress += delx/(trackLength-pipWidth)*maxValue;
+            
+            let newVal = Math.min(rawProgress, maxValue);
+            newVal = Math.max(newVal, 0);
+        
+            const setter = `set${param.type.toUpperCase()}`;
+            mainColor[setter]({[param.channel]: newVal});
+            x = orientation === 'horizontal' ? e.clientX : e.clientY;
+        }
+        
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',()=>{
+            document.removeEventListener('mousemove',move);
+        },{once:true})	
+    })	
+})
+}
 
 
 
 
+function buildNonlinearChannels(channels, {
+    trackLength = 300,
+    trackThickness = 8,
+    pipWidth = 12,
+    orientation = 'horizontal',
+    margin = 24,
+}={}){
+    const container = createSVG('svg',{
+        [orientation === 'horizontal' ? 'width' : 'height']: trackLength,
+        [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin
+    })
+    container.style.margin=4;
+
+    channels.forEach((param,i) => {    
+        let maxValue;
+        switch (param.type){
+            case 'rgb':
+                maxValue = 255;
+                break;
+            default:
+                maxValue = 100;
+        }
+
+       const pattern = makePattern();
+
+        const track_ = createSVG('rect',{
+            [ orientation === 'horizontal' ? 'width' : 'height']: trackLength,
+            [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness,
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i,
+            rx: 2,
+            fill: `url(#${pattern.id})`
+        })
+
+        const pip_ = createSVG('rect',{
+            [ orientation === 'horizontal' ? 'height' : 'width']: trackThickness + 2,
+            [ orientation === 'horizontal' ? 'width' : 'height']: pipWidth,
+            fill: 'transparent',
+            [ orientation === 'horizontal' ? 'y' : 'x']: (trackThickness + margin)*i - 1,
+            stroke: 'white',
+            'stroke-width': 3,
+            'vector-effect': 'non-scaling-stroke',
+            filter: 'url(#shadow)',
+            rx: 2
+        })
+
+        document.body.appendChild(container);
+        container.appendChild(pattern);
+        container.appendChild(track_);
+        container.appendChild(pip_);
+
+        mainColor.subscribe(COLOR=>{  
+        
+        const grad = makeGradient({
+            rgbFunc: rgbFromHSLUV,
+            color: COLOR[param.type],
+            channel: {
+                name: param.channel,
+                max: maxValue
+            },
+            direction: orientation,
+            width: 100,
+            height: 10
+        })
+
+        pattern.firstElementChild.setAttribute('href',grad);
+       
+        pip_.setAttribute(
+            orientation === 'horizontal' ? 'x' : 'y',
+            orientation === 'horizontal' ?
+                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) :
+                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth)
+        );		
+    })
+    
+    
+    pip_.addEventListener('mousedown',e=>{
+        let x = orientation === 'horizontal' ? e.clientX : e.clientY;
+        let rawProgress = mainColor.color[param.type][param.channel];
+        
+        function move(e){
+            const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
+            const delx = orientation === 'horizontal' ? newX - x : x - newX; //note need to scale if svg space is diff from user space;
+            rawProgress += delx/(trackLength-pipWidth)*maxValue;
+            
+            let newVal = Math.min(rawProgress, maxValue);
+            newVal = Math.max(newVal, 0);
+        
+            const setter = `set${param.type.toUpperCase()}`;
+            mainColor[setter]({[param.channel]: newVal});
+            x = orientation === 'horizontal' ? e.clientX : e.clientY;
+        }
+        
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',()=>{
+            document.removeEventListener('mousemove',move);
+        },{once:true})	
+    })	
+})
+}
 
 
 

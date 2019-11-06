@@ -19,14 +19,15 @@ export default function makeGradient({
         const rgb = rgbFunc({...color, [channel.name]: channel.max * xFrac});
         for (let y=0; y<height; y++){
             const i = direction === "horizontal" ? x + y*width : x*height + y;
-            img.data[i*4] = rgb.red * 255;
-            img.data[i*4+1] = rgb.green * 255;
-            img.data[i*4+2] = rgb.blue * 255;
+            img.data[i*4] = rgb.red;
+            img.data[i*4+1] = rgb.green;
+            img.data[i*4+2] = rgb.blue;
             img.data[i*4+3] = 255;
         }
     }
-    console.log(canvas);
     document.body.appendChild(canvas);
-    console.log(img.data)
     ctx.putImageData(img,0,0);
+    const result = canvas.toDataURL();
+    document.body.removeChild(canvas);
+    return result;
 }

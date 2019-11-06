@@ -11,6 +11,5 @@ export default function hslFromRGB(rgb){
     } else {
         saturation = (rgb[max] - rgb[min])/255 /(1 - Math.abs(2*lightness - 1));
     }
-    console.log(saturation, lightness)
     return { saturation: saturation*100, lightness: lightness*100, hue };
 }
