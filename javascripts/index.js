@@ -189,8 +189,8 @@ function buildChannels(channels, {
         }
 
         const gradient = createSVG('linearGradient',{
-            [orientation === 'horizontal' ? 'x1' : 'y1' ]: pipWidth/2,
-            [orientation === 'horizontal' ? 'x2' : 'y2' ]: trackLength-pipWidth/2,
+            [orientation === 'horizontal' ? 'x1' : 'y1' ]: pipWidth/2 + outerMargin,
+            [orientation === 'horizontal' ? 'x2' : 'y2' ]: trackLength-pipWidth/2 + outerMargin,
             [orientation === 'horizontal' ? 'y1' : 'x1' ]: 0,
             [orientation === 'horizontal' ? 'y2' : 'x2' ]: 0,
             gradientUnits: 'userSpaceOnUse',
