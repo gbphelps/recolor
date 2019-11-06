@@ -502,7 +502,11 @@ function set(id,props){
 	})
 }
 
-set('hue-svg',{ viewBox: `0 0 ${RADIUS*2 + 20} ${RADIUS*2 + 20}`, height: RADIUS*2 });
+set('hue-svg',{ 
+    viewBox: `0 0 ${RADIUS*2 + 20} ${RADIUS*2 + 20}`, 
+    height: RADIUS*2 + 20 
+});
+
 set('conic-gradient',{ height: 2*RADIUS });
 set('inner-circle',{r: RADIUS- thickness, cx: RADIUS, cy: RADIUS});
 set('conic-gradient-pattern',{viewBox: `0 0 ${RADIUS*2} ${RADIUS*2}`});
