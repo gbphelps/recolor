@@ -47,5 +47,23 @@
             />
         </g>    
     </svg>
+
+    <canvas id="c" style="display:none"></canvas>
+
+<svg id="triangle" filter="url(#shadow)">	
+	<defs>		
+		<pattern id="p" height="100%" width="100%">
+			<image id="image"/>		
+		</pattern>	
+		<clipPath id="clip">
+			<path id="clippath"/>
+		</clipPath>
+	</defs>
+	<rect id="triangle-rect"/>
+	<path id="bounds"/>
+	<circle id="triangle-pip"/>
+</svg>
+    
+
     </body>
 </html>

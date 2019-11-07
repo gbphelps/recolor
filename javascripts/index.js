@@ -10,6 +10,8 @@ import makeGradient from './nonlinearGradient';
 import createSVG from './createSVG';
 import makePattern from './makePattern';
 
+import './triangle.js'
+
 
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
@@ -320,13 +322,15 @@ function buildNonlinearChannels(channels, {
     pipWidth = 12,
     orientation = 'horizontal',
     margin = 24,
-    outerMargin = 10
+    outerMargin = 24
 }={}){
     const container = createSVG('svg',{
         [orientation === 'horizontal' ? 'width' : 'height']: trackLength + 2*outerMargin,
         [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
     container.style.margin=4;
+    container.style.border='1px solid #555';
+    container.style['border-radius']='2px';
 
     channels.forEach((param,i) => {    
         let maxValue;
