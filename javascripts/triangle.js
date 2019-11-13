@@ -1,11 +1,11 @@
-
-
+import mainColor from './ColorObject';
+import triFromRGB from './colorMethods/triFromRGB';
 
 function make(){
 
 const ratio = Math.sqrt(3)/2;
-const margin = 7;
-const padding = 5;
+const margin = 8;
+const padding = 1;
 const s = 150;
 
 const c = document.createElement('canvas');
@@ -89,14 +89,17 @@ r.setAttribute('width', c.width);
 r.setAttribute('clip-path', 'url(#clip)');
 r.setAttribute('fill', 'url(#p)');
 
-const svgHeight = c.height;
+const svgHeight = c.height + 2*padding;
 const svg = document.getElementById('triangle');
 svg.setAttribute('height', svgHeight);
 
 svg.setAttribute('viewBox', `${-padding} ${-padding} ${c.width + 2*padding} ${c.height + 2*padding}`);
 
-svg.style.transform=`translateY(${c.width/c.height*svgHeight}px)rotate(-90deg)`
+svg.style.transform=`translateY(100%)rotate(-90deg)`;
 svg.style['transform-origin']=`0 0`;
+
+
+
 
 
 const pip = document.getElementById('triangle-pip');
@@ -107,13 +110,23 @@ pip.setAttribute('stroke', 'white');
 pip.setAttribute('fill', 'transparent');
 pip.setAttribute('vector-effect','non-scaling-stroke')
 
+mainColor.subscribe(({rgb}) => {
+	const tri = triFromRGB(rgb);
+	const y = tri.color*s*ratio;
+	pip.setAttribute('cy', y + margin);
+	const xP = Math.sqrt(3)/2 * tri.white*s*ratio;
+	const yP = -1/2*tri.white*s*ratio;
+	const x = (y - yP)/Math.sqrt(3) + xP;
+	pip.setAttribute('cx',x + margin);	
+})
+
 pip.addEventListener('mousedown',e=>{
 	let x = e.clientX;
 	let y = e.clientY;
 	
 	function move(e){
-		dely = (e.clientX - x) * c.height/svgHeight;
-		delx = -(e.clientY - y) * c.height/svgHeight;
+		const dely = (e.clientX - x);
+		const delx = -(e.clientY - y);
 		
 		let xAttempt = pip.cx.baseVal.value + delx;
 		let yAttempt = pip.cy.baseVal.value + dely;

@@ -7,5 +7,5 @@ export default function(rgb){
    const white = rgb[min]/255;
    const color = (rgb[max] - 255*white)/255;
    const black = 1 - white - color;
-   console.log({white, black, color});
+   return {white, black, color};
 }
