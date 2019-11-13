@@ -83,9 +83,6 @@ clippath.setAttribute('d',`
 	A ${margin} ${margin} 0 0 1 ${margin} 0
 `)
 
-
-console.log(c.width, c.height)
-
 const r = document.getElementById('triangle-rect');
 r.setAttribute('height', c.height);
 r.setAttribute('width', c.width);

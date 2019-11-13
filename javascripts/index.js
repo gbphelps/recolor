@@ -3,12 +3,14 @@ import hslFromRGB from './colorMethods/hslFromRGB';
 import rgbFromHSL from './colorMethods/rgbFromHSL';
 import hsvFromRGB from './colorMethods/hsvFromRGB';
 import hsluvFromRGB from './colorMethods/hsluvFromRGB';
+import triFromRGB from './colorMethods/triFromRGB';
 
 import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
 import makeGradient from './nonlinearGradient';
 
 import createSVG from './createSVG';
 import makePattern from './makePattern';
+
 
 import './triangle.js'
 
@@ -56,6 +58,7 @@ class Color{
 	setRGB(rgb){
         Object.assign(this.color.rgb, rgb);
 
+        triFromRGB(this.color.rgb);
         this.color.hsv = hsvFromRGB(this.color.rgb);
         this.color.hsl = hslFromRGB(this.color.rgb);
         this.color.hsluv = hsluvFromRGB(this.color.rgb);
