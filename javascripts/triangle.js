@@ -120,10 +120,17 @@ pip.setAttribute('filter','url(#shadow2)')
 
 mainColor.subscribe(({rgb}) => {
 	const tri = triFromRGB(rgb);
-	const y = tri.color*s*ratio;
+	const y = tri.color*s*ratio; //most obvious; move as a percentage of s*ratio units away from x axis.
 	pip.setAttribute('cy', y + margin);
-	const xP = Math.sqrt(3)/2 * tri.white*s*ratio;
+
+
+	const xP = Math.sqrt(3)/2 * tri.white*s*ratio; 
+	//find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
+	//this gives a point that is the correct number of units away from the WHITE vertex.
+	//Make a line with slope of sqrt(3) intersecting this point using the point-slope formula.
+	//Find where this line intersects y = tri.color*s*ratio.
 	const yP = -1/2*tri.white*s*ratio;
+
 	const x = (y - yP)/Math.sqrt(3) + xP;
 	pip.setAttribute('cx',x + margin);
 	image.setAttribute('href', gen(rgb));	
