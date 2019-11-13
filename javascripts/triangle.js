@@ -37,9 +37,8 @@ function gen(color){
 		let x = i%c.width;
 		let y = Math.floor(i/c.width);
 		
-		x -= (c.width-s)/2;
-		y -= (c.height-h)/2;
-
+		x -= margin//(c.width-s)/2;
+		y -= margin//(c.height-h)/2; //todo: pretty sure the new val is correct.
 		
 		const top = y/h;
 		const left = (x*Math.sqrt(3) - y)/h/2;
@@ -140,7 +139,18 @@ pip.addEventListener('mousedown',e=>{
 	let x = e.clientX;
 	let y = e.clientY;
 	
+	const color = mainColor.color.rgb;
+	const {max, min} = extrema(color);
+	const multiplier = 255/(color[max] - color[min]);
+
+	const pure = {
+		red: (color.red - color[min])*multiplier,
+		green: (color.green - color[min])*multiplier,
+		blue: (color.blue - color[min])*multiplier,
+	}
+
 	function move(e){
+
 		const dely = (e.clientX - x);
 		const delx = -(e.clientY - y);
 		
@@ -148,6 +158,7 @@ pip.addEventListener('mousedown',e=>{
 		let yAttempt = pip.cy.baseVal.value + dely;
 		
 		if (yAttempt-margin > s*ratio ){
+			//tip of triangle
 			yAttempt = s*ratio + margin;
 			xAttempt = s/2 + margin;
 		} 
@@ -180,10 +191,26 @@ pip.addEventListener('mousedown',e=>{
 				yAttempt = (xAttempt-margin-s)*-Math.sqrt(3) + margin;
 			}
 		}
-			
-		pip.setAttribute('cx', xAttempt);
-		pip.setAttribute('cy', yAttempt);
-		pip.setAttribute('filter', 'url(#shadow)')
+		
+
+		const yy = yAttempt - margin;
+		const xx = xAttempt - margin;
+
+		const top = yy/h;
+		const left = (xx*Math.sqrt(3) - yy)/h/2;
+		// const right = ((xx-s)*-Math.sqrt(3)-yy)/h/2;
+
+		const newColor = {
+			red: pure.red*top + 255*left,
+			green: pure.green*top + 255*left,
+			blue: pure.blue*top + 255*left,
+		}
+
+		mainColor.setRGB(newColor);
+		
+		// pip.setAttribute('cx', xAttempt);
+		// pip.setAttribute('cy', yAttempt);
+		// pip.setAttribute('filter', 'url(#shadow)')
 		
 		
 		x = e.clientX;
