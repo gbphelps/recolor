@@ -1,5 +1,6 @@
 import mainColor from './ColorObject';
 import triFromRGB from './colorMethods/triFromRGB';
+import extrema from './utils/extrema';
 
 function make(){
 
@@ -22,54 +23,63 @@ const black = [0,0,0,255];
 const white = [255,255,255,255];
 
 function gen(color){
+	const {max, min} = extrema(color);
+	const multiplier = 255/(color[max] - color[min]);
 
-for (let i=0; i<img.data.length/4; i++){
-	let x = i%c.width;
-	let y = Math.floor(i/c.width);
-	
-	x -= (c.width-s)/2;
-	y -= (c.height-h)/2;
+	const colorArray = [
+		(color.red - color[min])*multiplier, 
+		(color.green - color[min])*multiplier, 
+		(color.blue - color[min])*multiplier, 
+		255
+	]; //cache previous value of color array; if it === current value of color array, use the old url.
 
-	
-	const top = y/h;
-	const left = (x*Math.sqrt(3) - y)/h/2;
-	const right = ((x-s)*-Math.sqrt(3) -y)/h/2;
+	for (let i=0; i<img.data.length/4; i++){
+		let x = i%c.width;
+		let y = Math.floor(i/c.width);
+		
+		x -= (c.width-s)/2;
+		y -= (c.height-h)/2;
 
-	
-	
-	if (y <= 0){
-		for(let j=0; j<4; j++) img.data[i*4+j] = x/s*white[j] + (1-x/s)*black[j]
+		
+		const top = y/h;
+		const left = (x*Math.sqrt(3) - y)/h/2;
+		const right = ((x-s)*-Math.sqrt(3) -y)/h/2;
+
+		
+		
+		if (y <= 0){
+			for(let j=0; j<4; j++) img.data[i*4+j] = x/s*white[j] + (1-x/s)*black[j]
+		}
+		
+		if (x > s/2 && y > 0){
+			const w = Math.min((-(x-s)/2 + ratio*y)/s,1);
+			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*white[j] + w*colorArray[j]
+		}
+		
+		if (x <= s/2 && y > 0){
+			const w = Math.min((x/2 + ratio*y)/s,1);
+			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*black[j] + w*colorArray[j]
+		}
+				
+		if (y < Math.sqrt(3)*x && y < (x-s)*-Math.sqrt(3) && y > 0){
+			for(let j=0; j<4; j++) img.data[i*4+j] = top*colorArray[j] + left*white[j] + right*black[j]
+		}
+		
 	}
-	
-	if (x > s/2 && y > 0){
-		const w = Math.min((-(x-s)/2 + ratio*y)/s,1);
-		for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*white[j] + w*color[j]
-	}
-	
-	if (x <= s/2 && y > 0){
-		const w = Math.min((x/2 + ratio*y)/s,1);
-		for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*black[j] + w*color[j]
-	}
-			
-	if (y < Math.sqrt(3)*x && y < (x-s)*-Math.sqrt(3) && y > 0){
-		for(let j=0; j<4; j++) img.data[i*4+j] = top*color[j] + left*white[j] + right*black[j]
-	}
-	
-}
 
 	ctx.putImageData(img,0,0);
 	return c.toDataURL();
 }
 
 
-const url = gen([255,0,0,255])
+const url = gen({red: 255, green: 0, blue: 0})
 
 
 
 
 
 const image = document.getElementById('image');
-image.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href",url);
+image.setAttribute("href",url);
 
 const clippath = document.getElementById('clippath');
 
@@ -118,7 +128,8 @@ mainColor.subscribe(({rgb}) => {
 	const xP = Math.sqrt(3)/2 * tri.white*s*ratio;
 	const yP = -1/2*tri.white*s*ratio;
 	const x = (y - yP)/Math.sqrt(3) + xP;
-	pip.setAttribute('cx',x + margin);	
+	pip.setAttribute('cx',x + margin);
+	image.setAttribute('href', gen(rgb));	
 })
 
 pip.addEventListener('mousedown',e=>{
