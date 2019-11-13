@@ -11,7 +11,7 @@ const s = 150;
 
 const c = document.createElement('canvas');
 c.width = s + margin*2;
-c.height = s*ratio + margin*2;
+c.height = Math.ceil(s*ratio + margin*2);
 
 const h = s * ratio;
 
@@ -46,24 +46,21 @@ function gen(color){
 		const right = ((x-s)*-Math.sqrt(3) -y)/h/2;
 
 		
-		
-		if (y <= 0){
-			for(let j=0; j<4; j++) img.data[i*4+j] = x/s*white[j] + (1-x/s)*black[j]
-		}
-		
-		if (x > s/2 && y > 0){
-			const w = Math.min((-(x-s)/2 + ratio*y)/s,1);
-			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*white[j] + w*colorArray[j]
-		}
-		
-		if (x <= s/2 && y > 0){
-			const w = Math.min((x/2 + ratio*y)/s,1);
-			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*black[j] + w*colorArray[j]
-		}
-				
 		if (y < Math.sqrt(3)*x && y < (x-s)*-Math.sqrt(3) && y > 0){
 			for(let j=0; j<4; j++) img.data[i*4+j] = top*colorArray[j] + left*white[j] + right*black[j]
-		}
+		
+		} else if (y <= 0){
+			for(let j=0; j<4; j++) img.data[i*4+j] = x/s*white[j] + (1-x/s)*black[j]
+		
+		} else if (x > s/2 && y > 0){
+			const w = Math.min((-(x-s)/2 + ratio*y)/s,1);
+			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*white[j] + w*colorArray[j]
+		
+		} else if (x <= s/2 && y > 0){
+			const w = Math.min((x/2 + ratio*y)/s,1);
+			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*black[j] + w*colorArray[j]
+		} 
+				
 		
 	}
 
