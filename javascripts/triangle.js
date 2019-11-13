@@ -109,6 +109,7 @@ pip.setAttribute('cy', margin);
 pip.setAttribute('stroke', 'white');
 pip.setAttribute('fill', 'transparent');
 pip.setAttribute('vector-effect','non-scaling-stroke')
+pip.setAttribute('filter','url(#shadow2)')
 
 mainColor.subscribe(({rgb}) => {
 	const tri = triFromRGB(rgb);
