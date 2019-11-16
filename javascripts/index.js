@@ -6,6 +6,7 @@ import makeGradient from './nonlinearGradient';
 import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor, { Color } from './ColorObject';
+import makeHueSlider from './hueSlider';
 
 
 import './triangle.js'
@@ -23,7 +24,7 @@ const height = 100;
 
 
 function setup(){
-    hueSlider();
+    makeHueSlider();
     buildChannels([
         {type: 'rgb', channel: 'red'},
         {type: 'rgb', channel: 'green'},
@@ -330,160 +331,3 @@ function buildNonlinearChannels(channels, {
     })	
 })
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Build Conic Gradient 
-
-function conicGradient(){
-	const c = document.getElementById('c');
-
-	c.width = 400;
-	c.height = 400;
-
-
-	const ctx = c.getContext('2d');
-
-	const img = ctx.createImageData(c.width, c.height);
-
-
-	for (let i=0; i<img.data.length/4; i++){
-		let y = i%c.width;
-		let x = Math.floor(i/c.width);
-
-		x = c.width/2 - x;
-		y = y - c.height/2;
-
-		let angle = Math.atan(y/x);
-		if (x < 0) angle = Math.PI + angle;
-		if (y < 0 && x >= 0) angle = 2*Math.PI + angle;
-
-		const sixth = angle/(Math.PI*2)*6;
-		const rgba = color(sixth);
-
-		for (let j=0;j<4;j++) img.data[i*4+j] = rgba[j];
-	}
-
-	ctx.putImageData(img,0,0);
-	return c.toDataURL();
-}
-
-
-
-
-function color(sixth){
-		switch (Math.floor(sixth)){
-			case 0:
-				return [255, 255*(sixth%1), 0, 255];
-			case 1:
-				return [255 * (1-sixth%1), 255, 0, 255];
-			case 2:
-				return [0, 255, 255 * (sixth%1), 255];
-			case 3:
-				return [0, 255 * (1-sixth%1), 255, 255];
-			case 4:
-				return [255 * (sixth%1), 0, 255, 255];
-			case 5:
-				return [255, 0, 255 * (1-sixth%1), 255];
-		}
-	return [0,0,0,0]
-}
-
-
-///////////////////////////////////////////////////
-
-//Set Up Hue Slider
-
-function hueSlider(){
-    document
-	    .getElementById('conic-gradient')
-        .setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',conicGradient());
-
-    const RADIUS = 100;
-    const thickness = 8;
-
-function set(id,props){
-	const el = document.getElementById(id);
-	Object.keys(props).forEach(key => {
-		el.setAttribute(key, props[key])
-	})
-}
-
-set('hue-svg',{ 
-    viewBox: `0 0 ${RADIUS*2 + 20} ${RADIUS*2 + 20}`, 
-    height: RADIUS*2 + 20 
-});
-
-set('conic-gradient',{ height: 2*RADIUS });
-set('inner-circle',{r: RADIUS- thickness, cx: RADIUS, cy: RADIUS});
-set('conic-gradient-pattern',{viewBox: `0 0 ${RADIUS*2} ${RADIUS*2}`});
-set('mask-background',{height: RADIUS*2, width: RADIUS*2});
-set('hue-track',{r: RADIUS, cx: RADIUS, cy: RADIUS})
-
-const huePip = document.getElementById('hue-pip');
-const huePipH = huePip.height.baseVal.value;
-const huePipW = huePip.width.baseVal.value;
-
-const pc = document.getElementById('pc');
-pc.setAttribute('transform',`translate(${RADIUS} ${RADIUS})`);
-huePip.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
-
-
-
-
-
-
-
-mainColor.subscribe(COLOR => {
-	huePip.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
-})
-
-huePip.addEventListener('mousedown',e=>{
-	
-	let [x,y] = [e.clientX, e.clientY];
-	function move(e){
-					
-		const delx = e.clientX - x; //note that this needs scaling if svg space is diff from user space
-		const dely = e.clientY - y;
-		
-		const xnew = Math.cos((mainColor.color.hsv.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + delx;
-		const ynew = Math.sin((mainColor.color.hsv.hue - 90)/180*Math.PI)*(RADIUS-thickness/2) + dely;
-		
-		
-		
-		let angle = Math.atan(ynew/xnew);
-		if (xnew < 0) angle = Math.PI + angle;
-
-		
-
-		
-		mainColor.setHSV({hue: angle/Math.PI*180 + 90});
-		
-		
-		x = e.clientX;
-		y = e.clientY;
-		
-	}
-	
-	document.addEventListener('mousemove', move);
-	document.addEventListener('mouseup',()=>{
-		document.removeEventListener('mousemove', move)
-	},{once:true})
-})
-
-}
-
-
-
-/////////////////////////////////////////////
