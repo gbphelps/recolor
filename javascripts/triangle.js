@@ -1,6 +1,7 @@
 import mainColor from './ColorObject';
 import triFromRGB from './colorMethods/triFromRGB';
 import extrema from './utils/extrema';
+import createSVG from './createSVG';
 
 
 
@@ -9,22 +10,15 @@ const ratio = Math.sqrt(3)/2;
 const margin = 8;
 const padding = 1;
 const s = 150;
-
-const c = document.createElement('canvas');
-c.width = s + margin*2;
-c.height = Math.ceil(s*ratio + margin*2);
-
 const h = s * ratio;
-
-const ctx = c.getContext('2d');
-const img = ctx.createImageData(c.width, c.height);
-
-
 const black = [0,0,0,255];
 const white = [255,255,255,255];
 
+let canvas, ctx;
+
 
 function gen(color){
+	const img = ctx.createImageData(s + margin*2, Math.ceil(s*ratio + margin*2));
 	const {max, min} = extrema(color);
 	const multiplier = 255/(color[max] - color[min]);
 
@@ -36,11 +30,11 @@ function gen(color){
 	]; //cache previous value of color array; if it === current value of color array, use the old url.
 
 	for (let i=0; i<img.data.length/4; i++){
-		let x = i%c.width;
-		let y = Math.floor(i/c.width);
+		let x = i%(s + margin*2);
+		let y = Math.floor(i/(s + margin*2));
 		
-		x -= margin//(c.width-s)/2;
-		y -= margin//(c.height-h)/2; //todo: pretty sure the new val is correct.
+		x -= margin;
+		y -= margin;
 		
 		const top = y/h;
 		const left = (x*Math.sqrt(3) - y)/h/2;
@@ -66,7 +60,7 @@ function gen(color){
 	}
 
 	ctx.putImageData(img,0,0);
-	return c.toDataURL();
+	return canvas.toDataURL();
 }
 
 
@@ -74,11 +68,29 @@ function gen(color){
 
 function make(){
 
-const url = gen({red: 255, green: 0, blue: 0})
-const image = document.getElementById('image');
-image.setAttribute("href",url);
+canvas = document.createElement('canvas');
+canvas.width = s + margin*2;
+canvas.height = Math.ceil(s*ratio + margin*2);
+ctx = canvas.getContext('2d');
 
-const clippath = document.getElementById('clippath');
+const url = gen({red: 255, green: 0, blue: 0});
+const svg = createSVG('svg',{});
+const defs = createSVG('defs',{});
+const pattern = createSVG('pattern',{
+	height: '100%',
+	width: '100%'
+})
+const image = createSVG('image',{href: url});
+const clip = createSVG('clipPath',{});
+const clippath = createSVG('path',{});
+const r = createSVG('rect',{});
+
+document.body.appendChild(svg);
+svg.appendChild(defs);
+defs.appendChild(pattern);
+pattern.appendChild(image);
+defs.appendChild(clip);
+clip.appendChild(clippath);
 
 clippath.setAttribute('d',`
 	M ${margin} 0 
@@ -90,26 +102,23 @@ clippath.setAttribute('d',`
 	A ${margin} ${margin} 0 0 1 ${margin} 0
 `)
 
-const r = document.getElementById('triangle-rect');
-r.setAttribute('height', c.height);
-r.setAttribute('width', c.width);
-r.setAttribute('clip-path', 'url(#clip)');
-r.setAttribute('fill', 'url(#p)');
+r.setAttribute('height', canvas.height);
+r.setAttribute('width', canvas.width);
+r.setAttribute('clip-path', `url(#${clip.id})`);
+r.setAttribute('fill', `url(#${pattern.id})`);
+svg.appendChild(r)
 
-const svgHeight = c.height + 2*padding;
-const svg = document.getElementById('triangle');
+
+const svgHeight = canvas.height + 2*padding;
 svg.setAttribute('height', svgHeight);
-
-svg.setAttribute('viewBox', `${-padding} ${-padding} ${c.width + 2*padding} ${c.height + 2*padding}`);
+svg.setAttribute('viewBox', `${-padding} ${-padding} ${canvas.width + 2*padding} ${canvas.height + 2*padding}`);
 
 svg.style.transform=`translateY(100%)rotate(-90deg)`;
 svg.style['transform-origin']=`0 0`;
 
+const pip = createSVG('circle',{});
+svg.appendChild(pip);
 
-
-
-
-const pip = document.getElementById('triangle-pip');
 pip.setAttribute('r', 5);
 pip.setAttribute('cx', margin);
 pip.setAttribute('cy', margin);
@@ -209,11 +218,7 @@ pip.addEventListener('mousedown',e=>{
 
 		mainColor.setRGB(newColor);
 		
-		// pip.setAttribute('cx', xAttempt);
-		// pip.setAttribute('cy', yAttempt);
-		// pip.setAttribute('filter', 'url(#shadow)')
-		
-		
+
 		x = e.clientX;
 		y = e.clientY;
 	}

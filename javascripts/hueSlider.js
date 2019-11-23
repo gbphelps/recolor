@@ -1,21 +1,24 @@
 import mainColor from './ColorObject';
 import conicGradient from './conicGradient';
 import createSVG from './createSVG';
+import c from './constants';
 
 
 export default function hueSlider(){ 
 
-    const RADIUS = 100;
-    const thickness = 8;
-    const marg = 20;
+    const RADIUS = c.hueSlider.radius;
+    const thickness = c.hueSlider.trackThickness;
+    const marg = c.hueSlider.svgMargin;
 
 
 const svg = createSVG('svg',{
     viewBox: `0 0 ${RADIUS*2 + marg} ${RADIUS*2 + marg}`, 
     height: RADIUS*2 + marg
 });
-const defs = createSVG('defs', {});
 
+c.hueSlider.set(svg);
+
+const defs = createSVG('defs', {});
 const mask = createSVG('mask',{});
 
 const maskBG = createSVG('rect',{
@@ -120,6 +123,4 @@ pipRect.addEventListener('mousedown',e=>{
 		document.removeEventListener('mousemove', move)
 	},{once:true})
 })
-
-    return svg;
 }
