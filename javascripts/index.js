@@ -157,7 +157,7 @@ function buildChannels(channels, {
         container.appendChild(track_);
         container.appendChild(pip_);
 
-        mainColor.subscribe(COLOR=>{  
+        mainColor.subscribe((COLOR, PREV)=>{  
             let left;
             let middle;
             let right;
@@ -285,7 +285,7 @@ function buildNonlinearChannels(channels, {
         container.appendChild(track_);
         container.appendChild(pip_);
 
-        mainColor.subscribe(COLOR=>{  
+        mainColor.subscribe((COLOR,PREV)=>{  
         
         const grad = makeGradient({
             rgbFunc: rgbFromHSLUV,

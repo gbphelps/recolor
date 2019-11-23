@@ -15,6 +15,14 @@ function deepDup(obj){
     return newObj;
 }
 
+function isEqualPartial(partial,obj){
+    const keys = Object.keys(partial || {});
+    for (let i=0; i<keys.length; i++){
+        if (partial[keys[i]] !== obj[keys[i]]) return false;
+    }
+    return true;
+}
+
 export class Color {
     constructor(){
         this.color = {
@@ -50,9 +58,10 @@ export class Color {
 		this.subscriptions.push(callback);
 	}
 	
-	setRGB(rgb){
+	setRGB(rgbPartial){
+        if (isEqualPartial(rgbPartial, this.color.rgb)) return;
         const prev = deepDup(this.color);
-        Object.assign(this.color.rgb, rgb);
+        Object.assign(this.color.rgb, rgbPartial);
 
         this.color.hsv = hsvFromRGB(this.color.rgb);
         this.color.hsl = hslFromRGB(this.color.rgb);
@@ -62,6 +71,7 @@ export class Color {
 	}
 	
 	setHSV(hsvPartial){
+        if (isEqualPartial(hsvPartial, this.color.hsv)) return;
         const prev = deepDup(this.color);
         Object.assign(this.color.hsv, hsvPartial);
 
@@ -73,6 +83,7 @@ export class Color {
     }
     
     setHSL(hslPartial){
+        if (isEqualPartial(hslPartial, this.color.hsl)) return;
         const prev = deepDup(this.color);
         Object.assign(this.color.hsl, hslPartial);
 
@@ -84,6 +95,7 @@ export class Color {
     }
 
     setHSLUV(hsluvPartial){
+        if (isEqualPartial(hsluvPartial, this.color.hsluv)) return;
         const prev = deepDup(this.color);
         Object.assign(this.color.hsluv, hsluvPartial);
 

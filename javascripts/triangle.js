@@ -5,9 +5,19 @@ import createSVG from './createSVG';
 import ns from './constants';
 
 
+const sq3 = Math.sqrt(3);
 
+function isEqual(obj,obj2){
+	const keys1 = Object.keys(obj || {});
+	const keys2 = Object.keys(obj2 || {});
+	if (keys1.length !== keys2.length) return false;
+	for (let i=0; i<keys1.length; i++){
+		if (obj[keys1[i]] !== obj2[keys1[i]]) return false;
+	}
+	return true;
+}
 
-const ratio = Math.sqrt(3)/2;
+const ratio = sq3/2;
 const margin = 8;
 const s = 120;
 const h = s * ratio;
@@ -16,18 +26,14 @@ const white = [255,255,255,255];
 
 let canvas, ctx;
 
-
 function gen(color){
 	const img = ctx.createImageData(s + margin*2, Math.ceil(s*ratio + margin*2));
-	const {max, min} = extrema(color);
-	const multiplier = 255/(color[max] - color[min]);
-
 	const colorArray = [
-		(color.red - color[min])*multiplier, 
-		(color.green - color[min])*multiplier, 
-		(color.blue - color[min])*multiplier, 
+		color.red, 
+		color.green, 
+		color.blue, 
 		255
-	]; //cache previous value of color array; if it === current value of color array, use the old url.
+	];
 
 	for (let i=0; i<img.data.length/4; i++){
 		let x = i%(canvas.width);
@@ -37,11 +43,11 @@ function gen(color){
 		y -= margin;
 		
 		const top = y/h;
-		const left = (x*Math.sqrt(3) - y)/h/2;
-		const right = ((x-s)*-Math.sqrt(3) -y)/h/2;
+		const left = (x*sq3 - y)/h/2;
+		const right = ((x-s)*-sq3 -y)/h/2;
 
 		
-		if (y < Math.sqrt(3)*x && y < (x-s)*-Math.sqrt(3) && y > 0){
+		if (y < sq3*x && y < (x-s)*-sq3 && y > 0){
 			for(let j=0; j<4; j++) img.data[i*4+j] = top*colorArray[j] + left*white[j] + right*black[j]
 		
 		} else if (y <= 0){
@@ -62,6 +68,7 @@ function gen(color){
 	ctx.putImageData(img,0,0);
 	return canvas.toDataURL();
 }
+
 
 
 
@@ -114,7 +121,7 @@ body.appendChild(r)
 const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
 body.setAttribute('transform', `
 	translate(
-		${-s/2/Math.sqrt(3) - margin + hueHeight/2} 
+		${-s/2/sq3 - margin + hueHeight/2} 
 		${canvas.width + ( hueHeight - canvas.width)/2}
 	)rotate(-90)`);
 
@@ -129,37 +136,59 @@ pip.setAttribute('fill', 'transparent');
 pip.setAttribute('vector-effect','non-scaling-stroke')
 pip.setAttribute('filter','url(#shadow2)')
 
-mainColor.subscribe(({rgb}) => {
-	const tri = triFromRGB(rgb);
-	const y = tri.color*s*ratio; //most obvious; move as a percentage of s*ratio units away from x axis.
-	pip.setAttribute('cy', y + margin);
 
-
-	const xP = Math.sqrt(3)/2 * tri.white*s*ratio; 
-	//find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
-	//this gives a point that is the correct number of units away from the WHITE vertex.
-	//Make a line with slope of sqrt(3) intersecting this point using the point-slope formula.
-	//Find where this line intersects y = tri.color*s*ratio.
-	const yP = -1/2*tri.white*s*ratio;
-
-	const x = (y - yP)/Math.sqrt(3) + xP;
-	pip.setAttribute('cx',x + margin);
-	image.setAttribute('href', gen(rgb));	
-})
-
-pip.addEventListener('mousedown',e=>{
-	let x = e.clientX;
-	let y = e.clientY;
-	
-	const color = mainColor.color.rgb;
+function getPure(color){
 	const {max, min} = extrema(color);
 	const multiplier = 255/(color[max] - color[min]);
 
-	const pure = {
+	return {
 		red: (color.red - color[min])*multiplier,
 		green: (color.green - color[min])*multiplier,
 		blue: (color.blue - color[min])*multiplier,
 	}
+}
+
+
+
+const setTriangle = (function(){
+	let prevPure = null;
+	return function(COLOR,PREV){
+		const tri = triFromRGB(COLOR.rgb);
+		if (
+			COLOR.hsv.saturation !== PREV.hsv.saturation ||
+			COLOR.hsv.value !== PREV.hsv.value
+		){
+			const y = tri.color*s*ratio; //most obvious; move as a percentage of s*ratio units away from x axis.
+			pip.setAttribute('cy', y + margin);
+			const xP = sq3/2 * tri.white*s*ratio; 
+			//find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
+			//this gives a point that is the correct number of units away from the WHITE vertex.
+			//Make a line with slope of sqrt(3) intersecting this point using the point-slope formula.
+			//Find where this line intersects y = tri.color*s*ratio.
+			const yP = -1/2*tri.white*s*ratio;
+			const x = (y - yP)/sq3 + xP;
+			pip.setAttribute('cx',x + margin);
+		}
+
+		//generate new triangle if color has changed.
+		const pure = getPure(COLOR.rgb);
+		if (!isEqual(prevPure, pure)){
+			prevPure = pure;
+			image.setAttribute('href', gen(pure));
+		}
+	}
+})()
+
+
+mainColor.subscribe(setTriangle);
+
+pip.addEventListener('mousedown', e =>{
+	let x = e.clientX;
+	let y = e.clientY;
+	
+	const color = mainColor.color.rgb;
+	const pure = getPure(color);
+
 
 	function move(e){
 

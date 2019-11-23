@@ -87,7 +87,7 @@ gPip.setAttribute('transform',`translate(${RADIUS} ${RADIUS})`);
 pipRect.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
 
 
-mainColor.subscribe(COLOR => {
+mainColor.subscribe((COLOR, PREV) => {
 	pipRect.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
 })
 
