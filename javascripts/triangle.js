@@ -2,7 +2,8 @@ import mainColor from './ColorObject';
 import triFromRGB from './colorMethods/triFromRGB';
 import extrema from './utils/extrema';
 
-function make(){
+
+
 
 const ratio = Math.sqrt(3)/2;
 const margin = 8;
@@ -21,6 +22,7 @@ const img = ctx.createImageData(c.width, c.height);
 
 const black = [0,0,0,255];
 const white = [255,255,255,255];
+
 
 function gen(color){
 	const {max, min} = extrema(color);
@@ -68,12 +70,11 @@ function gen(color){
 }
 
 
+
+
+function make(){
+
 const url = gen({red: 255, green: 0, blue: 0})
-
-
-
-
-
 const image = document.getElementById('image');
 image.setAttribute("href",url);
 

@@ -7,11 +7,12 @@ export default function hueSlider(){
 
     const RADIUS = 100;
     const thickness = 8;
+    const marg = 20;
 
 
 const svg = createSVG('svg',{
-    viewBox: `0 0 ${RADIUS*2 + 20} ${RADIUS*2 + 20}`, 
-    height: RADIUS*2 + 20 
+    viewBox: `0 0 ${RADIUS*2 + marg} ${RADIUS*2 + marg}`, 
+    height: RADIUS*2 + marg
 });
 const defs = createSVG('defs', {});
 
@@ -48,7 +49,7 @@ const gradientImage = createSVG('image', {
 defs.appendChild(pattern);
 pattern.appendChild(gradientImage);
 
-const gBody = createSVG('g',{transform: 'translate( 10 10 )'});
+const gBody = createSVG('g',{transform: `translate( ${marg/2} ${marg/2})`});
 const hueTrack = createSVG('circle',{
     fill: `url(#${pattern.id})`,
     mask: `url(#${mask.id})`,
@@ -120,4 +121,5 @@ pipRect.addEventListener('mousedown',e=>{
 	},{once:true})
 })
 
+    return svg;
 }
