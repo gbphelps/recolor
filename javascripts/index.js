@@ -7,6 +7,7 @@ import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor, { Color } from './ColorObject';
 import makeHueSlider from './hueSlider';
+import makeTriangle from './triangle';
 
 
 import './triangle.js'
@@ -25,6 +26,8 @@ const height = 100;
 
 function setup(){
     makeHueSlider();
+    makeTriangle();
+
     buildChannels([
         {type: 'rgb', channel: 'red'},
         {type: 'rgb', channel: 'green'},

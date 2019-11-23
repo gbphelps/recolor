@@ -2,14 +2,14 @@ import mainColor from './ColorObject';
 import triFromRGB from './colorMethods/triFromRGB';
 import extrema from './utils/extrema';
 import createSVG from './createSVG';
+import ns from './constants';
 
 
 
 
 const ratio = Math.sqrt(3)/2;
 const margin = 8;
-const padding = 1;
-const s = 150;
+const s = 120;
 const h = s * ratio;
 const black = [0,0,0,255];
 const white = [255,255,255,255];
@@ -30,8 +30,8 @@ function gen(color){
 	]; //cache previous value of color array; if it === current value of color array, use the old url.
 
 	for (let i=0; i<img.data.length/4; i++){
-		let x = i%(s + margin*2);
-		let y = Math.floor(i/(s + margin*2));
+		let x = i%(canvas.width);
+		let y = Math.floor(i/(canvas.width));
 		
 		x -= margin;
 		y -= margin;
@@ -66,7 +66,7 @@ function gen(color){
 
 
 
-function make(){
+export default function make(){
 
 canvas = document.createElement('canvas');
 canvas.width = s + margin*2;
@@ -74,7 +74,8 @@ canvas.height = Math.ceil(s*ratio + margin*2);
 ctx = canvas.getContext('2d');
 
 const url = gen({red: 255, green: 0, blue: 0});
-const svg = createSVG('svg',{});
+const svg = createSVG('g',{});
+const body = createSVG('g',{});
 const defs = createSVG('defs',{});
 const pattern = createSVG('pattern',{
 	height: '100%',
@@ -85,8 +86,9 @@ const clip = createSVG('clipPath',{});
 const clippath = createSVG('path',{});
 const r = createSVG('rect',{});
 
-document.body.appendChild(svg);
+ns.hueSlider.get().appendChild(svg);
 svg.appendChild(defs);
+svg.appendChild(body);
 defs.appendChild(pattern);
 pattern.appendChild(image);
 defs.appendChild(clip);
@@ -106,18 +108,18 @@ r.setAttribute('height', canvas.height);
 r.setAttribute('width', canvas.width);
 r.setAttribute('clip-path', `url(#${clip.id})`);
 r.setAttribute('fill', `url(#${pattern.id})`);
-svg.appendChild(r)
+body.appendChild(r)
 
 
-const svgHeight = canvas.height + 2*padding;
-svg.setAttribute('height', svgHeight);
-svg.setAttribute('viewBox', `${-padding} ${-padding} ${canvas.width + 2*padding} ${canvas.height + 2*padding}`);
-
-svg.style.transform=`translateY(100%)rotate(-90deg)`;
-svg.style['transform-origin']=`0 0`;
+const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
+body.setAttribute('transform', `
+	translate(
+		${-s/2/Math.sqrt(3) - margin + hueHeight/2} 
+		${canvas.width + ( hueHeight - canvas.width)/2}
+	)rotate(-90)`);
 
 const pip = createSVG('circle',{});
-svg.appendChild(pip);
+body.appendChild(pip);
 
 pip.setAttribute('r', 5);
 pip.setAttribute('cx', margin);
@@ -230,5 +232,3 @@ pip.addEventListener('mousedown',e=>{
 })
 }
 
-
-document.addEventListener("DOMContentLoaded",make);
