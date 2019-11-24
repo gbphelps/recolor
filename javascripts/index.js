@@ -9,6 +9,8 @@ import mainColor, { Color } from './ColorObject';
 import makeHueSlider from './hueSlider';
 import makeTriangle from './triangle';
 
+import methods from './colorMethods/index';
+
 
 import './triangle.js'
 
@@ -22,6 +24,15 @@ const width = 300;
 const height = 100;
 
 
+function allEqualExcept(key, obj1, obj2){
+    const keys = Object.keys(obj1 || {});
+    if (Object.keys(obj2 || {}).length !== keys.length) return false;
+    for (let i=0; i<keys.length; i++){
+        if (key === keys[i]) continue;
+        if (obj1[keys[i]] !== obj2[keys[i]]) return false;
+    }
+    return true;
+}
 
 
 function setup(){
@@ -158,28 +169,33 @@ function buildChannels(channels, {
         container.appendChild(pip_);
 
         mainColor.subscribe((COLOR, PREV)=>{  
+            if (
+                COLOR[param.type][param.channel] !==
+                PREV[param.type][param.channel]
+            ) pip_.setAttribute(
+                orientation === 'horizontal' ? 'x' : 'y',
+                orientation === 'horizontal' ?
+                    COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) + outerMargin :
+                    (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth) + outerMargin
+            );		
+
+            if (allEqualExcept(
+                param.channel,
+                COLOR[param.type],
+                PREV[param.type],
+            )) return;
+            
+
             let left;
             let middle;
             let right;
 
+            const base = COLOR[param.type]
             if (param.type !== 'rgb'){
-                const base = COLOR[param.type];
-
-                left = new Color();
-                const setter = `set${param.type.toUpperCase()}`;
-                left[setter]({ ...base, [param.channel]: 0 });
-                left = left.color.rgb;
-
-                right = new Color();
-                right[setter]({ ...base, [param.channel]: maxValue });
-                right = right.color.rgb;
-
-                middle = new Color();
-                middle[setter]({...base, [param.channel]: maxValue/2 });
-                middle = middle.color.rgb;
-
+                left = methods.getRGB[param.type]({...base, [param.channel]: 0 });
+                right = methods.getRGB[param.type]({...base, [param.channel]: maxValue });
+                middle = methods.getRGB[param.type]({...base, [param.channel]: maxValue/2});
             } else {
-                const base = COLOR.rgb;
                 left = { ...base , [param.channel]: 0  }
                 right = { ...base , [param.channel]: maxValue }
                 middle = { ...base , [param.channel]: maxValue/2 }
@@ -193,13 +209,6 @@ function buildChannels(channels, {
         stop1.setAttribute('stop-color', orientation === "horizontal" ? l : r);
         stop2.setAttribute('stop-color', m);
         stop3.setAttribute('stop-color', orientation === "horizontal" ? r : l);
-       
-        pip_.setAttribute(
-            orientation === 'horizontal' ? 'x' : 'y',
-            orientation === 'horizontal' ?
-                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) + outerMargin :
-                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth) + outerMargin
-        );		
     })
     
     
@@ -286,7 +295,23 @@ function buildNonlinearChannels(channels, {
         container.appendChild(pip_);
 
         mainColor.subscribe((COLOR,PREV)=>{  
+
+        if (
+            COLOR[param.type][param.channel] !==
+            PREV[param.type][param.channel]
+        ) pip_.setAttribute(
+            orientation === 'horizontal' ? 'x' : 'y',
+            orientation === 'horizontal' ?
+                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) + outerMargin :
+                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth) + outerMargin
+        );		
         
+        if (allEqualExcept(
+            param.channel,
+            COLOR[param.type],
+            PREV[param.type]
+        )) return;
+
         const grad = makeGradient({
             rgbFunc: rgbFromHSLUV,
             color: COLOR[param.type],
@@ -300,13 +325,6 @@ function buildNonlinearChannels(channels, {
         })
 
         pattern.firstElementChild.setAttribute('href',grad);
-       
-        pip_.setAttribute(
-            orientation === 'horizontal' ? 'x' : 'y',
-            orientation === 'horizontal' ?
-                COLOR[param.type][param.channel]/maxValue*(trackLength-pipWidth) + outerMargin :
-                (1-COLOR[param.type][param.channel]/maxValue)*(trackLength-pipWidth) + outerMargin
-        );		
     })
     
     

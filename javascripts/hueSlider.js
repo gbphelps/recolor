@@ -88,6 +88,7 @@ pipRect.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -th
 
 
 mainColor.subscribe((COLOR, PREV) => {
+    if (COLOR.hsv.hue === PREV.hsv.hue) return;
 	pipRect.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
 })
 

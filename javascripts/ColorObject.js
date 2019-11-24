@@ -48,8 +48,7 @@ export class Color {
                 hue: 0,
                 saturation: 0,
                 lightness: 0
-            }
-
+            },
         }
         this.subscriptions = [];
     }

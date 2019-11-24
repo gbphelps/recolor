@@ -7,6 +7,18 @@ import ns from './constants';
 
 const sq3 = Math.sqrt(3);
 
+function valueError(obj){
+	const keys = Object.keys(obj);
+	for (let i=0; i<keys.length; i++){
+		if (
+			Number.isNaN(obj[keys[i]]) ||
+			obj[keys[i]] === Infinity ||
+			obj[keys[i]] === -Infinity
+		) return true;  
+	}
+	return false;
+}
+
 function isEqual(obj,obj2){
 	const keys1 = Object.keys(obj || {});
 	const keys2 = Object.keys(obj2 || {});
@@ -138,6 +150,7 @@ pip.setAttribute('filter','url(#shadow2)')
 
 
 function getPure(color){
+	console.log(color)
 	const {max, min} = extrema(color);
 	const multiplier = 255/(color[max] - color[min]);
 
@@ -150,114 +163,125 @@ function getPure(color){
 
 
 
-const setTriangle = (function(){
-	let prevPure = null;
-	return function(COLOR,PREV){
-		const tri = triFromRGB(COLOR.rgb);
-		if (
-			COLOR.hsv.saturation !== PREV.hsv.saturation ||
-			COLOR.hsv.value !== PREV.hsv.value
-		){
-			const y = tri.color*s*ratio; //most obvious; move as a percentage of s*ratio units away from x axis.
-			pip.setAttribute('cy', y + margin);
-			const xP = sq3/2 * tri.white*s*ratio; 
-			//find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
-			//this gives a point that is the correct number of units away from the WHITE vertex.
-			//Make a line with slope of sqrt(3) intersecting this point using the point-slope formula.
-			//Find where this line intersects y = tri.color*s*ratio.
-			const yP = -1/2*tri.white*s*ratio;
-			const x = (y - yP)/sq3 + xP;
-			pip.setAttribute('cx',x + margin);
-		}
+const callbacks = (
+	function(){
+	let lastValidPure = null;
+	return {
+		setTriangle: function(COLOR,PREV){
+			const tri = triFromRGB(COLOR.rgb);
+			if (
+				COLOR.hsv.saturation !== PREV.hsv.saturation ||
+				COLOR.hsv.value !== PREV.hsv.value
+			){
+				const y = tri.color*s*ratio; //most obvious; move as a percentage of s*ratio units away from x axis.
+				pip.setAttribute('cy', y + margin);
+				const xP = sq3/2 * tri.white*s*ratio; 
+				//find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
+				//this gives a point that is the correct number of units away from the WHITE vertex.
+				//Make a line with slope of sqrt(3) intersecting this point using the point-slope formula.
+				//Find where this line intersects y = tri.color*s*ratio.
+				const yP = -1/2*tri.white*s*ratio;
+				const x = (y - yP)/sq3 + xP;
+				pip.setAttribute('cx',x + margin);
+			}
 
-		//generate new triangle if color has changed.
-		const pure = getPure(COLOR.rgb);
-		if (!isEqual(prevPure, pure)){
-			prevPure = pure;
-			image.setAttribute('href', gen(pure));
+			if (COLOR.hsv.hue !== PREV.hsv.hue){
+				let pure = getPure(COLOR.rgb);
+				if (valueError(pure)){
+					pure = lastValidPure;
+				} else {
+					lastValidPure = pure;
+				}
+				image.setAttribute('href', gen(pure));
+			} 
+		},
+	setPip: function(e){
+		let x = e.clientX;
+		let y = e.clientY;
+		
+		const color = mainColor.color.rgb;
+		let pure = getPure(color);
+		if (valueError(pure)){
+			pure = lastValidPure;
+		} else {
+			lastValidPure = pure;
 		}
+	
+		function move(e){
+	
+			const dely = (e.clientX - x);
+			const delx = -(e.clientY - y);
+			
+			let xAttempt = pip.cx.baseVal.value + delx;
+			let yAttempt = pip.cy.baseVal.value + dely;
+			
+			if (yAttempt-margin > s*ratio ){
+				//tip of triangle
+				yAttempt = s*ratio + margin;
+				xAttempt = s/2 + margin;
+			} 
+			
+			if ((yAttempt-margin) < 0){
+				yAttempt = margin;
+			}
+			
+			if ((xAttempt-margin) < 0){
+				xAttempt = margin;
+			}
+			
+			if ((xAttempt-margin) > s){
+				xAttempt = s + margin;
+			}
+			
+			if ((yAttempt-margin) > (xAttempt-margin)*Math.sqrt(3)){
+				if (-Math.sqrt(3)*dely > delx){
+					yAttempt = (xAttempt-margin)*Math.sqrt(3) + margin;
+				} else {
+					xAttempt = (yAttempt-margin)/Math.sqrt(3) + margin;
+				}
+			} 
+			
+			
+			if ((yAttempt-margin) > (xAttempt-margin-s)*-Math.sqrt(3)){
+				if (Math.sqrt(3)*dely > delx){
+					xAttempt = (yAttempt-margin)/-Math.sqrt(3) + margin +s;
+				} else {
+					yAttempt = (xAttempt-margin-s)*-Math.sqrt(3) + margin;
+				}
+			}
+			
+	
+			const yy = yAttempt - margin;
+			const xx = xAttempt - margin;
+	
+			const top = yy/h;
+			const left = (xx*Math.sqrt(3) - yy)/h/2;
+			// const right = ((xx-s)*-Math.sqrt(3)-yy)/h/2;
+	
+			const newColor = {
+				red: pure.red*top + 255*left,
+				green: pure.green*top + 255*left,
+				blue: pure.blue*top + 255*left,
+			}
+	
+			mainColor.setRGB(newColor);
+
+			x = e.clientX;
+			y = e.clientY;
+		}
+		
+		document.addEventListener('mousemove',move);
+		document.addEventListener('mouseup',()=>{
+			document.removeEventListener('mousemove',move)
+		},{once:true});
 	}
+}
 })()
 
 
-mainColor.subscribe(setTriangle);
 
-pip.addEventListener('mousedown', e =>{
-	let x = e.clientX;
-	let y = e.clientY;
-	
-	const color = mainColor.color.rgb;
-	const pure = getPure(color);
+mainColor.subscribe(callbacks.setTriangle);
 
-
-	function move(e){
-
-		const dely = (e.clientX - x);
-		const delx = -(e.clientY - y);
-		
-		let xAttempt = pip.cx.baseVal.value + delx;
-		let yAttempt = pip.cy.baseVal.value + dely;
-		
-		if (yAttempt-margin > s*ratio ){
-			//tip of triangle
-			yAttempt = s*ratio + margin;
-			xAttempt = s/2 + margin;
-		} 
-		
-		if ((yAttempt-margin) < 0){
-			yAttempt = margin;
-		}
-		
-		if ((xAttempt-margin) < 0){
-			xAttempt = margin;
-		}
-		
-		if ((xAttempt-margin) > s){
-			xAttempt = s + margin;
-		}
-		
-		if ((yAttempt-margin) > (xAttempt-margin)*Math.sqrt(3)){
-			if (-Math.sqrt(3)*dely > delx){
-				yAttempt = (xAttempt-margin)*Math.sqrt(3) + margin;
-			} else {
-				xAttempt = (yAttempt-margin)/Math.sqrt(3) + margin;
-			}
-		} 
-		
-		
-		if ((yAttempt-margin) > (xAttempt-margin-s)*-Math.sqrt(3)){
-			if (Math.sqrt(3)*dely > delx){
-				xAttempt = (yAttempt-margin)/-Math.sqrt(3) + margin +s;
-			} else {
-				yAttempt = (xAttempt-margin-s)*-Math.sqrt(3) + margin;
-			}
-		}
-		
-
-		const yy = yAttempt - margin;
-		const xx = xAttempt - margin;
-
-		const top = yy/h;
-		const left = (xx*Math.sqrt(3) - yy)/h/2;
-		// const right = ((xx-s)*-Math.sqrt(3)-yy)/h/2;
-
-		const newColor = {
-			red: pure.red*top + 255*left,
-			green: pure.green*top + 255*left,
-			blue: pure.blue*top + 255*left,
-		}
-
-		mainColor.setRGB(newColor);
-		
-
-		x = e.clientX;
-		y = e.clientY;
-	}
-	
-	document.addEventListener('mousemove',move);
-	document.addEventListener('mouseup',()=>{
-		document.removeEventListener('mousemove',move)
-	},{once:true})
-})
+pip.addEventListener('mousedown', callbacks.setPip)
 }
 
