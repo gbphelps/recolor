@@ -2,8 +2,6 @@ import extrema from '../utils/extrema'
 export default function hueFromRGB(rgb){
 	const { max, min } = extrema(rgb);
 	const c = rgb[max] - rgb[min];
-	if (c === 0) return 0;
-	
 	let hue = null
 	if (max === 'red'){
 		hue = ((rgb.green - rgb.blue)/c + 6)%6
