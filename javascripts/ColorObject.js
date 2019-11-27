@@ -23,6 +23,18 @@ function isEqualPartial(partial,obj){
     return true;
 }
 
+function patchError(obj, prev){
+    const keys = Object.keys(obj);
+    for (let i=0; i<keys.length; i++){
+        if (
+            obj[keys[i]] === Infinity ||
+            obj[keys[i]] === -Infinity ||
+            Number.isNaN(obj[keys[i]])
+        ) obj[keys[i]] = prev[keys[i]]
+    }
+    return obj;
+}
+
 export class Color {
     constructor(){
         this.color = {
@@ -62,9 +74,17 @@ export class Color {
         const prev = deepDup(this.color);
         Object.assign(this.color.rgb, rgbPartial);
 
-        this.color.hsv = hsvFromRGB(this.color.rgb);
-        this.color.hsl = hslFromRGB(this.color.rgb);
-        this.color.hsluv = hsluvFromRGB(this.color.rgb);
+        this.color.hsv = patchError(
+            hsvFromRGB(this.color.rgb), 
+            this.color.hsv
+        );
+
+        this.color.hsl = patchError(
+            hslFromRGB(this.color.rgb), 
+            this.color.hsl
+        );
+
+        this.color.hsluv = hsluvFromRGB(this.color.rgb) //todo;
 
 		this.subscriptions.forEach(subscription => subscription(this.color, prev));
 	}
@@ -74,9 +94,17 @@ export class Color {
         const prev = deepDup(this.color);
         Object.assign(this.color.hsv, hsvPartial);
 
-        this.color.rgb = rgbFromHSV(this.color.hsv);
-        this.color.hsl = hslFromRGB(this.color.rgb);
-        this.color.hsluv = hsluvFromRGB(this.color.rgb);
+        this.color.rgb = patchError(
+            rgbFromHSV(this.color.hsv), 
+            this.color.rgb
+        );
+
+        this.color.hsl = patchError(
+            hslFromRGB(this.color.rgb), 
+            this.color.hsl
+        );
+
+        this.color.hsluv = hsluvFromRGB(this.color.rgb) //todo;
 
 		this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
@@ -86,9 +114,17 @@ export class Color {
         const prev = deepDup(this.color);
         Object.assign(this.color.hsl, hslPartial);
 
-        this.color.rgb = rgbFromHSL(this.color.hsl);
-        this.color.hsv = hsvFromRGB(this.color.rgb);
-        this.color.hsluv = hsluvFromRGB(this.color.rgb);
+        this.color.rgb = patchError(
+            rgbFromHSL(this.color.hsl), 
+            this.color.rgb
+        );
+
+        this.color.hsv = patchError(
+            hsvFromRGB(this.color.rgb), 
+            this.color.hsv
+        );
+
+        this.color.hsluv = hsluvFromRGB(this.color.rgb); //todo;
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
@@ -98,9 +134,9 @@ export class Color {
         const prev = deepDup(this.color);
         Object.assign(this.color.hsluv, hsluvPartial);
 
-        this.color.rgb = rgbFromHSLUV(this.color.hsluv);
-        this.color.hsv = hsvFromRGB(this.color.rgb);
-        this.color.hsl = hslFromRGB(this.color.rgb);
+        this.color.rgb = rgbFromHSLUV(this.color.hsluv); //todo;
+        this.color.hsv = patchError(hsvFromRGB(this.color.rgb),this.color.hsv);
+        this.color.hsl = patchError(hslFromRGB(this.color.rgb),this.color.hsl);
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
