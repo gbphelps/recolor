@@ -35,6 +35,18 @@ function patchError(obj, prev){
     return obj;
 }
 
+function patchHSLUV(obj, prev){
+    //todo: add checks for maxes, not just mins
+    if (obj.saturation < 1e-8){
+        obj.hue = prev.hue;
+    }
+    if (obj.lightness < 1e-8 || Math.abs(obj.lightness - 100) < 1e-8){
+        obj.hue = prev.hue;
+        obj.saturation = prev.saturation;
+    } 
+    return obj;
+}
+
 export class Color {
     constructor(){
         this.color = {
@@ -84,7 +96,10 @@ export class Color {
             this.color.hsl
         );
 
-        this.color.hsluv = hsluvFromRGB(this.color.rgb) //todo;
+        this.color.hsluv = patchHSLUV(
+            hsluvFromRGB(this.color.rgb),
+            this.color.hsluv
+        )
 
 		this.subscriptions.forEach(subscription => subscription(this.color, prev));
 	}
@@ -104,7 +119,10 @@ export class Color {
             this.color.hsl
         );
 
-        this.color.hsluv = hsluvFromRGB(this.color.rgb) //todo;
+        this.color.hsluv = patchHSLUV(
+            hsluvFromRGB(this.color.rgb),
+            this.color.hsluv
+        )
 
 		this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
@@ -124,7 +142,10 @@ export class Color {
             this.color.hsv
         );
 
-        this.color.hsluv = hsluvFromRGB(this.color.rgb); //todo;
+        this.color.hsluv = patchHSLUV(
+            hsluvFromRGB(this.color.rgb),
+            this.color.hsluv
+        )
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
@@ -134,9 +155,17 @@ export class Color {
         const prev = deepDup(this.color);
         Object.assign(this.color.hsluv, hsluvPartial);
 
-        this.color.rgb = rgbFromHSLUV(this.color.hsluv); //todo;
-        this.color.hsv = patchError(hsvFromRGB(this.color.rgb),this.color.hsv);
-        this.color.hsl = patchError(hslFromRGB(this.color.rgb),this.color.hsl);
+        this.color.rgb = rgbFromHSLUV(this.color.hsluv); 
+        // todo need a patch to identify hue of this slider (maybe run extra conversion with lightness set to 50, then grab hue from there?)
+        this.color.hsv = patchError(
+            hsvFromRGB(this.color.rgb),
+            this.color.hsv
+        );
+
+        this.color.hsl = patchError(
+            hslFromRGB(this.color.rgb),
+            this.color.hsl
+        );
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }

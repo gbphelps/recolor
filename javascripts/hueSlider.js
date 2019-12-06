@@ -16,6 +16,8 @@ const svg = createSVG('svg',{
     height: RADIUS*2 + marg
 });
 
+svg.style.border = '1px solid'
+
 c.hueSlider.set(svg);
 
 const defs = createSVG('defs', {});

@@ -108,6 +108,7 @@ r.setAttribute('height', canvas.height);
 r.setAttribute('width', canvas.width);
 r.setAttribute('clip-path', `url(#${clip.id})`);
 r.setAttribute('fill', `url(#${pattern.id})`);
+r.setAttribute('filter',"url(#shadow)")
 body.appendChild(r)
 
 
