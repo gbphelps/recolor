@@ -5,6 +5,7 @@ export default function rgbFromHSL(hsl){
     const X = C * (1 - Math.abs(H%2-1));
     const m = hsl.lightness/100 - C/2;
     switch (Math.floor(H)){
+        case 6:
         case 0:
             return {
                 red: 255*(C + m),

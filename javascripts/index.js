@@ -11,6 +11,7 @@ import makeTriangle from './triangle';
 
 import methods from './colorMethods/index';
 import makeHueSatBlock from './hueSatBlock';
+import makelightnessBlocks from './lightnessBlocks';
 
 
 import './triangle.js'
@@ -40,6 +41,7 @@ function setup(){
     makeHueSatBlock();
     makeHueSlider();
     makeTriangle();
+    makelightnessBlocks();
 
     buildChannels([
         {type: 'rgb', channel: 'red'},
