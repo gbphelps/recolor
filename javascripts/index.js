@@ -10,6 +10,7 @@ import makeHueSlider from './hueSlider';
 import makeTriangle from './triangle';
 
 import methods from './colorMethods/index';
+import makeHueSatBlock from './hueSatBlock';
 
 
 import './triangle.js'
@@ -36,6 +37,7 @@ function allEqualExcept(key, obj1, obj2){
 
 
 function setup(){
+    makeHueSatBlock();
     makeHueSlider();
     makeTriangle();
 
