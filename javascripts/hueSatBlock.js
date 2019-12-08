@@ -2,13 +2,14 @@ import rgbFromHSL from './colorMethods/rgbFromHSL';
 import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
 import createSVG from './createSVG';
 import makePattern from './makePattern';
+import mainColor from './ColorObject';
 
 export default function(){
     const c = document.createElement('canvas');
     c.height = 150;
     c.width = 250;
     c.style.display = "none";
-    const margin = 2;
+    const margin = 0;
 
     document.body.appendChild(c);
     const ctx = c.getContext('2d');
@@ -58,9 +59,60 @@ export default function(){
         fill: `url(#${pattern.id})`
     })
 
+    const pip = createSVG('circle',{
+        r: 5,
+        stroke: 'white',
+        fill: 'transparent',
+        filter: 'url(#shadow)'
+    })
+
+    mainColor.subscribe((COLOR, PREV) => {
+        if (
+            COLOR.hsl.saturation === PREV.hsl.saturation &&
+            COLOR.hsl.hue === PREV.hsl.hue
+        ) return;
+        const {saturation, hue} = COLOR.hsl;
+        const x = hue/360*c.width;
+        const y = (1-saturation/100)*c.height;
+        pip.setAttribute('cx',x);
+        pip.setAttribute('cy',y);
+    })
+
+    pip.addEventListener('mousedown',e => {
+        let x = e.clientX;
+        let y = e.clientY;
+        function move(e){
+            const delHue = (e.clientX - x)/c.width * 360;
+            const delSat = (y - e.clientY)/c.height * 100;
+            console.log({delHue, delSat})
+            const {saturation, hue} = mainColor.color.hsl;
+            const rawSat = saturation + delSat;
+            const rawHue = hue + delHue;
+
+            let nSat = Math.max(rawSat, 0);
+            nSat = Math.min(nSat, 100);
+
+            let nHue = Math.max(rawHue, 0);
+            nHue = Math.min(nHue, 360);
+
+            mainColor.setHSL({saturation: nSat, hue: nHue})
+
+            if (nSat === rawSat) y = e.clientY; 
+            //note: the conditional here prevents deltas from being erroneously registered when we're outside of the slider box.
+            if (nHue === rawHue) x = e.clientX;      
+        }
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',() => {
+            document.removeEventListener('mousemove',move)
+        },{once: true})
+    })
+
+    
+
     document.body.appendChild(svg);
     svg.appendChild(defs);
     svg.appendChild(body);
     body.appendChild(rect);
+    body.appendChild(pip);
     defs.appendChild(pattern);
 }
