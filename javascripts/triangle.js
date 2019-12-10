@@ -11,7 +11,7 @@ let pip = null;
 let image = null;
 
 const ratio = sq3/2;
-const margin = 8;
+const margin = 2;
 const s = 120;
 const h = s * ratio;
 const black = [0,0,0,255];

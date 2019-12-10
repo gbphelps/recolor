@@ -1,7 +1,7 @@
 
 
 import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
-import makeGradient from './nonlinearGradient';
+import gradient from './nonlinearGradient';
 
 import createSVG from './createSVG';
 import makePattern from './makePattern';
@@ -10,8 +10,9 @@ import makeHueSlider from './hueSlider';
 import makeTriangle from './triangle';
 
 import methods from './colorMethods/index';
-import makeHueSatBlock from './hueSatBlock';
+import makeBlockWithSlider from './xySlider';
 import makelightnessBlocks from './lightnessBlocks';
+import hueSat from './hueSatCircle';
 
 
 import './triangle.js'
@@ -38,7 +39,43 @@ function allEqualExcept(key, obj1, obj2){
 
 
 function setup(){
-    makeHueSatBlock();
+    // hueSat();
+    makeBlockWithSlider({
+        xChannel: {
+            name: 'hue',
+            max: 360
+        },
+        yChannel: {
+            name: 'saturation',
+            max: 100,
+        },
+        zChannel: {
+            name: 'lightness',
+            max: 100
+        },
+        zInit: () => 50,
+        colorSpace: 'hsl'
+    });
+
+    makeBlockWithSlider({
+        xChannel: {
+            name: 'saturation',
+            max: 100,
+        },
+        yChannel: {
+            name: 'value',
+            max: 100
+        },
+        zChannel: {
+            name: 'hue',
+            max: 360
+        },
+        zInit: (color) => color.hsv.hue,
+        colorSpace: 'hsv',
+        height: 150,
+        width: 150,
+    });
+
     makeHueSlider();
     makeTriangle();
     makelightnessBlocks();
@@ -161,7 +198,7 @@ function buildChannels(channels, {
             'stroke-width': 2,
             'vector-effect': 'non-scaling-stroke',
             filter: 'url(#shadow)',
-            rx: 0
+            rx: 2
         })
 
         gradient.appendChild(stop1);
@@ -269,7 +306,11 @@ function buildNonlinearChannels(channels, {
             default:
                 maxValue = 100;
         }
-
+       const grad = gradient({
+           direction: orientation,
+           width: 100,
+           height: 10
+        });
        const pattern = makePattern();
 
         const track_ = createSVG('rect',{
@@ -290,7 +331,7 @@ function buildNonlinearChannels(channels, {
             'stroke-width': 2,
             'vector-effect': 'non-scaling-stroke',
             filter: 'url(#shadow)',
-            rx: 0
+            rx: 2
         })
 
         document.body.appendChild(container);
@@ -316,7 +357,7 @@ function buildNonlinearChannels(channels, {
             PREV[param.type]
         )) return;
 
-        const grad = makeGradient({
+        const gradURL = grad.update({
             rgbFunc: rgbFromHSLUV,
             color: COLOR[param.type],
             channel: {
@@ -324,11 +365,9 @@ function buildNonlinearChannels(channels, {
                 max: maxValue
             },
             direction: orientation,
-            width: 100,
-            height: 10
         })
 
-        pattern.firstElementChild.setAttribute('href',grad);
+        pattern.firstElementChild.setAttribute('href',gradURL);
     })
     
     

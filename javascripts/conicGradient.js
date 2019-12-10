@@ -17,7 +17,7 @@ return [0,0,0,0]
 }
 
 export default function conicGradient(){
-	const c = document.getElementById('c');
+	const c = document.createElement('canvas');
 
 	c.width = 400;
 	c.height = 400;

@@ -1,8 +1,7 @@
-import mainColor from './ColorObject';
-import conicGradient from './conicGradient';
-import createSVG from './createSVG';
 import c from './constants';
-
+import createSVG from './createSVG';
+import conicGradient from './conicGradient';
+import mainColor from './ColorObject';
 
 export default function hueSlider(){ 
 
