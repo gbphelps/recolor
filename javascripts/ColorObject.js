@@ -56,34 +56,34 @@ export class Color {
     constructor(){
         this.color = {
             rgb: {
-                red: 0,
-                green: 0,
-                blue: 0,
+                red: -1,
+                green: -1,
+                blue: -1,
             },
 
             hsv: {
-                hue: 0,
-                saturation: 100,
-                value: 0,
+                hue: -1,
+                saturation: -1,
+                value: -1,
             },
 
             hsl:{
-                hue: 0,
-                saturation: 0,
-                lightness: 0,
+                hue: -1,
+                saturation: -1,
+                lightness: -1,
             },
 
             hsluv:{
-                hue: 0,
-                saturation: 0,
-                lightness: 0
+                hue: -1,
+                saturation: -1,
+                lightness: -1
             },
 
             cmyk:{
-                cyan: 0,
-                magenta: 0,
-                yellow: 0,
-                black: 0
+                cyan: -1,
+                magenta: -1,
+                yellow: -1,
+                black: -1
             }
         }
         this.subscriptions = [];
@@ -112,6 +112,8 @@ export class Color {
             hsluvFromRGB(this.color.rgb),
             this.color.hsluv
         )
+
+        this.color.cmyk = cmykFromRGB(this.color.rgb);
 
 		this.subscriptions.forEach(subscription => subscription(this.color, prev));
 	}
@@ -142,7 +144,6 @@ export class Color {
     }
     
     setHSL(hslPartial){
-        console.log(this.color.cmyk, this.color.rgb)
         if (isEqualPartial(hslPartial, this.color.hsl)) return;
         const prev = deepDup(this.color);
         Object.assign(this.color.hsl, hslPartial);

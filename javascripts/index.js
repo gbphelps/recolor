@@ -80,11 +80,18 @@ function setup(){
     makeTriangle();
     makelightnessBlocks();
 
-    // buildChannels([
-    //     {type: 'rgb', channel: 'red'},
-    //     {type: 'rgb', channel: 'green'},
-    //     {type: 'rgb', channel: 'blue'},
-    // ]);
+    buildChannels([
+        {type: 'rgb', channel: 'red'},
+        {type: 'rgb', channel: 'green'},
+        {type: 'rgb', channel: 'blue'},
+    ]);
+
+    buildChannels([
+        {type: 'cmyk', channel: 'cyan'},
+        {type: 'cmyk', channel: 'magenta'},
+        {type: 'cmyk', channel: 'yellow'},
+        {type: 'cmyk', channel: 'black'},
+    ]);
     // buildChannels([
     //     {type: 'hsv', channel: 'saturation'},
     //     {type: 'hsv', channel: 'value' },
