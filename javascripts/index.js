@@ -80,43 +80,43 @@ function setup(){
     makeTriangle();
     makelightnessBlocks();
 
-    buildChannels([
-        {type: 'rgb', channel: 'red'},
-        {type: 'rgb', channel: 'green'},
-        {type: 'rgb', channel: 'blue'},
-    ]);
-    buildChannels([
-        {type: 'hsv', channel: 'saturation'},
-        {type: 'hsv', channel: 'value' },
-    ],{
-        trackLength: 100, 
-        trackThickness: 24, 
-        orientation: 'vertical',
-        margin: 8,
-        pipWidth: 8
-    });
+    // buildChannels([
+    //     {type: 'rgb', channel: 'red'},
+    //     {type: 'rgb', channel: 'green'},
+    //     {type: 'rgb', channel: 'blue'},
+    // ]);
+    // buildChannels([
+    //     {type: 'hsv', channel: 'saturation'},
+    //     {type: 'hsv', channel: 'value' },
+    // ],{
+    //     trackLength: 100, 
+    //     trackThickness: 24, 
+    //     orientation: 'vertical',
+    //     margin: 8,
+    //     pipWidth: 8
+    // });
     
-    buildChannels([
-        {type: 'hsl', channel: 'saturation'},
-        {type: 'hsl', channel: 'lightness' },
-    ],{
-        trackLength: 100, 
-        trackThickness: 24, 
-        orientation: 'vertical',
-        margin: 8,
-        pipWidth: 8
-    });
+    // buildChannels([
+    //     {type: 'hsl', channel: 'saturation'},
+    //     {type: 'hsl', channel: 'lightness' },
+    // ],{
+    //     trackLength: 100, 
+    //     trackThickness: 24, 
+    //     orientation: 'vertical',
+    //     margin: 8,
+    //     pipWidth: 8
+    // });
 
-    buildNonlinearChannels([
-        {type: 'hsluv', channel: 'saturation'},
-        {type: 'hsluv', channel: 'lightness'},
-    ],{
-        trackLength: 100, 
-        trackThickness: 24, 
-        orientation: 'vertical',
-        margin: 8,
-        pipWidth: 8
-    })
+    // buildNonlinearChannels([
+    //     {type: 'hsluv', channel: 'saturation'},
+    //     {type: 'hsluv', channel: 'lightness'},
+    // ],{
+    //     trackLength: 100, 
+    //     trackThickness: 24, 
+    //     orientation: 'vertical',
+    //     margin: 8,
+    //     pipWidth: 8
+    // })
     mainColor.setRGB({red: 50, green: 100, blue: 200 });
 }
 

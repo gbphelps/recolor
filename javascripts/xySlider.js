@@ -138,7 +138,9 @@ export default function({
         const yVal = (1-COLOR[colorSpace][yChannel.name]/yChannel.max)*height;
         pip.setAttribute('cx',xVal);
         pip.setAttribute('cy',yVal);
-        if (zInit(COLOR) !== zInit(PREV)) image.setAttribute('href',makeGradient());
+        if (zInit(COLOR) !== zInit(PREV)){
+            image.setAttribute('href',makeGradient());
+        }
     })
 
     pip.addEventListener('mousedown',e => {

@@ -4,6 +4,11 @@ import rgbFromHSL from './colorMethods/rgbFromHSL';
 import hsvFromRGB from './colorMethods/hsvFromRGB';
 import hsluvFromRGB from './colorMethods/hsluvFromRGB';
 import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
+import cmykFromRGB from './colorMethods/cmykFromRGB';
+import rgbFromCMYK from './colorMethods/rgbFromCMYK';
+
+
+//todo you can easily clean this up by making an object of colormethods
 
 function deepDup(obj){
     const newObj = {};
@@ -73,6 +78,13 @@ export class Color {
                 saturation: 0,
                 lightness: 0
             },
+
+            cmyk:{
+                cyan: 0,
+                magenta: 0,
+                yellow: 0,
+                black: 0
+            }
         }
         this.subscriptions = [];
     }
@@ -124,10 +136,13 @@ export class Color {
             this.color.hsluv
         )
 
+        this.color.cmyk = cmykFromRGB(this.color.rgb);
+
 		this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
     
     setHSL(hslPartial){
+        console.log(this.color.cmyk, this.color.rgb)
         if (isEqualPartial(hslPartial, this.color.hsl)) return;
         const prev = deepDup(this.color);
         Object.assign(this.color.hsl, hslPartial);
@@ -146,6 +161,8 @@ export class Color {
             hsluvFromRGB(this.color.rgb),
             this.color.hsluv
         )
+
+        this.color.cmyk = cmykFromRGB(this.color.rgb);
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
@@ -166,6 +183,32 @@ export class Color {
             hslFromRGB(this.color.rgb),
             this.color.hsl
         );
+
+        this.color.cmyk = cmykFromRGB(this.color.rgb);
+
+        this.subscriptions.forEach(subscription => subscription(this.color, prev));
+    }
+
+    setCMYK(cmykPartial){
+        if (isEqualPartial(cmykPartial, this.color.cmyk)) return; 
+        const prev = deepDup(this.color);
+        Object.assign(this.color.cmyk, cmykPartial);
+        this.color.rgb = rgbFromCMYK(this.color.cmyk);
+
+        this.color.hsv = patchError(
+            hsvFromRGB(this.color.rgb),
+            this.color.hsv
+        );
+
+        this.color.hsl = patchError(
+            hslFromRGB(this.color.rgb),
+            this.color.hsl
+        );
+
+        this.color.hsluv = patchHSLUV(
+            hsluvFromRGB(this.color.rgb),
+            this.color.hsluv
+        )
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
