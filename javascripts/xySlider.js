@@ -106,7 +106,7 @@ export default function({
             const yAttempt = mainColor.color[colorSpace][zChannel.name] + delY;
             let newY = Math.min(zChannel.max, yAttempt);
             newY = Math.max(newY, 0);
-            mainColor[`set${[colorSpace.toUpperCase()]}`]({
+            mainColor.set(colorSpace, {
                 [zChannel.name]: newY,
             })
             if (newY === yAttempt) y = e.clientY;
@@ -158,8 +158,8 @@ export default function({
             let nX = Math.max(rawX, 0);
             nX = Math.min(nX, xChannel.max);
 
-            //todo: fix!
-            mainColor[`set${colorSpace.toUpperCase()}`]({
+
+            mainColor.set(colorSpace,{
                 [xChannel.name]: nX,
                 [yChannel.name]: nY,
             })

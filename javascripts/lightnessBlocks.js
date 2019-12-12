@@ -31,7 +31,7 @@ export default function (){
             x: i * (w + m),
         })
         block.addEventListener('click',()=>{
-            mainColor.setHSL(
+            mainColor.set('hsl',
                 Object.assign(
                     {},
                     mainColor.color.hsl,

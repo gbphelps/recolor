@@ -195,7 +195,7 @@ function setPip(e){
 			blue: pure.blue*top + 255*left,
 		}
 
-		mainColor.setRGB(newColor);
+		mainColor.set('rgb',newColor);
 
 		x = e.clientX;
 		y = e.clientY;

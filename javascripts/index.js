@@ -120,7 +120,7 @@ function setup(){
     //     margin: 8,
     //     pipWidth: 8
     // })
-    mainColor.setRGB({red: 50, green: 100, blue: 200 });
+    mainColor.set('rgb',{red: 50, green: 100, blue: 200 });
 }
 
 
@@ -301,9 +301,7 @@ function buildChannels(channels, {
             
             let newVal = Math.min(rawProgress, maxValue);
             newVal = Math.max(newVal, 0);
-        
-            const setter = `set${param.type.toUpperCase()}`;
-            mainColor[setter]({[param.channel]: newVal});
+            mainColor.set(param.type,{[param.channel]: newVal});
             x = orientation === 'horizontal' ? e.clientX : e.clientY;
         }
         
@@ -419,9 +417,8 @@ function buildNonlinearChannels(channels, {
             
             let newVal = Math.min(rawProgress, maxValue);
             newVal = Math.max(newVal, 0);
-        
-            const setter = `set${param.type.toUpperCase()}`;
-            mainColor[setter]({[param.channel]: newVal});
+
+            mainColor.set(param.type,{[param.channel]: newVal})
             x = orientation === 'horizontal' ? e.clientX : e.clientY;
         }
         

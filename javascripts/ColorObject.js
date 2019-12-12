@@ -1,14 +1,4 @@
-import rgbFromHSV from './colorMethods/rgbFromHSV';
-import hslFromRGB from './colorMethods/hslFromRGB';
-import rgbFromHSL from './colorMethods/rgbFromHSL';
-import hsvFromRGB from './colorMethods/hsvFromRGB';
-import hsluvFromRGB from './colorMethods/hsluvFromRGB';
-import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
-import cmykFromRGB from './colorMethods/cmykFromRGB';
-import rgbFromCMYK from './colorMethods/rgbFromCMYK';
-
-
-//todo you can easily clean this up by making an object of colormethods
+import converter from './colorMethods/index';
 
 function deepDup(obj){
     const newObj = {};
@@ -92,125 +82,24 @@ export class Color {
 	subscribe(callback){
 		this.subscriptions.push(callback);
 	}
-	
-	setRGB(rgbPartial){
-        if (isEqualPartial(rgbPartial, this.color.rgb)) return;
-        const prev = deepDup(this.color);
-        Object.assign(this.color.rgb, rgbPartial);
-
-        this.color.hsv = patchError(
-            hsvFromRGB(this.color.rgb), 
-            this.color.hsv
-        );
-
-        this.color.hsl = patchError(
-            hslFromRGB(this.color.rgb), 
-            this.color.hsl
-        );
-
-        this.color.hsluv = patchHSLUV(
-            hsluvFromRGB(this.color.rgb),
-            this.color.hsluv
-        )
-
-        this.color.cmyk = cmykFromRGB(this.color.rgb);
-
-		this.subscriptions.forEach(subscription => subscription(this.color, prev));
-	}
-	
-	setHSV(hsvPartial){
-        if (isEqualPartial(hsvPartial, this.color.hsv)) return;
-        const prev = deepDup(this.color);
-        Object.assign(this.color.hsv, hsvPartial);
-
-        this.color.rgb = patchError(
-            rgbFromHSV(this.color.hsv), 
-            this.color.rgb
-        );
-
-        this.color.hsl = patchError(
-            hslFromRGB(this.color.rgb), 
-            this.color.hsl
-        );
-
-        this.color.hsluv = patchHSLUV(
-            hsluvFromRGB(this.color.rgb),
-            this.color.hsluv
-        )
-
-        this.color.cmyk = cmykFromRGB(this.color.rgb);
-
-		this.subscriptions.forEach(subscription => subscription(this.color, prev));
-    }
     
-    setHSL(hslPartial){
-        if (isEqualPartial(hslPartial, this.color.hsl)) return;
+    set(colorSpace, partial){
+        if (isEqualPartial(partial,this.color[colorSpace])) return;
         const prev = deepDup(this.color);
-        Object.assign(this.color.hsl, hslPartial);
+        Object.assign(this.color[colorSpace], partial);
+        this.color.rgb = colorSpace === 'rgb' ? 
+            this.color.rgb : 
+            converter.getRGB[colorSpace](this.color[colorSpace]);
 
-        this.color.rgb = patchError(
-            rgbFromHSL(this.color.hsl), 
-            this.color.rgb
-        );
-
-        this.color.hsv = patchError(
-            hsvFromRGB(this.color.rgb), 
-            this.color.hsv
-        );
-
-        this.color.hsluv = patchHSLUV(
-            hsluvFromRGB(this.color.rgb),
-            this.color.hsluv
-        )
-
-        this.color.cmyk = cmykFromRGB(this.color.rgb);
-
-        this.subscriptions.forEach(subscription => subscription(this.color, prev));
-    }
-
-    setHSLUV(hsluvPartial){
-        if (isEqualPartial(hsluvPartial, this.color.hsluv)) return;
-        const prev = deepDup(this.color);
-        Object.assign(this.color.hsluv, hsluvPartial);
-
-        this.color.rgb = rgbFromHSLUV(this.color.hsluv); 
-        // todo need a patch to identify hue of this slider (maybe run extra conversion with lightness set to 50, then grab hue from there?)
-        this.color.hsv = patchError(
-            hsvFromRGB(this.color.rgb),
-            this.color.hsv
-        );
-
-        this.color.hsl = patchError(
-            hslFromRGB(this.color.rgb),
-            this.color.hsl
-        );
-
-        this.color.cmyk = cmykFromRGB(this.color.rgb);
-
-        this.subscriptions.forEach(subscription => subscription(this.color, prev));
-    }
-
-    setCMYK(cmykPartial){
-        if (isEqualPartial(cmykPartial, this.color.cmyk)) return; 
-        const prev = deepDup(this.color);
-        Object.assign(this.color.cmyk, cmykPartial);
-        this.color.rgb = rgbFromCMYK(this.color.cmyk);
-
-        this.color.hsv = patchError(
-            hsvFromRGB(this.color.rgb),
-            this.color.hsv
-        );
-
-        this.color.hsl = patchError(
-            hslFromRGB(this.color.rgb),
-            this.color.hsl
-        );
-
-        this.color.hsluv = patchHSLUV(
-            hsluvFromRGB(this.color.rgb),
-            this.color.hsluv
-        )
-
+        const spaces = Object.keys(this.color);
+        spaces.forEach(space => {
+            console.log(space)
+            if (space === 'rgb' || space === colorSpace) return;
+            this.color[space] = patchError(
+                converter.fromRGB[space](this.color.rgb),
+                this.color[space]
+            )
+        })
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
 }

@@ -115,7 +115,7 @@ pipRect.addEventListener('mousedown',e=>{
 		
 
 		
-		mainColor.setHSV({hue: angle/Math.PI*180 + 90});
+		mainColor.set('hsv',{hue: angle/Math.PI*180 + 90});
 		
 		
 		x = e.clientX;
