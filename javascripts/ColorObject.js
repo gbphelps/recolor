@@ -93,7 +93,6 @@ export class Color {
 
         const spaces = Object.keys(this.color);
         spaces.forEach(space => {
-            console.log(space)
             if (space === 'rgb' || space === colorSpace) return;
             this.color[space] = patchError(
                 converter.fromRGB[space](this.color.rgb),
