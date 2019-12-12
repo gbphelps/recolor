@@ -23,10 +23,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 })
 
 
-const width = 300;
-const height = 100;
-
-
 function allEqualExcept(key, obj1, obj2){
     const keys = Object.keys(obj1 || {});
     if (Object.keys(obj2 || {}).length !== keys.length) return false;
@@ -141,19 +137,38 @@ function buildChannels(channels, {
     trackThickness = 8,
     pipWidth = 12,
     orientation = 'horizontal',
-    margin = 24,
+    margin=24,
     outerMargin=24,
+    spacing=4,
 }={}){
+    const div = document.createElement('div');
+    div.style.position = 'relative';
+    div.style[orientation === 'horizontal' ? 'width' : 'height'] = trackLength + 2*outerMargin + 2*spacing;
+    div.style[orientation === 'horizontal' ? 'height' : 'width'] = channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin + 2*spacing;
+    div.style.display = 'flex';
+    div.style['justify-content'] = 'center';
+    div.style['align-items'] = 'flex-start';
+    div.style.margin = '20px'
+
+    const inputContainer = document.createElement('div');
+    inputContainer.classList.add('input-container');
+    inputContainer.style.margin = spacing + 'px';
+
+    document.body.appendChild(div);
+
+
     const container = createSVG('svg',{
         [orientation === 'horizontal' ? 'width' : 'height']: trackLength + 2*outerMargin,
         [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
-    container.style.margin=4;
+    container.style.margin=spacing;
     container.style.border="1px solid #555";
-    container.style['border-radius']="2px"
+    container.style['border-radius']="2px";
+    container.style.position="absolute";
 
-
-    document.body.appendChild(container);
+    div.appendChild(container);
+    div.appendChild(inputContainer);
+ 
     channels.forEach((param,i) => {    
         let maxValue;
         switch (param.type){
@@ -163,6 +178,21 @@ function buildChannels(channels, {
             default:
                 maxValue = 100;
         }
+
+
+        const input = document.createElement('input');
+        inputContainer.appendChild(input);
+        
+        mainColor.subscribe((COLOR, PREV) => {
+            input.value = Math.round(COLOR[param.type][param.channel] * 10)/10;
+        })
+
+        input.addEventListener('input',e => {
+            e.preventDefault();
+            mainColor[`set${param.type.toUpperCase()}`](
+                {[param.channel]: +e.target.value}
+            )
+        })
 
         const gradient = createSVG('linearGradient',{
             [orientation === 'horizontal' ? 'x1' : 'y1' ]: pipWidth/2 + outerMargin,

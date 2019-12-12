@@ -1,0 +1,23 @@
+* {
+    box-sizing: border-box;
+}
+
+.input-container{
+    position: relative;
+    z-index: 100;
+    transform: translateY(-50%);
+    background: #383838;
+}
+
+input {
+    width: 40px;
+    background: transparent;
+    outline: none;
+    border: 1px solid #555;
+    margin: 0 8px;
+    color: white;
+}
+
+input:focus{
+    background: #888;
+}
