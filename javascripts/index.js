@@ -182,16 +182,25 @@ function buildChannels(channels, {
 
         const input = document.createElement('input');
         inputContainer.appendChild(input);
+        let lastValid = 0;
         
         mainColor.subscribe((COLOR, PREV) => {
-            input.value = Math.round(COLOR[param.type][param.channel] * 10)/10;
+            lastValid = COLOR[param.type][param.channel];
+            const value = Math.round(COLOR[param.type][param.channel] * 10)/10;
+            input.value = document.activeElement === input ? value : value.toFixed(1);
         })
 
         input.addEventListener('input',e => {
             e.preventDefault();
-            mainColor[`set${param.type.toUpperCase()}`](
-                {[param.channel]: +e.target.value}
+            if (+input.value < 0 || +input.value > maxValue) return;
+            mainColor.set(
+                param.type,
+                { [param.channel]: +input.value }
             )
+        })
+
+        input.addEventListener('blur',()=>{
+            input.value = lastValid.toFixed(1)
         })
 
         const gradient = createSVG('linearGradient',{

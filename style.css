@@ -16,8 +16,9 @@ input {
     border: 1px solid #555;
     margin: 0 8px;
     color: white;
+    text-align: right;
 }
 
-input:focus{
+/* input:focus{
     background: #888;
-}
+} */
