@@ -187,7 +187,7 @@ function buildChannels(channels, {
         mainColor.subscribe((COLOR, PREV) => {
             lastValid = COLOR[param.type][param.channel];
             const value = Math.round(COLOR[param.type][param.channel] * 10)/10;
-            input.value = value.toFixed(1);
+            if (document.activeElement !== input) input.value = value.toFixed(1);
         })
 
         input.addEventListener('input',e => {
