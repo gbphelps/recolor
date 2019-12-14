@@ -192,13 +192,11 @@ function buildChannels(channels, {
 
         input.addEventListener('input',e => {
             e.preventDefault();
-            const asWritten = input.value;
             if (+input.value < 0 || +input.value > maxValue) return;
             mainColor.set(
                 param.type,
                 { [param.channel]: +input.value }
             )
-            input.value = asWritten;
         })
 
         input.addEventListener('blur',()=>{
