@@ -187,16 +187,18 @@ function buildChannels(channels, {
         mainColor.subscribe((COLOR, PREV) => {
             lastValid = COLOR[param.type][param.channel];
             const value = Math.round(COLOR[param.type][param.channel] * 10)/10;
-            input.value = document.activeElement === input ? value : value.toFixed(1);
+            input.value = value.toFixed(1);
         })
 
         input.addEventListener('input',e => {
             e.preventDefault();
+            const asWritten = input.value;
             if (+input.value < 0 || +input.value > maxValue) return;
             mainColor.set(
                 param.type,
                 { [param.channel]: +input.value }
             )
+            input.value = asWritten;
         })
 
         input.addEventListener('blur',()=>{
