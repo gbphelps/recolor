@@ -1,9 +1,9 @@
 import mainColor from './ColorObject';
 import createSVG from './createSVG';
-import rgbFromHSL from './colorMethods/rgbFromHSL';
+import converter from './colorMethods/index';
 
 
-export default function (){
+export default function (colorSpace, channel){
     const H = 100;
     const W = 600;
     const N = 20;
@@ -12,10 +12,10 @@ export default function (){
     const outerMargin = 20;
 
     const svg = createSVG('svg',{
-        height: H + outerMargin*2,
+        height: w + outerMargin*2,
         width: W + outerMargin*2,
     })
-    
+
     const body = createSVG('g',{
         transform: `translate(${outerMargin} ${outerMargin})`
     });
@@ -31,11 +31,11 @@ export default function (){
             x: i * (w + m),
         })
         block.addEventListener('click',()=>{
-            mainColor.set('hsl',
+            mainColor.set(colorSpace,
                 Object.assign(
                     {},
-                    mainColor.color.hsl,
-                    {lightness: i*100/(N-1)}
+                    mainColor.color[colorSpace],
+                    {[channel.name]: i*[channel.max]/(N-1)}
                 )
             )
         })
@@ -55,9 +55,8 @@ export default function (){
     body.appendChild(frame);
 
     mainColor.subscribe((COLOR, PREV) => {
-        const { lightness } = COLOR.hsl;
-        const inc = (100/(N-1));
-        const replacementIndex = Math.round(lightness/inc);
+        const inc = (channel.max/(N-1));
+        const replacementIndex = Math.round(COLOR[colorSpace][channel.name]/inc);
 
         for (let i=0; i<N; i++){
             if (i === replacementIndex){
@@ -69,8 +68,13 @@ export default function (){
                 frame.setAttribute('y', -wDel/2)
                 continue;
             }
-            const tempLightness = inc*i;
-            const color = rgbFromHSL(Object.assign({},COLOR.hsl,{lightness: tempLightness}));
+            const tempChannel = inc*i;
+            const color = converter.getRGB[colorSpace](
+                Object.assign(
+                    {},
+                    COLOR[colorSpace],
+                    {[channel.name]: tempChannel})
+                );
             blocks[i].setAttribute(
                 'fill',
                 `rgb(${color.red},${color.green},${color.blue})`,
