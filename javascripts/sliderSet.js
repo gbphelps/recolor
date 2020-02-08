@@ -35,8 +35,6 @@ export default function buildChannels(channels, {
         [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
     container.style.margin=spacing;
-    container.style.border="1px solid #555";
-    container.style['border-radius']="2px";
     container.style.position="absolute";
 
     div.appendChild(container);

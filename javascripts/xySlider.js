@@ -11,7 +11,6 @@ export default function({
     yChannel,
     zChannel, 
     colorSpace, 
-    zInit,
     height = 150,
     width = 250,
     trackWidth = 20,
@@ -35,7 +34,7 @@ export default function({
     function makeOtherGradient(){
         const img = ctx2.createImageData(10, height);
         for (let y=0; y<height; y++) {
-            const param = y/height * zChannel.max;
+            const param = (1-y/height) * zChannel.max;
 
             console.log(convert.getRGB[colorSpace])
             const color = convert.getRGB[colorSpace]({
@@ -73,7 +72,9 @@ export default function({
                 yVal = Math.min(yChannel.max, yVal);
                 yVal = Math.max(0, yVal);
     
-                const zVal = zInit(mainColor.color);
+                const zVal = mainColor.color[colorSpace][zChannel.name];
+                //NOTE: you may want to keep this stable at eg 50 or something.
+
                 const {red, green, blue} = convert.getRGB[colorSpace]({
                     [xChannel.name]: xVal,
                     [yChannel.name]: yVal,
@@ -95,8 +96,6 @@ export default function({
         height: height + 2*outerMargin,
         width: width + 2*outerMargin + trackWidth + spaceBetween,
     });
-    svg.style.border = '1px solid #555';
-    svg.style.margin = '4px';
     
     const body = createSVG('g',{
         transform: `translate(${outerMargin} ${outerMargin})`
@@ -176,10 +175,17 @@ export default function({
         const yVal = (1-COLOR[colorSpace][yChannel.name]/yChannel.max)*height;
         pip.setAttribute('cx',xVal);
         pip.setAttribute('cy',yVal);
-        if (zInit(COLOR) !== zInit(PREV)){
+        if (COLOR[colorSpace][zChannel.name] !== PREV[colorSpace][zChannel.name]){
+            //TODO if you add back zInit you need to replace here.
             image.setAttribute('href',makeGradient());
         }
-        image2.setAttribute('href',makeOtherGradient());
+        if (
+            COLOR[colorSpace][xChannel.name] !== PREV[colorSpace][xChannel.name] ||
+            COLOR[colorSpace][yChannel.name] !== PREV[colorSpace][yChannel.name]
+        ){
+             //TODO add similar safegaurds here.
+            image2.setAttribute('href',makeOtherGradient());
+        }
     })
 
     pip.addEventListener('mousedown',e => {

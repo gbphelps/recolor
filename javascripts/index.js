@@ -43,7 +43,6 @@ function setup(){
             name: 'lightness',
             max: 100
         },
-        zInit: () => 50,
         colorSpace: 'hsl'
     });
 
@@ -60,7 +59,6 @@ function setup(){
             name: 'hue',
             max: 360
         },
-        zInit: (color) => color.hsv.hue,
         colorSpace: 'hsv',
         height: 150,
         width: 150,
@@ -145,9 +143,6 @@ function buildNonlinearChannels(channels, {
         [orientation === 'horizontal' ? 'width' : 'height']: trackLength + 2*outerMargin,
         [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
-    container.style.margin=4;
-    container.style.border='1px solid #555';
-    container.style['border-radius']='2px';
 
     channels.forEach((param,i) => {    
         let maxValue;

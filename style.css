@@ -19,6 +19,14 @@ input {
     text-align: right;
 }
 
+body{
+    background: #383838;
+}
 /* input:focus{
     background: #888;
 } */
+
+svg {
+    margin: 8px;
+    box-shadow: 5px 5px 5px 0 rgba(0,0,0,.1), -5px -5px 5px rgba(255,255,255,.03)
+}
