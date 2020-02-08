@@ -4,6 +4,8 @@ import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor from './ColorObject';
 import convert from './colorMethods/index';
+
+
 export default function({
     xChannel,
     yChannel,
@@ -15,8 +17,6 @@ export default function({
     trackWidth = 20,
     spaceBetween = 10
 }){
-
-    
     const margin = 0;
     const c = document.createElement('canvas');
     const ctx = c.getContext('2d');
@@ -24,6 +24,41 @@ export default function({
     c.width = width;
     c.style.display = 'none';
     document.body.appendChild(c);
+
+    const c2 = document.createElement('canvas');
+    const ctx2 = c2.getContext('2d');
+    c2.height = height;
+    c2.width = 1;
+    document.body.appendChild(c2);
+    c2.style.display = 'none';
+
+    function makeOtherGradient(){
+        const img = ctx2.createImageData(10, height);
+        for (let y=0; y<height; y++) {
+            const param = y/height * zChannel.max;
+
+            console.log(convert.getRGB[colorSpace])
+            const color = convert.getRGB[colorSpace]({
+                ...mainColor.color[colorSpace],
+                [zChannel.name]: param,
+            }) || {
+                [zChannel.name]: 0,
+                [xChannel.name]: 0,
+                [yChannel.name]: 0,
+            }
+
+            for (let x=0; x<10; x++) {
+                const pixel = y*10 + x;
+                img.data[pixel*4] = color.red;
+                img.data[pixel*4+1] = color.green;
+                img.data[pixel*4+2] = color.blue;
+                img.data[pixel*4+3] = 255;
+            }
+        }
+        ctx2.putImageData(img,0,0);
+        const url = c2.toDataURL();
+        return url;
+    }
 
     function makeGradient(){
         const img = ctx.createImageData(width, height);
@@ -53,9 +88,7 @@ export default function({
         ctx.putImageData(img,0,0);
         const url = c.toDataURL();
         return url;
-    }
-
-   
+    } 
 
     const outerMargin = 20;
     const svg = createSVG('svg',{
@@ -73,6 +106,12 @@ export default function({
     const image = pattern.getElementsByTagName('image')[0];
     image.setAttribute('href',makeGradient());
     const defs = createSVG('defs',{});
+
+    const pattern2 = makePattern();
+    const image2 = pattern2.getElementsByTagName('image')[0];
+    image2.setAttribute('href',makeOtherGradient());
+
+
 
     const rect = createSVG('rect',{
         height: height,
@@ -121,12 +160,11 @@ export default function({
         const y = (1-(COLOR[colorSpace][zChannel.name]/zChannel.max))*(height - pipHeight);
         sliderPip.setAttribute('y',y);
     })
-    
 
     const sliderTrack = createSVG('rect',{
         width: trackWidth,
         height: height,
-        fill: 'red',
+        fill: `url(#${pattern2.id})`,
         x: width + spaceBetween,
     })
 
@@ -141,6 +179,7 @@ export default function({
         if (zInit(COLOR) !== zInit(PREV)){
             image.setAttribute('href',makeGradient());
         }
+        image2.setAttribute('href',makeOtherGradient());
     })
 
     pip.addEventListener('mousedown',e => {
@@ -182,4 +221,5 @@ export default function({
     body.appendChild(rect);
     body.appendChild(pip);
     defs.appendChild(pattern);
+    defs.appendChild(pattern2);
 }

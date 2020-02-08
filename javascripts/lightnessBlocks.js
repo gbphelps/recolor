@@ -4,12 +4,11 @@ import converter from './colorMethods/index';
 
 
 export default function (colorSpace, channel){
-    const H = 100;
-    const W = 600;
-    const N = 20;
+    const W = 800;
+    const N = 21;
     const m = 1;
     const w = (W-(m*(N-1)))/N;
-    const outerMargin = 20;
+    const outerMargin = 4;
 
     const svg = createSVG('svg',{
         height: w + outerMargin*2,
