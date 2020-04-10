@@ -5,6 +5,17 @@ import methods from './colorMethods/index';
 
 
 
+const paramLookup = {
+    cyan: 'C',
+    magenta: 'M',
+    yellow: 'Y',
+    black: 'K',
+    red: 'R',
+    green: 'G',
+    blue: 'B'
+}
+
+
 export default function buildChannels(channels, {
     trackLength = 300,
     trackThickness = 8,
@@ -52,6 +63,9 @@ export default function buildChannels(channels, {
 
 
         const input = document.createElement('input');
+        const label = document.createElement('label');
+        label.innerHTML = paramLookup[param.channel];
+        inputContainer.appendChild(label);
         inputContainer.appendChild(input);
         let lastValid = 0;
         

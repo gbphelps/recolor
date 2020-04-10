@@ -16,7 +16,7 @@ export default function (colorSpace, channel){
     })
 
     const body = createSVG('g',{
-        transform: `translate(${outerMargin} ${outerMargin})`
+        transform: `translate(${outerMargin-1} ${outerMargin-1})`
     });
     svg.appendChild(body);
 
@@ -26,7 +26,6 @@ export default function (colorSpace, channel){
         const block = createSVG('rect',{
             height: w,
             width: w,
-            fill: 'magenta',
             x: i * (w + m),
         })
         block.addEventListener('click',()=>{
@@ -46,10 +45,13 @@ export default function (colorSpace, channel){
     const frame = createSVG('rect',{
         height: w + wDel,
         width: w + wDel,
+
         fill: 'transparent',
         stroke: 'white',
         'stroke-width': 2,
-        filter: 'url(#shadow)'
+        filter: 'url(#shadow)',
+        rx: 2,
+        ry: 2
     });
     body.appendChild(frame);
 

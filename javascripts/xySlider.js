@@ -36,7 +36,6 @@ export default function({
         for (let y=0; y<height; y++) {
             const param = (1-y/height) * zChannel.max;
 
-            console.log(convert.getRGB[colorSpace])
             const color = convert.getRGB[colorSpace]({
                 ...mainColor.color[colorSpace],
                 [zChannel.name]: param,
