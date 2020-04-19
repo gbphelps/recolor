@@ -5,11 +5,11 @@ import converter from './colorMethods/index';
 
 export default function (colorSpace, channel, target){
     const W = 510;
-    const N = 21;
+    const N = 16;
     const m = 1;
     const w = (W-(m*(N-1)))/N;
     const wmarg = 0;
-    const hmarg = 4;
+    const hmarg = 6;
 
     const dir = "v";
 

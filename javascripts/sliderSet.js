@@ -70,6 +70,14 @@ export default function buildChannels(channels, {
 
         const input = document.createElement('input');
         const label = document.createElement('label');
+        Object.assign(label.style, {
+            userSelect: 'none'
+        })
+
+        Object.assign(inputContainer.style, {
+            userSelect: 'none'
+        })
+
         label.innerHTML = paramLookup[param.channel];
         inputContainer.appendChild(label);
         inputContainer.appendChild(input);

@@ -3,7 +3,7 @@
         <script src="./dist/bundle.js"></script>
         <link rel="stylesheet" type="text/css" href="./style.css">
     </head>
-    <body>
+    <body style="display: flex; justify-content: center; margin-top: 40px">
     <canvas id="c" style="display:none;"></canvas>
     <svg height="0" width="0">
         <filter id="shadow" height="200%" width="200%" x="-50%" y="-50%">
@@ -15,7 +15,8 @@
         </filter>
     </svg>
 
-    <div style="display: flex">
+    <div style="display: flex;">
+        <div id="lightness-blocks" style="display: flex; margin-right: 20px"></div>
         <div style="width: 670px;">
             <div style="display: flex; align-items: center; justify-content: space-between; height: 300px; margin-bottom: 20px">
                 <div id="main"></div>
@@ -23,7 +24,6 @@
             </div>
             <div id="block-sliders" style="display: flex; justify-content: space-between"></div>
         </div>
-        <div id="lightness-blocks" style="display: flex"></div>
     </div>
    
    
