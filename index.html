@@ -5,7 +5,6 @@
     </head>
     <body>
     <canvas id="c" style="display:none;"></canvas>
-
     <svg height="0" width="0">
         <filter id="shadow" height="200%" width="200%" x="-50%" y="-50%">
             <feDropShadow dx="0" dy="2" stdDeviation="1" flood-opacity=".5"/>
@@ -15,6 +14,13 @@
             <feDropShadow dx="-2" dy="0" stdDeviation="1" flood-opacity=".5"/>
         </filter>
     </svg>
+
+    <div style="display: flex; align-items: center; height: 300px">
+        <div id="main"></div>
+        <div id="rgb-cmyk" style="height: 100%; display: flex; justify-content: space-between; flex-direction: column;"></div>
+    </div>
+   
+    
     
     </body>
 </html>

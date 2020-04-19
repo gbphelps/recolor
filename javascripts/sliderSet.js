@@ -16,15 +16,21 @@ const paramLookup = {
 }
 
 
+
 export default function buildChannels(channels, {
     trackLength = 300,
     trackThickness = 8,
     pipWidth = 12,
     orientation = 'horizontal',
-    margin=24,
-    outerMargin=24,
-    spacing=4,
-}={}){
+    margin = 24,
+    outerMargin = 24,
+    spacing = 0,
+    recipient
+}){
+
+    const HH = outerMargin * 2 + margin * (channels.length-1) + trackThickness*(channels.length);
+    console.log(HH)
+
     const div = document.createElement('div');
     div.style.position = 'relative';
     div.style[orientation === 'horizontal' ? 'width' : 'height'] = trackLength + 2*outerMargin + 2*spacing;
@@ -32,13 +38,13 @@ export default function buildChannels(channels, {
     div.style.display = 'flex';
     div.style['justify-content'] = 'center';
     div.style['align-items'] = 'flex-start';
-    div.style.margin = '20px'
+
 
     const inputContainer = document.createElement('div');
     inputContainer.classList.add('input-container');
     inputContainer.style.margin = spacing + 'px';
 
-    document.body.appendChild(div);
+    (recipient ? recipient : document.body).appendChild(div);
 
 
     const container = createSVG('svg',{

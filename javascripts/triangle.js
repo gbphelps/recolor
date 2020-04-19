@@ -12,7 +12,7 @@ let image = null;
 
 const ratio = sq3/2;
 const margin = 2;
-const s = 120;
+const s = 180;
 const h = s * ratio;
 const black = [0,0,0,255];
 const white = [255,255,255,255];

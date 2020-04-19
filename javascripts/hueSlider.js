@@ -4,7 +4,9 @@ import createSVG from './createSVG';
 import c from './constants';
 
 
-export default function hueSlider(){ 
+export default function hueSlider(target){ 
+
+    if (!target) target = document.body;
 
     const RADIUS = c.hueSlider.radius;
     const thickness = c.hueSlider.trackThickness;
@@ -81,7 +83,7 @@ gBody.appendChild(hueTrack);
 gBody.appendChild(gPip);
 gPip.appendChild(pipRect);
 
-document.body.appendChild(svg);
+target.appendChild(svg);
 svg.appendChild(defs);
 svg.appendChild(gBody);
 
