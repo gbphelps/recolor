@@ -3,20 +3,26 @@ import createSVG from './createSVG';
 import converter from './colorMethods/index';
 
 
-export default function (colorSpace, channel){
-    const W = 800;
+export default function (colorSpace, channel, target){
+    const W = 510;
     const N = 21;
     const m = 1;
     const w = (W-(m*(N-1)))/N;
-    const outerMargin = 4;
+    const wmarg = 0;
+    const hmarg = 4;
+
+    const dir = "v";
+
+    if (!target) target = document.body;
+
 
     const svg = createSVG('svg',{
-        height: w + outerMargin*2,
-        width: W + outerMargin*2,
+        [dir === 'v' ? 'width' : 'height']: w + hmarg*2,
+        [dir === 'v' ? 'height' : 'width']: W + wmarg*2,
     })
 
     const body = createSVG('g',{
-        transform: `translate(${outerMargin-1} ${outerMargin-1})`
+        transform: `translate(${dir === "v" ? hmarg : wmarg} ${dir === "v" ? wmarg : hmarg})`
     });
     svg.appendChild(body);
 
@@ -26,7 +32,7 @@ export default function (colorSpace, channel){
         const block = createSVG('rect',{
             height: w,
             width: w,
-            x: i * (w + m),
+            [dir === 'v' ? 'y' : 'x']: i * (w + m),
         })
         block.addEventListener('click',()=>{
             mainColor.set(colorSpace,
@@ -65,8 +71,8 @@ export default function (colorSpace, channel){
                     'fill',
                     `rgb(${COLOR.rgb.red},${COLOR.rgb.green},${COLOR.rgb.blue})`,
                 );
-                frame.setAttribute('x', i*(w+m) - wDel/2);
-                frame.setAttribute('y', -wDel/2)
+                frame.setAttribute(dir === 'v' ? 'y' : 'x', i*(w+m) - wDel/2);
+                frame.setAttribute(dir === 'v' ? 'x' : 'y', -wDel/2)
                 continue;
             }
             const tempChannel = inc*i;
@@ -84,5 +90,9 @@ export default function (colorSpace, channel){
         }
     })
 
-    document.body.appendChild(svg);
+    Object.assign(svg.style, {
+        border: 'none',
+        borderRadius: 0
+    })
+    target.appendChild(svg);
 }

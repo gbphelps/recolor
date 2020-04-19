@@ -88,8 +88,8 @@ function setup(){
         recipient: document.getElementById('rgb-cmyk')
     });
 
-    makelightnessBlocks('hsl', {name: 'lightness', max: 100});
-    makelightnessBlocks('hsl', {name: 'saturation', max: 100});
+    makelightnessBlocks('hsl', {name: 'lightness', max: 100}, document.getElementById('lightness-blocks'));
+    makelightnessBlocks('hsl', {name: 'saturation', max: 100}, document.getElementById('lightness-blocks'));
 
     mainColor.set('rgb',{red: 50, green: 100, blue: 200 });
 }
