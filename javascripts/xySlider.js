@@ -14,8 +14,11 @@ export default function({
     height = 150,
     width = 250,
     trackWidth = 20,
-    spaceBetween = 10
+    spaceBetween = 10,
+    target
 }){
+    if (!target) target = document.body;
+
     const margin = 0;
     const c = document.createElement('canvas');
     const ctx = c.getContext('2d');
@@ -220,7 +223,7 @@ export default function({
 
     
 
-    document.body.appendChild(svg);
+    target.appendChild(svg);
     svg.appendChild(defs);
     svg.appendChild(body);
     body.appendChild(rect);

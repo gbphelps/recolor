@@ -43,7 +43,10 @@ function setup(){
             name: 'lightness',
             max: 100
         },
-        colorSpace: 'hsl'
+        colorSpace: 'hsl',
+        height: 150,
+        width: 350,
+        target: document.getElementById('block-sliders')
     });
 
     makeBlockWithSlider({
@@ -62,6 +65,7 @@ function setup(){
         colorSpace: 'hsv',
         height: 150,
         width: 150,
+        target: document.getElementById('block-sliders')
     });
 
     makeHueSlider(document.getElementById('main'));
