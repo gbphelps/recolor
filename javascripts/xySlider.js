@@ -174,12 +174,6 @@ export default function({
         'stroke-width': .5,
     });
     const inputY = document.createElement('input');
-    Object.assign(inputY.style, {
-        position: 'absolute',
-        margin: 0,
-        left: 0,
-        transform: 'translateY(-50%)translateX(-50%)'
-    })
     inputY.addEventListener('input', (e) => {
         e.preventDefault();
         if (isNaN(+inputY.value) || +inputY.value < 0 || +inputY.value > yChannel.max) return;
@@ -352,6 +346,13 @@ export default function({
     })
     inputZ.addEventListener('blur', () => {
         inputZ.value = lastValid.z.toFixed(1);
+    })
+
+    Object.assign(inputY.style, {
+        position: 'absolute',
+        margin: 0,
+        left: outerMargin/DIM_RATIO,
+        transform: 'translateY(-50%)translateX(-100%)'
     })
 
 
