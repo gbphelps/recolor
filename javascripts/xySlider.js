@@ -15,9 +15,15 @@ export default function({
     width = 250,
     trackWidth = 20,
     spaceBetween = 10,
+    outerMargin = 20,
     target
 }){
     if (!target) target = document.body;
+
+    let DIM_RATIO;
+
+    const WW = width + trackWidth + spaceBetween + outerMargin*2;
+    const HH = outerMargin*2 + height;
 
     const margin = 0;
     const c = document.createElement('canvas');
@@ -93,11 +99,17 @@ export default function({
         return url;
     } 
 
-    const outerMargin = 20;
     const svg = createSVG('svg',{
-        height: height + 2*outerMargin,
-        width: width + 2*outerMargin + trackWidth + spaceBetween,
+        'viewBox': `0 0 ${WW} ${HH}`
     });
+
+    Object.assign(svg.style, {
+        height: '192px',
+        width: 'auto',
+        display: 'block',
+        flexShrink: 0,
+    })
+    
     
     const body = createSVG('g',{
         transform: `translate(${outerMargin} ${outerMargin})`
@@ -128,6 +140,21 @@ export default function({
         filter: 'url(#shadow)'
     })
 
+    const v = createSVG('line', {
+        y1: 0,
+        y2: height,
+        stroke: 'white',
+        'stroke-width': .5,
+    });
+
+    const h = createSVG('line', {
+        x1: 0,
+        x2: width,
+        stroke: 'white',
+        'stroke-width': .5,
+    });
+
+
     const pipWidth = 22;
     const pipHeight = 8;
     const sliderPip = createSVG('rect',{
@@ -142,7 +169,7 @@ export default function({
     sliderPip.addEventListener('mousedown',(e)=>{
         let y = e.clientY;
         function move(e){
-            const delY = (y - e.clientY)/(height-pipHeight)*zChannel.max;
+            const delY = (y - e.clientY)/(height-pipHeight)*zChannel.max*DIM_RATIO;
             const yAttempt = mainColor.color[colorSpace][zChannel.name] + delY;
             let newY = Math.min(zChannel.max, yAttempt);
             newY = Math.max(newY, 0);
@@ -177,6 +204,11 @@ export default function({
         const yVal = (1-COLOR[colorSpace][yChannel.name]/yChannel.max)*height;
         pip.setAttribute('cx',xVal);
         pip.setAttribute('cy',yVal);
+        v.setAttribute('x1', xVal);
+        v.setAttribute('x2', xVal);
+        h.setAttribute('y1', yVal);
+        h.setAttribute('y2', yVal);
+
         if (COLOR[colorSpace][zChannel.name] !== PREV[colorSpace][zChannel.name]){
             //TODO if you add back zInit you need to replace here.
             image.setAttribute('href',makeGradient());
@@ -194,8 +226,8 @@ export default function({
         let x = e.clientX;
         let y = e.clientY;
         function move(e){
-            const delX = (e.clientX - x)/width * xChannel.max;
-            const delY = (y - e.clientY)/height * yChannel.max;
+            const delX = (e.clientX - x)/width * DIM_RATIO * xChannel.max;
+            const delY = (y - e.clientY)/height * DIM_RATIO * yChannel.max;
             const rawY = mainColor.color[colorSpace][yChannel.name] + delY;
             const rawX = mainColor.color[colorSpace][xChannel.name] + delX;
 
@@ -227,7 +259,17 @@ export default function({
     svg.appendChild(defs);
     svg.appendChild(body);
     body.appendChild(rect);
+    body.appendChild(v);
+    body.appendChild(h);
     body.appendChild(pip);
     defs.appendChild(pattern);
     defs.appendChild(pattern2);
+
+    function setRatio(){
+        DIM_RATIO = HH/svg.getBoundingClientRect().height;
+        console.log(DIM_RATIO)
+    }
+
+    setRatio();
+    window.addEventListener('resize', setRatio);
 }
