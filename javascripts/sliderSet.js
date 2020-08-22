@@ -116,7 +116,7 @@ export default function buildChannels(channels, {
 
         input.addEventListener('input',e => {
             e.preventDefault();
-            if (+input.value < 0 || +input.value > maxValue) return;
+            if (isNaN(+input.value) || +input.value < 0 || +input.value > maxValue) return;
             mainColor.set(
                 param.type,
                 { [param.channel]: +input.value }

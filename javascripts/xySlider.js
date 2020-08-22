@@ -21,6 +21,7 @@ export default function({
     if (!target) target = document.body;
 
     let DIM_RATIO;
+    let lastValid;
 
     const WW = width + trackWidth + spaceBetween + outerMargin*2;
     const HH = outerMargin*2 + height;
@@ -153,6 +154,17 @@ export default function({
         transform: 'translateX(-50%)',
         bottom: 0,
     })
+    inputX.addEventListener('input', (e) => {
+        e.preventDefault();
+        if (isNaN(+inputX.value) || +inputX.value < 0 || +inputX.value > xChannel.max) return;
+        mainColor.set(
+            colorSpace,
+            { [xChannel.name]: +inputX.value }
+        )
+    })
+    inputX.addEventListener('blur', () => {
+        inputX.value = lastValid.x.toFixed(1);
+    })
 
 
     const h = createSVG('line', {
@@ -167,6 +179,17 @@ export default function({
         margin: 0,
         left: 0,
         transform: 'translateY(-50%)translateX(-50%)'
+    })
+    inputY.addEventListener('input', (e) => {
+        e.preventDefault();
+        if (isNaN(+inputY.value) || +inputY.value < 0 || +inputY.value > yChannel.max) return;
+        mainColor.set(
+            colorSpace,
+            { [yChannel.name]: +inputY.value }
+        )
+    })
+    inputY.addEventListener('blur', () => {
+        inputY.value = lastValid.y.toFixed(1);
     })
 
 
@@ -215,6 +238,11 @@ export default function({
     body.appendChild(sliderPip)
 
     mainColor.subscribe((COLOR, PREV) => {
+        lastValid = {
+            x: COLOR[colorSpace][xChannel.name],
+            y: COLOR[colorSpace][yChannel.name],
+            z: COLOR[colorSpace][zChannel.name],
+        }
         const xVal = COLOR[colorSpace][xChannel.name]/xChannel.max*width;
         const yVal = (1-COLOR[colorSpace][yChannel.name]/yChannel.max)*height;
         pip.setAttribute('cx',xVal);
