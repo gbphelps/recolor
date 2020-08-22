@@ -117,8 +117,16 @@ l3 = createSVG('line',{
 });
 
 input1 = document.createElement('input');
+input1.addEventListener('input', setChannel('color'));
+input1.addEventListener('blur', setFromLastValid('color'));
+
 input2 = document.createElement('input');
+input2.addEventListener('input', setChannel('white'));
+input2.addEventListener('blur', setFromLastValid('white'));
+
 input3 = document.createElement('input');
+input3.addEventListener('input', setChannel('black'));
+input3.addEventListener('blur', setFromLastValid('black'));
 
 [input1, input2, input3].forEach(i => {
 	Object.assign(i.style, {
@@ -188,7 +196,20 @@ pip.setAttribute('fill', 'transparent');
 pip.setAttribute('vector-effect','non-scaling-stroke')
 pip.setAttribute('filter','url(#shadow2)')
 
+
+let lastValidTri = null;
+
 mainColor.subscribe(setTriangle);
+mainColor.subscribe(COLOR => {
+	lastValidTri = triFromRGB(COLOR.rgb);
+})
+
+function setFromLastValid(channel){
+	return function (e) {
+		e.target.value = Math.abs(lastValidTri[channel]*100).toFixed(1);
+	}
+}
+
 pip.addEventListener('mousedown',setPip)
 }
 
@@ -313,6 +334,10 @@ function setTriangle(COLOR,PREV){
 		input1.style.left = 0 + xT + 'px';
 		input1.style.bottom = xm + yT - canvas.width + 'px';
 
+		if (document.activeElement !== input1) input1.value = Math.abs(tri.color * 100).toFixed(1);
+		if (document.activeElement !== input2) input2.value = Math.abs(tri.white * 100).toFixed(1);
+		if (document.activeElement !== input3) input3.value = Math.abs(tri.black * 100).toFixed(1);
+
 		l3.setAttribute('x1', x + margin);
 		l3.setAttribute('y1', y + margin);
 		l3.setAttribute('x2', xx2);
@@ -324,4 +349,31 @@ function setTriangle(COLOR,PREV){
 		image.setAttribute('href', gen(pure));
 	} 
 
+}
+
+
+function setChannel(channel){
+	return function (e){
+		e.preventDefault();
+		if (isNaN(+e.target.value) || +e.target.value > 100 || +e.target.value < 0) return;
+		const tri = triFromRGB(mainColor.color.rgb);
+		const newVal = +e.target.value;
+		tri[channel] = 0;
+		const denom = Object.values(tri).reduce((a,l)=> a + l, 0);
+		const newTri = {
+			white: (100 - newVal) * (denom ? tri.white/denom : 1),
+			color: (100 - newVal) * (denom ? tri.color/denom : 1),
+			black: (100 - newVal) * (denom ? tri.black/denom : 1),
+		}
+		newTri[channel] = newVal;
+
+		const hue = mainColor.color.hsv.hue;
+		const rgb = pureFromHue(hue);
+
+		mainColor.set('rgb',{
+			red: (rgb.red * newTri.color + 0 * newTri.black + 255 * newTri.white)/100,
+			green: (rgb.green * newTri.color + 0 * newTri.black + 255 * newTri.white)/100,
+			blue: (rgb.blue * newTri.color + 0 * newTri.black + 255 * newTri.white)/100,
+		})
+	}
 }
