@@ -7,11 +7,14 @@ import pureFromHue from './colorMethods/pureFromHue';
 
 
 const sq3 = Math.sqrt(3);
-let pip = null;
-let image = null;
+let pip;
+let image;
+let l1;
+let l2;
+let l3;
 
 const ratio = sq3/2;
-const margin = 2;
+const margin = 10;
 const s = 180;
 const h = s * ratio;
 const black = [0,0,0,255];
@@ -68,6 +71,7 @@ function gen(color){
 
 export default function make(){
 
+
 canvas = document.createElement('canvas');
 canvas.width = s + margin*2;
 canvas.height = Math.ceil(s*ratio + margin*2);
@@ -85,6 +89,21 @@ image = createSVG('image',{href: url});
 const clip = createSVG('clipPath',{});
 const clippath = createSVG('path',{});
 const r = createSVG('rect',{});
+
+l1 = createSVG('line',{
+	stroke: 'white',
+	'stroke-width': .5,
+});
+
+l2 = createSVG('line',{
+	stroke: 'white',
+	'stroke-width': .5,
+});
+
+l3 = createSVG('line',{
+	stroke: 'white',
+	'stroke-width': .5,
+});
 
 ns.hueSlider.get().appendChild(svg);
 svg.appendChild(defs);
@@ -108,7 +127,7 @@ r.setAttribute('height', canvas.height);
 r.setAttribute('width', canvas.width);
 r.setAttribute('clip-path', `url(#${clip.id})`);
 r.setAttribute('fill', `url(#${pattern.id})`);
-r.setAttribute('filter',"url(#shadow)")
+r.setAttribute('filter',"url(#shadow)");
 body.appendChild(r)
 
 
@@ -120,6 +139,9 @@ body.setAttribute('transform', `
 	)rotate(-90)`);
 
 pip = createSVG('circle',{});
+body.appendChild(l1);
+body.appendChild(l2);
+body.appendChild(l3);
 body.appendChild(pip);
 
 pip.setAttribute('r', 5);
@@ -215,7 +237,9 @@ function setTriangle(COLOR,PREV){
 		COLOR.hsv.value !== PREV.hsv.value
 	){
 		const y = tri.color*s*ratio; //most obvious; move as a percentage of s*ratio units away from x axis.
-		pip.setAttribute('cy', y + margin);
+		const ym = y + margin;
+
+		pip.setAttribute('cy', ym);
 		const xP = sq3/2 * tri.white*s*ratio; 
 		//find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
 		//this gives a point that is the correct number of units away from the WHITE vertex.
@@ -223,7 +247,31 @@ function setTriangle(COLOR,PREV){
 		//Find where this line intersects y = tri.color*s*ratio.
 		const yP = -1/2*tri.white*s*ratio;
 		const x = (y - yP)/sq3 + xP;
-		pip.setAttribute('cx',x + margin);
+		const xm = x + margin;
+		pip.setAttribute('cx',xm);
+
+		l1.setAttribute('y2', ym);
+		l1.setAttribute('x1', xm);
+		l1.setAttribute('x2', xm);
+
+
+		const mm1 = margin + 3 * margin/sq3;
+		const xx1 = (sq3*(s + mm1) + 1/sq3*(xm) - ym)/(1/sq3 + sq3);
+		const yy1 = -sq3*(xx1 - (s + mm1));
+
+		const mm2 = margin - sq3*margin/2 - 3/2*margin/sq3;
+		const xx2 = (1/sq3*xm + ym + sq3*mm2)/(1/sq3 + sq3)
+		const yy2 = sq3*(xx2 - mm2)
+
+		l2.setAttribute('x1', x + margin);
+		l2.setAttribute('y1', y + margin);
+		l2.setAttribute('x2', xx1);
+		l2.setAttribute('y2', yy1);
+
+		l3.setAttribute('x1', x + margin);
+		l3.setAttribute('y1', y + margin);
+		l3.setAttribute('x2', xx2);
+		l3.setAttribute('y2',yy2);
 	}
 
 	if (COLOR.hsv.hue !== PREV.hsv.hue){
