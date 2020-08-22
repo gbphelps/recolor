@@ -146,6 +146,14 @@ export default function({
         stroke: 'white',
         'stroke-width': .5,
     });
+    const inputX = document.createElement('input');
+    Object.assign(inputX.style, {
+        position: 'absolute',
+        margin: 0,
+        transform: 'translateX(-50%)',
+        bottom: 0,
+    })
+
 
     const h = createSVG('line', {
         x1: 0,
@@ -153,6 +161,13 @@ export default function({
         stroke: 'white',
         'stroke-width': .5,
     });
+    const inputY = document.createElement('input');
+    Object.assign(inputY.style, {
+        position: 'absolute',
+        margin: 0,
+        left: 0,
+        transform: 'translateY(-50%)translateX(-50%)'
+    })
 
 
     const pipWidth = 22;
@@ -206,8 +221,13 @@ export default function({
         pip.setAttribute('cy',yVal);
         v.setAttribute('x1', xVal);
         v.setAttribute('x2', xVal);
+        inputX.style.left = (xVal + outerMargin)/DIM_RATIO;
+        if (document.activeElement !== inputX) inputX.value = COLOR[colorSpace][xChannel.name].toFixed(1);
+
         h.setAttribute('y1', yVal);
         h.setAttribute('y2', yVal);
+        inputY.style.top = (yVal + outerMargin)/DIM_RATIO;
+        if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel.name].toFixed(1);
 
         if (COLOR[colorSpace][zChannel.name] !== PREV[colorSpace][zChannel.name]){
             //TODO if you add back zInit you need to replace here.
@@ -255,7 +275,15 @@ export default function({
 
     
 
-    target.appendChild(svg);
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+        position: 'relative'
+    })
+
+    target.appendChild(container);
+    container.appendChild(svg);
+    container.appendChild(inputX);
+    container.appendChild(inputY);
     svg.appendChild(defs);
     svg.appendChild(body);
     body.appendChild(rect);
