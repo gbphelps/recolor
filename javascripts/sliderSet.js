@@ -55,10 +55,9 @@ export default function buildChannels(channels, {
 
     Object.assign(container.style, {
         marign: spacing,
-        display: 'blcok',
-        width: '300px',
+        display: 'block',
         height: 'auto',
-        flexShrink: '0'
+        flexShrink: '0',
     });
 
     container.setAttribute('viewBox', `0 0 ${WW} ${HH}`);
@@ -84,8 +83,14 @@ export default function buildChannels(channels, {
         }
 
 
+        const INPUT_HEIGHT = 24;
         const input = document.createElement('input');
-        input.style.display = 'block';
+        Object.assign(input.style, {
+            height: `${INPUT_HEIGHT}px`,
+            display: 'block',
+            position: 'absolute',
+            top: `${outerMargin/DIM_RATIO + i * (trackThickness + margin)/DIM_RATIO + (trackThickness/2)/DIM_RATIO - INPUT_HEIGHT/2}`,
+        })
 
 
         // const label = document.createElement('label');
@@ -95,7 +100,7 @@ export default function buildChannels(channels, {
 
         Object.assign(inputContainer.style, {
             userSelect: 'none',
-            padding: `${Math.round(outerMargin/DIM_RATIO)}px 0`,
+            height: `${HH/DIM_RATIO}px`
         })
 
         // label.innerHTML = paramLookup[param.channel];
