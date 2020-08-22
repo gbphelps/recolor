@@ -29,7 +29,7 @@ export default function buildChannels(channels, {
 }){
 
     const HH = outerMargin * 2 + margin * (channels.length-1) + trackThickness*(channels.length);
-    console.log(HH)
+    const WW = outerMargin * 2 + trackLength;
 
     const div = document.createElement('div');
     div.style.position = 'relative';
@@ -43,6 +43,7 @@ export default function buildChannels(channels, {
     const inputContainer = document.createElement('div');
     inputContainer.classList.add('input-container');
     inputContainer.style.margin = spacing + 'px';
+    
 
     (recipient ? recipient : document.body).appendChild(div);
 
@@ -51,11 +52,26 @@ export default function buildChannels(channels, {
         [orientation === 'horizontal' ? 'width' : 'height']: trackLength + 2*outerMargin,
         [orientation === 'horizontal' ? 'height' : 'width']: channels.length * trackThickness + (channels.length - 1)*margin + 2*outerMargin
     })
-    container.style.margin=spacing;
-    container.style.position="absolute";
+
+    Object.assign(container.style, {
+        marign: spacing,
+        display: 'blcok',
+        width: '300px',
+        height: 'auto',
+        flexShrink: '0'
+    });
+
+    container.setAttribute('viewBox', `0 0 ${WW} ${HH}`);
 
     div.appendChild(container);
     div.appendChild(inputContainer);
+
+    let DIM_RATIO;
+    function resetRatio(){
+        DIM_RATIO = WW/container.getBoundingClientRect().width;
+    }
+    window.addEventListener('resize', resetRatio);
+    resetRatio();
  
     channels.forEach((param,i) => {    
         let maxValue;
@@ -69,17 +85,21 @@ export default function buildChannels(channels, {
 
 
         const input = document.createElement('input');
-        const label = document.createElement('label');
-        Object.assign(label.style, {
-            userSelect: 'none'
-        })
+        input.style.display = 'block';
+
+
+        // const label = document.createElement('label');
+        // Object.assign(label.style, {
+        //     userSelect: 'none'
+        // })
 
         Object.assign(inputContainer.style, {
-            userSelect: 'none'
+            userSelect: 'none',
+            padding: `${Math.round(outerMargin/DIM_RATIO)}px 0`,
         })
 
-        label.innerHTML = paramLookup[param.channel];
-        inputContainer.appendChild(label);
+        // label.innerHTML = paramLookup[param.channel];
+        // inputContainer.appendChild(label);
         inputContainer.appendChild(input);
         let lastValid = 0;
         
@@ -204,7 +224,7 @@ export default function buildChannels(channels, {
         
         function move(e){
             const newX = orientation === 'horizontal' ? e.clientX : e.clientY;
-            const delx = orientation === 'horizontal' ? newX - x : x - newX; //note need to scale if svg space is diff from user space;
+            const delx = DIM_RATIO*(orientation === 'horizontal' ? newX - x : x - newX); //note need to scale if svg space is diff from user space;
             rawProgress += delx/(trackLength-pipWidth)*maxValue;
             
             let newVal = Math.min(rawProgress, maxValue);
