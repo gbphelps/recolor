@@ -12,6 +12,11 @@ let image;
 let l1;
 let l2;
 let l3;
+let input1;
+let input2;
+let input3;
+let xT;
+let yT;
 
 const ratio = sq3/2;
 const margin = 10;
@@ -69,8 +74,14 @@ function gen(color){
 
 
 
-export default function make(){
+export default function make(target){
 
+
+const container = document.createElement('div');
+Object.assign(container.style, {
+	width: 	s + margin*2 + 'px',
+	height: Math.ceil(s*ratio + margin*2) + 'px'
+})
 
 canvas = document.createElement('canvas');
 canvas.width = s + margin*2;
@@ -105,6 +116,25 @@ l3 = createSVG('line',{
 	'stroke-width': .5,
 });
 
+input1 = document.createElement('input');
+input2 = document.createElement('input');
+input3 = document.createElement('input');
+
+[input1, input2, input3].forEach(i => {
+	Object.assign(i.style, {
+		position: 'absolute', 
+		margin: 0,
+	})
+})
+
+input1.style.transform = `translateX(-100%)translateY(50%)`
+input2.style.transform = `translateY(100%)`
+
+target.appendChild(input1);
+target.appendChild(input2);
+target.appendChild(input3);
+
+
 ns.hueSlider.get().appendChild(svg);
 svg.appendChild(defs);
 svg.appendChild(body);
@@ -131,11 +161,17 @@ r.setAttribute('filter',"url(#shadow)");
 body.appendChild(r)
 
 
+
+
 const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
+xT = -s/2/sq3 - margin + hueHeight/2;
+yT = canvas.width + ( hueHeight - canvas.width)/2;
+
+
 body.setAttribute('transform', `
 	translate(
-		${-s/2/sq3 - margin + hueHeight/2} 
-		${canvas.width + ( hueHeight - canvas.width)/2}
+		${xT} 
+		${yT}
 	)rotate(-90)`);
 
 pip = createSVG('circle',{});
@@ -260,13 +296,22 @@ function setTriangle(COLOR,PREV){
 		const yy1 = -sq3*(xx1 - (s + mm1));
 
 		const mm2 = margin - sq3*margin/2 - 3/2*margin/sq3;
-		const xx2 = (1/sq3*xm + ym + sq3*mm2)/(1/sq3 + sq3)
-		const yy2 = sq3*(xx2 - mm2)
+		const xx2 = (1/sq3*xm + ym + sq3*mm2)/(1/sq3 + sq3);
+		const yy2 = sq3*(xx2 - mm2);
 
 		l2.setAttribute('x1', x + margin);
 		l2.setAttribute('y1', y + margin);
 		l2.setAttribute('x2', xx1);
 		l2.setAttribute('y2', yy1);
+
+		input3.style.left = yy1 + xT + 'px';
+		input3.style.bottom = xx1 + yT - canvas.width + 'px';
+
+		input2.style.left = yy2 + xT + 'px';
+		input2.style.bottom = xx2 + yT - canvas.width + 'px';
+
+		input1.style.left = 0 + xT + 'px';
+		input1.style.bottom = xm + yT - canvas.width + 'px';
 
 		l3.setAttribute('x1', x + margin);
 		l3.setAttribute('y1', y + margin);
@@ -278,4 +323,5 @@ function setTriangle(COLOR,PREV){
 		const pure = pureFromHue(COLOR.hsv.hue);
 		image.setAttribute('href', gen(pure));
 	} 
+
 }

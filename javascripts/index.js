@@ -17,9 +17,6 @@ import hueSat from './hueSatCircle';
 import allEqualExcept from './utils/allEqualExcept';
 
 
-import './triangle.js'
-
-
 document.addEventListener('DOMContentLoaded',()=>{
     setup();
 })
@@ -69,7 +66,7 @@ function setup(){
     });
 
     makeHueSlider(document.getElementById('main'));
-    makeTriangle();
+    makeTriangle(document.getElementById('main'));
    
     buildChannels([
         {type: 'rgb', channel: 'red'},
