@@ -322,13 +322,10 @@ export default function({
 
     function setRatio(){
         DIM_RATIO = HH/svg.getBoundingClientRect().height;
-        console.log(DIM_RATIO)
     }
     setRatio();
     window.addEventListener('resize', setRatio);
 
-
-    console.log(DIM_RATIO)
     Object.assign(inputZ.style, {
         position: 'absolute',
         margin: 0,

@@ -90,6 +90,7 @@ export default function buildChannels(channels, {
             display: 'block',
             position: 'absolute',
             top: `${outerMargin/DIM_RATIO + i * (trackThickness + margin)/DIM_RATIO + (trackThickness/2)/DIM_RATIO - INPUT_HEIGHT/2}`,
+            margin: 0,
         })
 
 
@@ -100,7 +101,9 @@ export default function buildChannels(channels, {
 
         Object.assign(inputContainer.style, {
             userSelect: 'none',
-            height: `${HH/DIM_RATIO}px`
+            height: `${HH/DIM_RATIO}px`,
+            position: 'absolute',
+            right: '16px',
         })
 
         // label.innerHTML = paramLookup[param.channel];

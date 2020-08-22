@@ -85,6 +85,7 @@ export class Color {
     
     set(colorSpace, partial){
         if (isEqualPartial(partial,this.color[colorSpace])) return;
+
         const prev = deepDup(this.color);
         Object.assign(this.color[colorSpace], partial);
         this.color.rgb = colorSpace === 'rgb' ? 
@@ -99,6 +100,13 @@ export class Color {
                 this.color[space]
             )
         })
+
+        if (partial.hue) {
+            if (colorSpace !== 'hsl') Object.assign(this.color.hsl,{hue: partial.hue%360});
+            if (colorSpace !== 'hsluv') Object.assign(this.color.hsluv,{hue: partial.hue%360});
+            if (colorSpace !== 'hsv') Object.assign(this.color.hsv,{hue: partial.hue%360});
+        }
+
         this.subscriptions.forEach(subscription => subscription(this.color, prev));
     }
 }
