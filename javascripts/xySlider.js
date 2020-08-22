@@ -193,6 +193,8 @@ export default function({
     })
 
 
+    const inputZ = document.createElement('input');
+
     const pipWidth = 22;
     const pipHeight = 8;
     const sliderPip = createSVG('rect',{
@@ -257,6 +259,8 @@ export default function({
         inputY.style.top = (yVal + outerMargin)/DIM_RATIO;
         if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel.name].toFixed(1);
 
+        if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel.name].toFixed(1);
+
         if (COLOR[colorSpace][zChannel.name] !== PREV[colorSpace][zChannel.name]){
             //TODO if you add back zInit you need to replace here.
             image.setAttribute('href',makeGradient());
@@ -312,6 +316,7 @@ export default function({
     container.appendChild(svg);
     container.appendChild(inputX);
     container.appendChild(inputY);
+    container.appendChild(inputZ);
     svg.appendChild(defs);
     svg.appendChild(body);
     body.appendChild(rect);
@@ -325,7 +330,29 @@ export default function({
         DIM_RATIO = HH/svg.getBoundingClientRect().height;
         console.log(DIM_RATIO)
     }
-
     setRatio();
     window.addEventListener('resize', setRatio);
+
+
+    console.log(DIM_RATIO)
+    Object.assign(inputZ.style, {
+        position: 'absolute',
+        margin: 0,
+        right: (outerMargin +trackWidth/2)/DIM_RATIO,
+        top: '10px',
+        transform: 'translateX(50%)translateY(-100%)'
+    })
+    inputZ.addEventListener('input', (e) => {
+        e.preventDefault();
+        if (isNaN(+inputZ.value) || +inputZ.value < 0 || +inputZ.value > zChannel.max) return;
+        mainColor.set(
+            colorSpace,
+            { [zChannel.name]: +inputZ.value }
+        )
+    })
+    inputZ.addEventListener('blur', () => {
+        inputZ.value = lastValid.z.toFixed(1);
+    })
+
+
 }
