@@ -8,18 +8,23 @@ export default function (colorSpace, channel, target){
     const N = 16;
     const m = 1;
     const w = (W-(m*(N-1)))/N;
-    const wmarg = 0;
-    const hmarg = 6;
+    const wmarg = 10;
+    const hmarg = 10;
 
     const dir = "v";
 
     if (!target) target = document.body;
 
 
+    const [ width, height ] = dir === 'v' ? [w + hmarg*2, W + wmarg*2] : [W + hmarg*2, w + wmarg*2]
+    
+
     const svg = createSVG('svg',{
-        [dir === 'v' ? 'width' : 'height']: w + hmarg*2,
-        [dir === 'v' ? 'height' : 'width']: W + wmarg*2,
+        viewBox: `0 0 ${width} ${height}`
     })
+
+    svg.style.height = '100%';
+    svg.style.width = 'auto';
 
     const body = createSVG('g',{
         transform: `translate(${dir === "v" ? hmarg : wmarg} ${dir === "v" ? wmarg : hmarg})`
@@ -92,7 +97,8 @@ export default function (colorSpace, channel, target){
 
     Object.assign(svg.style, {
         border: 'none',
-        borderRadius: 0
+        borderRadius: 0,
+        marginRight: '20px'
     })
     target.appendChild(svg);
 }

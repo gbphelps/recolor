@@ -57,6 +57,9 @@ defs.appendChild(pattern);
 pattern.appendChild(gradientImage);
 
 const gBody = createSVG('g',{transform: `translate( ${marg/2} ${marg/2})`});
+
+const gHue = createSVG('g',{});
+
 const hueTrack = createSVG('circle',{
     fill: `url(#${pattern.id})`,
     mask: `url(#${mask.id})`,
@@ -79,7 +82,9 @@ const pipRect = createSVG('rect',{
     stroke: 'white',
     'vector-effect': 'non-scaling-stroke'
 });
-gBody.appendChild(hueTrack);
+gBody.appendChild(gHue);
+gHue.appendChild(hueTrack);
+
 gBody.appendChild(gPip);
 gPip.appendChild(pipRect);
 
