@@ -98,7 +98,8 @@ export default function (colorSpace, channel, target){
     Object.assign(svg.style, {
         border: 'none',
         borderRadius: 0,
-        marginRight: '20px'
+        boxShadow: 'none',
+        margin: 'none',
     })
     target.appendChild(svg);
 }
