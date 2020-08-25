@@ -95,6 +95,14 @@ export default function (colorSpace, channel, target){
         }
     })
 
+    function resize(){
+        Object.assign(svg.style, {
+            height: target.getBoundingClientRect().height + 'px',
+        })
+    }
+    document.addEventListener('resize', resize);
+    resize();
+
     Object.assign(svg.style, {
         border: 'none',
         borderRadius: 0,
