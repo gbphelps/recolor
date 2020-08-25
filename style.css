@@ -39,3 +39,12 @@ svg {
 #lightness-blocks {
     margin-right: 20px;
 }
+
+
+.current-color {
+    height: 300px;
+    width: 300px;
+    margin-top: 20px;  
+    box-shadow: inset 0 -1px 2px rgba(0,0,0, .6), inset 0 1px 1px rgba(255,255,255,.15), 0 10px 30px 0 rgba(0,0,0,.5); 
+    border-radius: 4px;
+}

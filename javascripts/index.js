@@ -1,20 +1,13 @@
 
-
-import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
-import gradient from './nonlinearGradient';
-
-import createSVG from './createSVG';
-import makePattern from './makePattern';
-import mainColor, { Color } from './ColorObject';
+import mainColor from './ColorObject';
 import makeHueSlider from './hueSlider';
 import makeTriangle from './triangle';
 
-import methods from './colorMethods/index';
 import makeBlockWithSlider from './xySlider';
 import makelightnessBlocks from './lightnessBlocks';
 import buildChannels from './sliderSet';
-import hueSat from './hueSatCircle';
-import allEqualExcept from './utils/allEqualExcept';
+import makeColorPalette from './makeColorPalette';
+
 
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -87,6 +80,9 @@ function setup(){
 
     makelightnessBlocks('hsl', {name: 'lightness', max: 100}, document.getElementById('lightness-blocks'));
     makelightnessBlocks('hsl', {name: 'saturation', max: 100}, document.getElementById('lightness-blocks'));
+
+
+    makeColorPalette({ target: document.getElementById('color-palette') });
 
     mainColor.set('rgb',{red: 50, green: 100, blue: 200 });
 }
