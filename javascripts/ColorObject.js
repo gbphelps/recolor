@@ -102,9 +102,15 @@ export class Color {
         })
 
         if (partial.hue) {
-            if (colorSpace !== 'hsl') Object.assign(this.color.hsl,{hue: partial.hue%360});
-            if (colorSpace !== 'hsluv') Object.assign(this.color.hsluv,{hue: partial.hue%360});
-            if (colorSpace !== 'hsv') Object.assign(this.color.hsv,{hue: partial.hue%360});
+            if (colorSpace !== 'hsl'){
+                Object.assign(this.color.hsl,{hue: partial.hue%360});
+            }
+            if (colorSpace !== 'hsluv'){
+                Object.assign(this.color.hsluv,{hue: partial.hue%360});
+            }
+            if (colorSpace !== 'hsv'){
+                Object.assign(this.color.hsv,{hue: partial.hue%360});
+            }
         }
 
         this.subscriptions.forEach(subscription => subscription(this.color, prev));

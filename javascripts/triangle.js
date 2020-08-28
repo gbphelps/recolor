@@ -221,7 +221,7 @@ function setPip(e){
 	let x = e.clientX;
 	let y = e.clientY;
 	
-	const pure = pureFromHue(mainColor.color.hsv.hue);
+	const pure = pureFromHue(mainColor.color.hsv.hue%360);
 	function move(e){
 
 		const dely = (e.clientX - x);
@@ -349,7 +349,7 @@ function setTriangle(COLOR,PREV){
 	}
 
 	if (COLOR.hsv.hue !== PREV.hsv.hue){
-		const pure = pureFromHue(COLOR.hsv.hue);
+		const pure = pureFromHue(COLOR.hsv.hue%360);
 		image.setAttribute('href', gen(pure));
 	} 
 
@@ -372,7 +372,7 @@ function setChannel(channel){
 		newTri[channel] = newVal;
 
 		const hue = mainColor.color.hsv.hue;
-		const rgb = pureFromHue(hue);
+		const rgb = pureFromHue(hue%360);
 
 		mainColor.set('rgb',{
 			red: (rgb.red * newTri.color + 0 * newTri.black + 255 * newTri.white)/100,
