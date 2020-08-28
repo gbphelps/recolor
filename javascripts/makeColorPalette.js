@@ -45,8 +45,8 @@ function closestNamedColor(color){
         const hmax = Math.max(c1.hue, c2.hue);
         let hdiff = Math.min(hmax-hmin, hmin+360-hmax);
         hdiff = isNaN(hdiff) ? 0 : hdiff;
-    
-        const squareSum = (hdiff/360)**2*2 + ((c1.saturation - c2.saturation)/100)**2 + ((c1.value - c2.value)/100)**2*2;
+        const sdiff = isNaN(c1.saturation - c2.saturation) ? 0 : c1.saturation - c2.saturation;
+        const squareSum = (hdiff/360)**2*2 + (sdiff/100)**2 + ((c1.value - c2.value)/100)**2*2;
 
         if (!best || best.distance > squareSum){
             best = {
