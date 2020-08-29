@@ -76,26 +76,47 @@ function isDark(rgb) {
     return .2126*rgb.red + .7152*rgb.green + .0722*rgb.blue < .68*255;
 }
 
+
+
+
+const opts = [
+    () => {
+        const closest = closestNamedColor(mainColor.color.rgb)
+        return `
+            <div style="display: flex; width: 100%; justify-content: space-between">  
+            <div class="color-description">
+                <div>${closest.color.toUpperCase()}</div>
+                <div>${closest.distance}% match</div>
+            </div>
+            </div>
+        `
+    },
+    () => {
+        const { color: { rgb: { red, green, blue } } } = mainColor;
+        return `
+            <div>rgb(${Math.round(red)},${Math.round(green)},${Math.round(blue)})</div>
+        `
+    }
+]
+
+let showIdx = 0;
+
 export default function makeColorPalette({target}) {
     const currentColor = document.createElement('div');
     currentColor.classList.add('current-color');
+    currentColor.addEventListener('click',()=>{
+        showIdx = (showIdx+1)%opts.length;
+        currentColor.innerHTML = opts[showIdx]();
+    })
+    
     target.appendChild(currentColor);
     mainColor.subscribe(COLOR => {
        const hexColor = hexFromRGB(COLOR.rgb);
-       const closest = closestNamedColor(COLOR.rgb);
        currentColor.style.background = hexColor;
        currentColor.classList.add(isDark(COLOR.rgb) ? 'dark' : 'light');
        currentColor.classList.remove(isDark(COLOR.rgb) ? 'light' : 'dark');
-
        currentColor.innerHTML = hexColor;
-       currentColor.innerHTML = `
-        <div style="display: flex; width: 100%; justify-content: space-between">  
-        <div class="color-description">
-            <div>${closest.color.toUpperCase()}</div>
-            <div>${closest.distance}% match</div>
-        </div>
-        </div>
-        `;
+       currentColor.innerHTML = opts[showIdx]();
     })
 }
 
