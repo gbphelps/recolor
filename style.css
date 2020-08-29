@@ -65,14 +65,24 @@ svg {
 }
 
 
-.current-color div:last-child {
+.color-description div:last-child {
     color: inherit;
     font-weight: 100;
     font-size: .8em;
     margin-top: 8px;
 }
 
-.current-color div:first-child {
+.color-description div:first-child {
     font-weight: 900;
     letter-spacing: 1.1;
+}
+
+.arrow {
+    background: transparent;
+    color: inherit;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0 16px;
+    text-shadow: inherit;
 }

@@ -81,8 +81,6 @@ export default function makeColorPalette({target}) {
     currentColor.classList.add('current-color');
     target.appendChild(currentColor);
     mainColor.subscribe(COLOR => {
-       const secondaryRGB = mix({red: 255, green: 255, blue: 255}, COLOR.rgb, .3);
-
        const hexColor = hexFromRGB(COLOR.rgb);
        const closest = closestNamedColor(COLOR.rgb);
        currentColor.style.background = hexColor;
@@ -90,6 +88,15 @@ export default function makeColorPalette({target}) {
        currentColor.classList.remove(isDark(COLOR.rgb) ? 'light' : 'dark');
 
        currentColor.innerHTML = hexColor;
-       currentColor.innerHTML = `<div>${closest.color.toUpperCase()}</div><div>${closest.distance}% match</div>`;
+       currentColor.innerHTML = `
+        <div style="display: flex">
+        <button class="arrow">&#9664;</button>
+        <div class="color-description">
+            <div>${closest.color.toUpperCase()}</div>
+            <div>${closest.distance}% match</div>
+        </div>
+        <button class="arrow">&#9654;</button>
+        </div>
+        `;
     })
 }
