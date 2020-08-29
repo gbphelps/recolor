@@ -89,14 +89,15 @@ export default function makeColorPalette({target}) {
 
        currentColor.innerHTML = hexColor;
        currentColor.innerHTML = `
-        <div style="display: flex">
-        <button class="arrow">&#9664;</button>
+        <div style="display: flex; width: 100%; justify-content: space-between">  
         <div class="color-description">
             <div>${closest.color.toUpperCase()}</div>
             <div>${closest.distance}% match</div>
         </div>
-        <button class="arrow">&#9654;</button>
         </div>
         `;
     })
 }
+
+{/* <button class="arrow">&#9664;</button>
+ <button class="arrow">&#9654;</button> */}
