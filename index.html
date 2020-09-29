@@ -13,40 +13,6 @@
         <filter id="shadow2" height="200%" width="200%" x="-50%" y="-50%">
             <feDropShadow dy="" dx="-2" stdDeviation="1" flood-opacity=".5"/>
         </filter>
-
-        <filter id="inset-shadow">
-            <feColorMatrix 
-                          type="matrix" 
-                          in="SourceGraphic" 
-                          result="reverseAlpha" 
-                          values="
-                                  0 0 0 0 0
-                                  0 0 0 0 0
-                                  0 0 0 0 0
-                                  0 0 0 -1 .8"
-                      />
-                      <feGaussianBlur
-                          in="reverseAlpha"
-                          result="shadow"
-                          stdDeviation="0"
-                      />
-                      <feOffset
-                          in="shadow"
-                          result="shadow"
-                          dx="1"
-                      /> 
-                      <feComposite 
-                          in="shadow"
-                          in2="SourceGraphic"
-                          operator="in"
-                          result="shadow"
-                      />
-                      <feComposite
-                          in="shadow"
-                          in2="SourceGraphic"
-                          operator="over"
-                      />
-          </filter>
     </svg>
 
     <div>

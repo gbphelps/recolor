@@ -166,9 +166,7 @@ r.setAttribute('width', canvas.width);
 r.setAttribute('clip-path', `url(#${clip.id})`);
 r.setAttribute('fill', `url(#${pattern.id})`);
 r.setAttribute('filter',"url(#shadow2)");
-const g = createSVG('g',{
-	filter: 'url(#inset-shadow)'
-});
+const g = createSVG('g',{});
 body.appendChild(g);
 g.appendChild(r);
 

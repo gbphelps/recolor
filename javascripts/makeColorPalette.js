@@ -79,6 +79,14 @@ function isDark(rgb) {
 
 
 
+const inputStyle = `
+    font-size: 14px; 
+    width: 32px; 
+    color: inherit; 
+    text-shadow: inherit; 
+    border: none;
+`;
+
 const opts = [
     () => {
         const closest = closestNamedColor(mainColor.color.rgb)
@@ -94,21 +102,28 @@ const opts = [
     () => {
         const { color: { rgb: { red, green, blue } } } = mainColor;
         return `
-            <div>rgb(${Math.round(red)},${Math.round(green)},${Math.round(blue)})</div>
+            <div>
+            <span style="font-weight: 900; color: inherit;">RGB(</span>
+            <input onInput="console.log(event.target.value)" onClick="event.stopPropagation()" style="${inputStyle}" value='${Math.round(red)}'/>, 
+            <input onInput="console.log(event.target.value)" onClick="event.stopPropagation()" style="${inputStyle}" value='${Math.round(green)}'/>, 
+            <input onInput="console.log(event.target.value)" onClick="event.stopPropagation()" style="${inputStyle}" value='${Math.round(blue)}'/>
+            <span style="font-weight: 900; color: inherit;">)</span>
+            </div>
         `
     }
 ]
 
-let showIdx = 0;
+
 
 export default function makeColorPalette({target}) {
+    let showIdx = 0;
     const currentColor = document.createElement('div');
     currentColor.classList.add('current-color');
     currentColor.addEventListener('click',()=>{
         showIdx = (showIdx+1)%opts.length;
         currentColor.innerHTML = opts[showIdx]();
     })
-    
+
     target.appendChild(currentColor);
     mainColor.subscribe(COLOR => {
        const hexColor = hexFromRGB(COLOR.rgb);
