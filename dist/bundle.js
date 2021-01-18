@@ -250,7 +250,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _rgb
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return conicGradient; });\nfunction color(sixth){\n\tswitch (Math.floor(sixth)){\n\t\tcase 0:\n\t\t\treturn [255, 255*(sixth%1), 0, 255];\n\t\tcase 1:\n\t\t\treturn [255 * (1-sixth%1), 255, 0, 255];\n\t\tcase 2:\n\t\t\treturn [0, 255, 255 * (sixth%1), 255];\n\t\tcase 3:\n\t\t\treturn [0, 255 * (1-sixth%1), 255, 255];\n\t\tcase 4:\n\t\t\treturn [255 * (sixth%1), 0, 255, 255];\n\t\tcase 5:\n\t\t\treturn [255, 0, 255 * (1-sixth%1), 255];\n\t}\nreturn [0,0,0,0]\n}\n\nfunction conicGradient(){\n\tconst c = document.createElement('canvas');\n\n\tc.width = 400;\n\tc.height = 400;\n\n\n\tconst ctx = c.getContext('2d');\n\n\tconst img = ctx.createImageData(c.width, c.height);\n\n\n\tfor (let i=0; i<img.data.length/4; i++){\n\t\tlet y = i%c.width;\n\t\tlet x = Math.floor(i/c.width);\n\n\t\tx = c.width/2 - x;\n\t\ty = y - c.height/2;\n\n\t\tlet angle = Math.atan(y/x);\n\t\tif (x < 0) angle = Math.PI + angle;\n\t\tif (y < 0 && x >= 0) angle = 2*Math.PI + angle;\n\n\t\tconst sixth = angle/(Math.PI*2)*6;\n\t\tconst rgba = color(sixth);\n\n\t\tfor (let j=0;j<4;j++) img.data[i*4+j] = rgba[j];\n\t}\n\n\tctx.putImageData(img,0,0);\n\treturn c.toDataURL();\n}\n\n//# sourceURL=webpack:///./javascripts/conicGradient.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return conicGradient; });\n/* harmony import */ var _webgl_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./webgl/utils */ \"./javascripts/webgl/utils.js\");\n/* harmony import */ var _webgl_shaders_basicVertexShader_glsl__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./webgl/shaders/basicVertexShader.glsl */ \"./javascripts/webgl/shaders/basicVertexShader.glsl\");\n/* harmony import */ var _webgl_shaders_conicGradient_glsl__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./webgl/shaders/conicGradient.glsl */ \"./javascripts/webgl/shaders/conicGradient.glsl\");\n\n\n\n\nfunction conicGradient(){\n\tconst c = document.createElement('canvas');\n\n\tc.width = 400;\n\tc.height = 400;\n\n\tObject(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__[\"webglGradient\"])(c,_webgl_shaders_basicVertexShader_glsl__WEBPACK_IMPORTED_MODULE_1__[\"default\"],_webgl_shaders_conicGradient_glsl__WEBPACK_IMPORTED_MODULE_2__[\"default\"]);\n\treturn c.toDataURL();\n}\n\n//# sourceURL=webpack:///./javascripts/conicGradient.js?");
 
 /***/ }),
 
@@ -394,6 +394,42 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 
 "use strict";
 eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return extrema; });\nfunction extrema(obj){\n\tlet max = null;\n\tlet min = null;\n\tObject.keys(obj).forEach(channel => {\n\t\tif (!min) min = channel;\n\t\tif (!max) max = channel;\n\t\tif (obj[channel] < obj[min]) min = channel;\n\t\tif (obj[channel] > obj[max]) max = channel;\n\t});\n\treturn {max, min};\n}\n\n//# sourceURL=webpack:///./javascripts/utils/extrema.js?");
+
+/***/ }),
+
+/***/ "./javascripts/webgl/shaders/basicVertexShader.glsl":
+/*!**********************************************************!*\
+  !*** ./javascripts/webgl/shaders/basicVertexShader.glsl ***!
+  \**********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (\"// an attribute will receive data from a buffer\\nattribute vec4 a_position;\\nvarying vec2 v_pos;\\n\\n// all shaders have a main function\\nvoid main() {\\n\\n    // gl_Position is a special variable a vertex shader\\n    // is responsible for setting\\n    gl_Position = a_position;\\n    v_pos = vec2(a_position);\\n}\");\n\n//# sourceURL=webpack:///./javascripts/webgl/shaders/basicVertexShader.glsl?");
+
+/***/ }),
+
+/***/ "./javascripts/webgl/shaders/conicGradient.glsl":
+/*!******************************************************!*\
+  !*** ./javascripts/webgl/shaders/conicGradient.glsl ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (\"precision mediump float;\\nvarying vec2 v_pos;\\n\\nfloat frac(float x) {\\n    return x - floor(x);\\n}\\n\\nvoid main() {\\n    float pi = 3.14159265359;\\n\\n    float y = v_pos.y;\\n    float x = v_pos.x;\\n\\n    float angle = atan(x/y);\\n    if (y < 0.0) angle = pi + angle;\\n\\tif (x < 0.0 && y >= 0.0) angle = 2.0*pi + angle;\\n\\n    \\n    float sixth = angle/(2.0*pi) * 6.0;\\n\\n    if (sixth < 1.0) {\\n        gl_FragColor = vec4(1.0, frac(sixth), 0.0, 1.0);\\n    } else if (sixth < 2.0) {\\n        gl_FragColor = vec4(1.0 - frac(sixth), 1.0, 0.0, 1.0);\\n    } else if (sixth < 3.0) {\\n        gl_FragColor = vec4(0.0, 1.0, frac(sixth), 1.0);\\n    } else if (sixth < 4.0) {\\n        gl_FragColor = vec4(0.0, 1.0 - frac(sixth), 1.0, 1.0);\\n    } else if (sixth < 5.0) {\\n        gl_FragColor = vec4(frac(sixth), 0, 1.0, 1.0);\\n    } else {\\n        gl_FragColor = vec4(1.0, 0.0, 1.0-frac(sixth), 1.0);\\n    }\\n}\");\n\n//# sourceURL=webpack:///./javascripts/webgl/shaders/conicGradient.glsl?");
+
+/***/ }),
+
+/***/ "./javascripts/webgl/utils.js":
+/*!************************************!*\
+  !*** ./javascripts/webgl/utils.js ***!
+  \************************************/
+/*! exports provided: webglGradient */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"webglGradient\", function() { return webglGradient; });\nfunction webglGradient(canvas, vertexScript, fragmentScript){\n    const gl = canvas.getContext('webgl');\n    if (!gl) throw new Error(\"Could not find WebGL context\");\n\n    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);\n    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentScript);\n\n    const program = createProgram(gl, vertexShader, fragmentShader);\n    const a_position = gl.getAttribLocation(program, \"a_position\");\n    const positionBuffer = gl.createBuffer();\n    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);\n    const positions = [\n        -1, -1,\n        1, -1,\n        1,  1,\n        1,  1,\n        -1, 1,\n        -1, -1,\n      ];\n    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);\n    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);\n    gl.clearColor(0, 0, 0, 0);\n    gl.clear(gl.COLOR_BUFFER_BIT);\n    gl.useProgram(program);\n    gl.enableVertexAttribArray(a_position);\n    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);\n    gl.drawArrays(gl.TRIANGLES, 0, 6);\n}\n\nfunction createShader(gl, type, source) {\n    const shader = gl.createShader(type);\n    if (!shader) throw new Error('Could not create shader');\n\n    gl.shaderSource(shader, source);\n    gl.compileShader(shader);\n    const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);\n    if (success) {\n        return shader;\n    }\n\n    console.log(gl.getShaderInfoLog(shader));\n    gl.deleteShader(shader);\n    throw new Error('Could not create shader')\n}\n\nfunction createProgram(gl, vertexShader, fragmentShader) {\n    var program = gl.createProgram();\n    if (!program) throw new Error('Could not create program');\n    gl.attachShader(program, vertexShader);\n    gl.attachShader(program, fragmentShader);\n    gl.linkProgram(program);\n    var success = gl.getProgramParameter(program, gl.LINK_STATUS);\n    if (success) {\n      return program;\n    }\n   \n    console.log(gl.getProgramInfoLog(program));\n    gl.deleteProgram(program);\n    throw new Error('Could not create program');\n}\n\n//# sourceURL=webpack:///./javascripts/webgl/utils.js?");
 
 /***/ }),
 
