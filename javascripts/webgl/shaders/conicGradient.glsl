@@ -17,7 +17,7 @@ void main() {
 
     
     float sixth = angle/(2.0*pi) * 6.0;
-
+    
     if (sixth < 1.0) {
         gl_FragColor = vec4(1.0, frac(sixth), 0.0, 1.0);
     } else if (sixth < 2.0) {

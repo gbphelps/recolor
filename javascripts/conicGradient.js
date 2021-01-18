@@ -1,6 +1,4 @@
-import { webglGradient} from './webgl/utils';
-import vertexShader from './webgl/shaders/basicVertexShader.glsl';
-import conicGradientShader from './webgl/shaders/conicGradient.glsl';
+import { genConicGradient } from './webgl/utils';
 
 export default function conicGradient(){
 	const c = document.createElement('canvas');
@@ -8,6 +6,6 @@ export default function conicGradient(){
 	c.width = 400;
 	c.height = 400;
 
-	webglGradient(c,vertexShader,conicGradientShader);
+	genConicGradient(c);
 	return c.toDataURL();
 }

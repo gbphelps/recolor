@@ -4,6 +4,7 @@ import extrema from './utils/extrema';
 import createSVG from './createSVG';
 import ns from './constants';
 import pureFromHue from './colorMethods/pureFromHue';
+import {genTriangleGradient} from './webgl/utils';
 
 
 const sq3 = Math.sqrt(3);
@@ -22,197 +23,151 @@ const ratio = sq3/2;
 const margin = 10;
 const s = 180;
 const h = s * ratio;
-const black = [0,0,0,255];
-const white = [255,255,255,255];
 
-let canvas, ctx;
-
-function gen(color){
-	const img = ctx.createImageData(s + margin*2, Math.ceil(s*ratio + margin*2));
-	const colorArray = [
-		color.red, 
-		color.green, 
-		color.blue, 
-		255
-	];
-
-	for (let i=0; i<img.data.length/4; i++){
-		let x = i%(canvas.width);
-		let y = Math.floor(i/(canvas.width));
-		
-		x -= margin;
-		y -= margin;
-		
-		const top = y/h;
-		const left = (x*sq3 - y)/h/2;
-		const right = ((x-s)*-sq3 -y)/h/2;
-
-		
-		if (y < sq3*x && y < (x-s)*-sq3 && y > 0){
-			for(let j=0; j<4; j++) img.data[i*4+j] = top*colorArray[j] + left*white[j] + right*black[j]
-		
-		} else if (y <= 0){
-			for(let j=0; j<4; j++) img.data[i*4+j] = x/s*white[j] + (1-x/s)*black[j]
-		
-		} else if (x > s/2 && y > 0){
-			const w = Math.min((-(x-s)/2 + ratio*y)/s,1);
-			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*white[j] + w*colorArray[j]
-		
-		} else if (x <= s/2 && y > 0){
-			const w = Math.min((x/2 + ratio*y)/s,1);
-			for(let j=0; j<4; j++) img.data[i*4+j] = (1-w)*black[j] + w*colorArray[j]
-		} 
-				
-		
-	}
-
-	ctx.putImageData(img,0,0);
-	return canvas.toDataURL();
-}
-
-
-
+let canvas;
+let updateGradient;
 
 
 export default function make(target){
-
-
-const container = document.createElement('div');
-Object.assign(container.style, {
-	width: 	s + margin*2 + 'px',
-	height: Math.ceil(s*ratio + margin*2) + 'px'
-})
-
-canvas = document.createElement('canvas');
-canvas.width = s + margin*2;
-canvas.height = Math.ceil(s*ratio + margin*2);
-ctx = canvas.getContext('2d');
-
-const url = gen({red: 255, green: 0, blue: 0});
-const svg = createSVG('g',{});
-const body = createSVG('g',{});
-const defs = createSVG('defs',{});
-const pattern = createSVG('pattern',{
-	height: '100%',
-	width: '100%'
-})
-image = createSVG('image',{href: url});
-const clip = createSVG('clipPath',{});
-const clippath = createSVG('path',{});
-const r = createSVG('rect',{});
-
-l1 = createSVG('line',{
-	stroke: 'white',
-	'stroke-width': .5,
-});
-
-l2 = createSVG('line',{
-	stroke: 'white',
-	'stroke-width': .5,
-});
-
-l3 = createSVG('line',{
-	stroke: 'white',
-	'stroke-width': .5,
-});
-
-input1 = document.createElement('input');
-input1.addEventListener('input', setChannel('color'));
-input1.addEventListener('blur', setFromLastValid('color'));
-
-input2 = document.createElement('input');
-input2.addEventListener('input', setChannel('white'));
-input2.addEventListener('blur', setFromLastValid('white'));
-
-input3 = document.createElement('input');
-input3.addEventListener('input', setChannel('black'));
-input3.addEventListener('blur', setFromLastValid('black'));
-
-[input1, input2, input3].forEach(i => {
-	Object.assign(i.style, {
-		position: 'absolute', 
-		margin: 0,
+	const container = document.createElement('div');
+	Object.assign(container.style, {
+		width: 	s + margin*2 + 'px',
+		height: Math.ceil(s*ratio + margin*2) + 'px'
 	})
-})
 
-input1.style.transform = `translateX(-100%)translateY(50%)`
-input2.style.transform = `translateY(100%)`
+	canvas = document.createElement('canvas');
+	canvas.width = s + margin*2;
+	canvas.height = Math.ceil(s*ratio + margin*2);
 
-target.appendChild(input1);
-target.appendChild(input2);
-target.appendChild(input3);
+	const {update} = genTriangleGradient(canvas);
+	updateGradient = update;
 
+	const url = canvas.toDataURL();
+	
+	const svg = createSVG('g',{});
+	const body = createSVG('g',{});
+	const defs = createSVG('defs',{});
+	const pattern = createSVG('pattern',{
+		height: '100%',
+		width: '100%'
+	})
+	image = createSVG('image',{href: url});
+	const clip = createSVG('clipPath',{});
+	const clippath = createSVG('path',{});
+	const r = createSVG('rect',{});
 
-ns.hueSlider.get().appendChild(svg);
-svg.appendChild(defs);
-svg.appendChild(body);
-defs.appendChild(pattern);
-pattern.appendChild(image);
-defs.appendChild(clip);
-clip.appendChild(clippath);
+	l1 = createSVG('line',{
+		stroke: 'white',
+		'stroke-width': .5,
+	});
 
-clippath.setAttribute('d',`
-	M ${margin} 0 
-	l ${s} 0 
-	a ${margin} ${margin} 0 0 1 ${margin*Math.sin(Math.PI/3)} ${margin + margin*Math.cos(Math.PI/3)}
-	l ${-s/2} ${s*ratio} 
-	a ${margin} ${margin} 0 0 1 ${-margin*2*Math.sin(Math.PI/3)} 0
-	l ${-s/2} ${-s*ratio}
-	A ${margin} ${margin} 0 0 1 ${margin} 0
-`)
+	l2 = createSVG('line',{
+		stroke: 'white',
+		'stroke-width': .5,
+	});
 
-r.setAttribute('height', canvas.height);
-r.setAttribute('width', canvas.width);
-r.setAttribute('clip-path', `url(#${clip.id})`);
-r.setAttribute('fill', `url(#${pattern.id})`);
-r.setAttribute('filter',"url(#shadow2)");
-const g = createSVG('g',{});
-body.appendChild(g);
-g.appendChild(r);
+	l3 = createSVG('line',{
+		stroke: 'white',
+		'stroke-width': .5,
+	});
 
+	input1 = document.createElement('input');
+	input1.addEventListener('input', setChannel('color'));
+	input1.addEventListener('blur', setFromLastValid('color'));
 
+	input2 = document.createElement('input');
+	input2.addEventListener('input', setChannel('white'));
+	input2.addEventListener('blur', setFromLastValid('white'));
 
+	input3 = document.createElement('input');
+	input3.addEventListener('input', setChannel('black'));
+	input3.addEventListener('blur', setFromLastValid('black'));
 
-const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
-xT = -s/2/sq3 - margin + hueHeight/2;
-yT = canvas.width + ( hueHeight - canvas.width)/2;
+	[input1, input2, input3].forEach(i => {
+		Object.assign(i.style, {
+			position: 'absolute', 
+			margin: 0,
+		})
+	})
 
+	input1.style.transform = `translateX(-100%)translateY(50%)`
+	input2.style.transform = `translateY(100%)`
 
-body.setAttribute('transform', `
-	translate(
-		${xT} 
-		${yT}
-	)rotate(-90)`);
-
-pip = createSVG('circle',{});
-body.appendChild(l1);
-body.appendChild(l2);
-body.appendChild(l3);
-body.appendChild(pip);
-
-pip.setAttribute('r', 5);
-pip.setAttribute('cx', margin);
-pip.setAttribute('cy', margin);
-pip.setAttribute('stroke', 'white');
-pip.setAttribute('fill', 'transparent');
-pip.setAttribute('vector-effect','non-scaling-stroke')
-pip.setAttribute('filter','url(#shadow2)')
+	target.appendChild(input1);
+	target.appendChild(input2);
+	target.appendChild(input3);
 
 
-let lastValidTri = null;
+	ns.hueSlider.get().appendChild(svg);
+	svg.appendChild(defs);
+	svg.appendChild(body);
+	defs.appendChild(pattern);
+	pattern.appendChild(image);
+	defs.appendChild(clip);
+	clip.appendChild(clippath);
 
-mainColor.subscribe(setTriangle);
-mainColor.subscribe(COLOR => {
-	lastValidTri = triFromRGB(COLOR.rgb);
-})
+	clippath.setAttribute('d',`
+		M ${margin} 0 
+		l ${s} 0 
+		a ${margin} ${margin} 0 0 1 ${margin*Math.sin(Math.PI/3)} ${margin + margin*Math.cos(Math.PI/3)}
+		l ${-s/2} ${s*ratio} 
+		a ${margin} ${margin} 0 0 1 ${-margin*2*Math.sin(Math.PI/3)} 0
+		l ${-s/2} ${-s*ratio}
+		A ${margin} ${margin} 0 0 1 ${margin} 0
+	`)
 
-function setFromLastValid(channel){
-	return function (e) {
-		e.target.value = Math.abs(lastValidTri[channel]*100).toFixed(1);
+	r.setAttribute('height', canvas.height);
+	r.setAttribute('width', canvas.width);
+	r.setAttribute('clip-path', `url(#${clip.id})`);
+	r.setAttribute('fill', `url(#${pattern.id})`);
+	r.setAttribute('filter',"url(#shadow2)");
+	const g = createSVG('g',{});
+	body.appendChild(g);
+	g.appendChild(r);
+
+
+
+
+	const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
+	xT = -s/2/sq3 - margin + hueHeight/2;
+	yT = canvas.width + ( hueHeight - canvas.width)/2;
+
+
+	body.setAttribute('transform', `
+		translate(
+			${xT} 
+			${yT}
+		)rotate(-90)`);
+
+	pip = createSVG('circle',{});
+	body.appendChild(l1);
+	body.appendChild(l2);
+	body.appendChild(l3);
+	body.appendChild(pip);
+
+	pip.setAttribute('r', 5);
+	pip.setAttribute('cx', margin);
+	pip.setAttribute('cy', margin);
+	pip.setAttribute('stroke', 'white');
+	pip.setAttribute('fill', 'transparent');
+	pip.setAttribute('vector-effect','non-scaling-stroke')
+	pip.setAttribute('filter','url(#shadow2)')
+
+
+	let lastValidTri = null;
+
+	mainColor.subscribe(setTriangle);
+	mainColor.subscribe(COLOR => {
+		lastValidTri = triFromRGB(COLOR.rgb);
+	})
+
+	function setFromLastValid(channel){
+		return function (e) {
+			e.target.value = Math.abs(lastValidTri[channel]*100).toFixed(1);
+		}
 	}
-}
 
-pip.addEventListener('mousedown',setPip)
+	pip.addEventListener('mousedown',setPip)
 }
 
 function setPip(e){
@@ -348,7 +303,8 @@ function setTriangle(COLOR,PREV){
 
 	if (COLOR.hsv.hue !== PREV.hsv.hue){
 		const pure = pureFromHue(COLOR.hsv.hue%360);
-		image.setAttribute('href', gen(pure));
+		updateGradient(pure);
+		image.setAttribute('href', canvas.toDataURL());
 	} 
 
 }
