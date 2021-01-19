@@ -9,10 +9,37 @@ const COLOR_SPACE = {
     'hsv': 1,
 }
 
+const COLOR_ORD = {
+    hsl: {
+        hue: 0,
+        saturation: 1,
+        lightness: 2,
+    },
+    hsv: {
+        hue: 0,
+        saturation: 1,
+        value: 2,
+    }
+}
+
+const CHAN_MAX = {
+    hsl: {
+        hue: 360,
+        saturation: 100,
+        lightness: 100,
+    },
+    hsv: {
+        hue: 360,
+        saturation: 100,
+        value: 100,
+    }
+}
+
+
 export default function({
     xChannel,
     yChannel,
-    zChannel, 
+    zChannel,
     colorSpace, 
     height = 150,
     width = 250,
@@ -21,7 +48,11 @@ export default function({
     outerMargin = 20,
     target
 }){
+    const xMax = CHAN_MAX[colorSpace][xChannel];
+    const yMax = CHAN_MAX[colorSpace][yChannel];
+    const zMax = CHAN_MAX[colorSpace][zChannel];
 
+    const ord = [xChannel, yChannel, zChannel].map(c => COLOR_ORD[colorSpace][c]);
     let updateXYGradient = () => {};
 
     if (!target) target = document.body;
@@ -37,7 +68,7 @@ export default function({
     // const ctx = c.getContext('2d');
     c.height = height;
     c.width = width;
-    const {update} = genXYGradient(c, COLOR_SPACE[colorSpace]);
+    const {update} = genXYGradient(c, COLOR_SPACE[colorSpace], ord);
     updateXYGradient = update;
 
     c.style.visibility = 'hidden';
@@ -55,15 +86,15 @@ export default function({
     function makeOtherGradient(){
         const img = ctx2.createImageData(10, height);
         for (let y=0; y<height; y++) {
-            const param = (1-y/height) * zChannel.max;
+            const param = (1-y/height) * zMax;
 
             const color = convert.getRGB[colorSpace]({
                 ...mainColor.color[colorSpace],
-                [zChannel.name]: param,
+                [zChannel]: param,
             }) || {
-                [zChannel.name]: 0,
-                [xChannel.name]: 0,
-                [yChannel.name]: 0,
+                [zChannel]: 0,
+                [xChannel]: 0,
+                [yChannel]: 0,
             }
 
             for (let x=0; x<10; x++) {
@@ -135,10 +166,10 @@ export default function({
     })
     inputX.addEventListener('input', (e) => {
         e.preventDefault();
-        if (isNaN(+inputX.value) || +inputX.value < 0 || +inputX.value > xChannel.max) return;
+        if (isNaN(+inputX.value) || +inputX.value < 0 || +inputX.value > xMax) return;
         mainColor.set(
             colorSpace,
-            { [xChannel.name]: +inputX.value }
+            { [xChannel]: +inputX.value }
         )
     })
     inputX.addEventListener('blur', () => {
@@ -155,10 +186,10 @@ export default function({
     const inputY = document.createElement('input');
     inputY.addEventListener('input', (e) => {
         e.preventDefault();
-        if (isNaN(+inputY.value) || +inputY.value < 0 || +inputY.value > yChannel.max) return;
+        if (isNaN(+inputY.value) || +inputY.value < 0 || +inputY.value > yMax) return;
         mainColor.set(
             colorSpace,
-            { [yChannel.name]: +inputY.value }
+            { [yChannel]: +inputY.value }
         )
     })
     inputY.addEventListener('blur', () => {
@@ -182,12 +213,12 @@ export default function({
     sliderPip.addEventListener('mousedown',(e)=>{
         let y = e.clientY;
         function move(e){
-            const delY = (y - e.clientY)/(height-pipHeight)*zChannel.max*DIM_RATIO;
-            const yAttempt = mainColor.color[colorSpace][zChannel.name] + delY;
-            let newY = Math.min(zChannel.max, yAttempt);
+            const delY = (y - e.clientY)/(height-pipHeight)*zMax*DIM_RATIO;
+            const yAttempt = mainColor.color[colorSpace][zChannel] + delY;
+            let newY = Math.min(zMax, yAttempt);
             newY = Math.max(newY, 0);
             mainColor.set(colorSpace, {
-                [zChannel.name]: newY,
+                [zChannel]: newY,
             })
             if (newY === yAttempt) y = e.clientY;
         }
@@ -198,7 +229,7 @@ export default function({
     })
 
     mainColor.subscribe((COLOR, PREV) => {
-        const y = (1-(COLOR[colorSpace][zChannel.name]/zChannel.max))*(height - pipHeight);
+        const y = (1-(COLOR[colorSpace][zChannel]/zMax))*(height - pipHeight);
         sliderPip.setAttribute('y',y);
     })
 
@@ -214,34 +245,34 @@ export default function({
 
     mainColor.subscribe((COLOR, PREV) => {
         lastValid = {
-            x: COLOR[colorSpace][xChannel.name],
-            y: COLOR[colorSpace][yChannel.name],
-            z: COLOR[colorSpace][zChannel.name],
+            x: COLOR[colorSpace][xChannel],
+            y: COLOR[colorSpace][yChannel],
+            z: COLOR[colorSpace][zChannel],
         }
-        const xVal = COLOR[colorSpace][xChannel.name]/xChannel.max*width;
-        const yVal = (1-COLOR[colorSpace][yChannel.name]/yChannel.max)*height;
+        const xVal = COLOR[colorSpace][xChannel]/xMax*width;
+        const yVal = (1-COLOR[colorSpace][yChannel]/yMax)*height;
         pip.setAttribute('cx',xVal);
         pip.setAttribute('cy',yVal);
         v.setAttribute('x1', xVal);
         v.setAttribute('x2', xVal);
         inputX.style.left = (xVal + outerMargin)/DIM_RATIO;
-        if (document.activeElement !== inputX) inputX.value = COLOR[colorSpace][xChannel.name].toFixed(1);
+        if (document.activeElement !== inputX) inputX.value = COLOR[colorSpace][xChannel].toFixed(1);
 
         h.setAttribute('y1', yVal);
         h.setAttribute('y2', yVal);
         inputY.style.top = (yVal + outerMargin)/DIM_RATIO;
-        if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel.name].toFixed(1);
+        if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel].toFixed(1);
 
-        if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel.name].toFixed(1);
+        if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel].toFixed(1);
 
-        if (COLOR[colorSpace][zChannel.name] !== PREV[colorSpace][zChannel.name]){
-            const value = COLOR[colorSpace][zChannel.name]/zChannel.max;
+        if (COLOR[colorSpace][zChannel] !== PREV[colorSpace][zChannel]){
+            const value = COLOR[colorSpace][zChannel]/zMax;
             updateXYGradient(value);
             image.setAttribute('href',c.toDataURL());
         }
         if (
-            COLOR[colorSpace][xChannel.name] !== PREV[colorSpace][xChannel.name] ||
-            COLOR[colorSpace][yChannel.name] !== PREV[colorSpace][yChannel.name]
+            COLOR[colorSpace][xChannel] !== PREV[colorSpace][xChannel] ||
+            COLOR[colorSpace][yChannel] !== PREV[colorSpace][yChannel]
         ){
              //TODO add similar safegaurds here.
             image2.setAttribute('href',makeOtherGradient());
@@ -252,21 +283,21 @@ export default function({
         let x = e.clientX;
         let y = e.clientY;
         function move(e){
-            const delX = (e.clientX - x)/width * DIM_RATIO * xChannel.max;
-            const delY = (y - e.clientY)/height * DIM_RATIO * yChannel.max;
-            const rawY = mainColor.color[colorSpace][yChannel.name] + delY;
-            const rawX = mainColor.color[colorSpace][xChannel.name] + delX;
+            const delX = (e.clientX - x)/width * DIM_RATIO * xMax;
+            const delY = (y - e.clientY)/height * DIM_RATIO * yMax;
+            const rawY = mainColor.color[colorSpace][yChannel] + delY;
+            const rawX = mainColor.color[colorSpace][xChannel] + delX;
 
             let nY = Math.max(rawY, 0);
-            nY = Math.min(nY, yChannel.max);
+            nY = Math.min(nY, yMax);
 
             let nX = Math.max(rawX, 0);
-            nX = Math.min(nX, xChannel.max);
+            nX = Math.min(nX, xMax);
 
 
             mainColor.set(colorSpace,{
-                [xChannel.name]: nX,
-                [yChannel.name]: nY,
+                [xChannel]: nX,
+                [yChannel]: nY,
             })
 
             if (nY === rawY) y = e.clientY; 
@@ -315,10 +346,10 @@ export default function({
     })
     inputZ.addEventListener('input', (e) => {
         e.preventDefault();
-        if (isNaN(+inputZ.value) || +inputZ.value < 0 || +inputZ.value > zChannel.max) return;
+        if (isNaN(+inputZ.value) || +inputZ.value < 0 || +inputZ.value > zMax) return;
         mainColor.set(
             colorSpace,
-            { [zChannel.name]: +inputZ.value }
+            { [zChannel]: +inputZ.value }
         )
     })
     inputZ.addEventListener('blur', () => {

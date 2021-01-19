@@ -71,7 +71,7 @@ export function genTriangleGradient(c){
 }
 
 
-export function genXYGradient(c, colorSpace){
+export function genXYGradient(c, colorSpace, ord){
     const gl = c.getContext('webgl');
     if (!gl) throw new Error("Could not find WebGL context");
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
@@ -85,10 +85,12 @@ export function genXYGradient(c, colorSpace){
     const u_res = gl.getUniformLocation(program, "u_res");
     const u_z = gl.getUniformLocation(program, "u_z");
     const u_colorspace = gl.getUniformLocation(program, "u_colorspace");
+    const u_ord = gl.getUniformLocation(program, "u_ord");
     
     gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
     gl.uniform1i(u_colorspace, colorSpace);
     gl.uniform1f(u_z, 0);
+    gl.uniform3i(u_ord, ...ord);
 
     drawVertices(gl, program, "a_position");
     return {

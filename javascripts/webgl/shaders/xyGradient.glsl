@@ -3,6 +3,7 @@ varying vec2 v_pos;
 uniform vec2 u_res;
 uniform float u_z;
 uniform int u_colorspace;
+uniform ivec3 u_ord;
 
 float floatMod(float a, float b){
     return a - floor(a/b) * b;
@@ -59,6 +60,23 @@ vec3 rgb_hsv(vec3 hsv){
     }
 }
 
+
+vec3 swizzle(vec3 channels, ivec3 u_ord) {
+    if (u_ord.x == 0 && u_ord.y == 1 && u_ord.z == 2) {
+        return channels.xyz;
+    } else if (u_ord.x == 0 && u_ord.y == 2 && u_ord.z == 1) {
+        return channels.xzy;
+    } else if (u_ord.x == 1 && u_ord.y == 0 && u_ord.z == 2) {
+        return channels.yxz;
+    } else if (u_ord.x == 1 && u_ord.y == 2 && u_ord.z == 0) {
+        return channels.zxy;
+    } else if (u_ord.x == 2 && u_ord.y == 0 && u_ord.z == 1) {
+        return channels.yzx;
+    } else {
+        return channels.zyx;
+    }
+}
+
 void main() {
     float margin = 0.0;
 
@@ -76,10 +94,15 @@ void main() {
 
     vec3 rgb;
 
+    //manually swizzle the channels
+    vec3 channels = vec3(x_unit, y_unit, u_z);
+ 
+    vec3 newChannels = swizzle(channels, u_ord);
+
     if (u_colorspace == 0) {
-        rgb = rgb_hsl(vec3(x_unit, y_unit, u_z));
+        rgb = rgb_hsl(newChannels);
     } else if (u_colorspace == 1) {
-        rgb = rgb_hsv(vec3(u_z, x_unit, y_unit));
+        rgb = rgb_hsv(newChannels);
     } else {
         rgb = vec3(1.0,0.0,0.0);
     }

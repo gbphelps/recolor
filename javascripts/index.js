@@ -21,18 +21,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 function setup(){
     // hueSat();
     makeBlockWithSlider({
-        xChannel: {
-            name: 'hue',
-            max: 360
-        },
-        yChannel: {
-            name: 'saturation',
-            max: 100,
-        },
-        zChannel: {
-            name: 'lightness',
-            max: 100
-        },
+        xChannel: 'hue',
+        yChannel: 'saturation',
+        zChannel: 'lightness',
         colorSpace: 'hsl',
         height: 150,
         width: 350,
@@ -40,18 +31,9 @@ function setup(){
     });
 
     makeBlockWithSlider({
-        xChannel: {
-            name: 'saturation',
-            max: 100,
-        },
-        yChannel: {
-            name: 'value',
-            max: 100
-        },
-        zChannel: {
-            name: 'hue',
-            max: 360
-        },
+        xChannel: 'saturation',
+        yChannel: 'value',
+        zChannel: 'hue',
         colorSpace: 'hsv',
         height: 150,
         width: 150,
