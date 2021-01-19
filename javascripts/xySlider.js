@@ -1,9 +1,8 @@
-import rgbFromHSL from './colorMethods/rgbFromHSL';
-import rgbFromHSLUV from './colorMethods/rgbFromHSLUV';
 import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor from './ColorObject';
 import convert from './colorMethods/index';
+import { genHueSatGradient } from './webgl/utils';
 
 
 export default function({
@@ -28,9 +27,10 @@ export default function({
 
     const margin = 0;
     const c = document.createElement('canvas');
-    const ctx = c.getContext('2d');
+    // const ctx = c.getContext('2d');
     c.height = height;
     c.width = width;
+    genHueSatGradient(c);
     c.style.display = 'none';
     document.body.appendChild(c);
 
@@ -69,33 +69,33 @@ export default function({
     }
 
     function makeGradient(){
-        const img = ctx.createImageData(width, height);
-        for (let x=0; x<width; x++){
-            for (let y=0; y<height; y++){
+        // const img = ctx.createImageData(width, height);
+        // for (let x=0; x<width; x++){
+        //     for (let y=0; y<height; y++){
     
-                let xVal = (x-margin)/(width-2*margin)*xChannel.max;
-                xVal = Math.min(xChannel.max,xVal);
-                xVal = Math.max(0,xVal);
+        //         let xVal = (x-margin)/(width-2*margin)*xChannel.max;
+        //         xVal = Math.min(xChannel.max,xVal);
+        //         xVal = Math.max(0,xVal);
     
-                let yVal = (1-(y-margin)/(height-2*margin))*yChannel.max;
-                yVal = Math.min(yChannel.max, yVal);
-                yVal = Math.max(0, yVal);
+        //         let yVal = (1-(y-margin)/(height-2*margin))*yChannel.max;
+        //         yVal = Math.min(yChannel.max, yVal);
+        //         yVal = Math.max(0, yVal);
     
-                const zVal = mainColor.color[colorSpace][zChannel.name];
-                //NOTE: you may want to keep this stable at eg 50 or something.
+        //         const zVal = mainColor.color[colorSpace][zChannel.name];
+        //         //NOTE: you may want to keep this stable at eg 50 or something.
 
-                const {red, green, blue} = convert.getRGB[colorSpace]({
-                    [xChannel.name]: xVal,
-                    [yChannel.name]: yVal,
-                    [zChannel.name]: zVal
-                });
-                img.data[(y*width + x)*4 +0] = red;
-                img.data[(y*width + x)*4 +1] = green;
-                img.data[(y*width + x)*4 +2] = blue;
-                img.data[(y*width + x)*4 +3] = 255;
-            }
-        }
-        ctx.putImageData(img,0,0);
+        //         const {red, green, blue} = convert.getRGB[colorSpace]({
+        //             [xChannel.name]: xVal,
+        //             [yChannel.name]: yVal,
+        //             [zChannel.name]: zVal
+        //         });
+        //         img.data[(y*width + x)*4 +0] = red;
+        //         img.data[(y*width + x)*4 +1] = green;
+        //         img.data[(y*width + x)*4 +2] = blue;
+        //         img.data[(y*width + x)*4 +3] = 255;
+        //     }
+        // }
+        // ctx.putImageData(img,0,0);
         const url = c.toDataURL();
         return url;
     } 
