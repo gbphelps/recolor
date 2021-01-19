@@ -2,8 +2,12 @@ import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor from './ColorObject';
 import convert from './colorMethods/index';
-import { genHueSatGradient } from './webgl/utils';
+import { genXYGradient } from './webgl/utils';
 
+const COLOR_SPACE = {
+    'hsl': 0,
+    'hsv': 1,
+}
 
 export default function({
     xChannel,
@@ -17,6 +21,9 @@ export default function({
     outerMargin = 20,
     target
 }){
+
+    let updateXYGradient = () => {};
+
     if (!target) target = document.body;
 
     let DIM_RATIO;
@@ -30,8 +37,11 @@ export default function({
     // const ctx = c.getContext('2d');
     c.height = height;
     c.width = width;
-    genHueSatGradient(c);
-    c.style.display = 'none';
+    const {update} = genXYGradient(c, COLOR_SPACE[colorSpace]);
+    updateXYGradient = update;
+
+    c.style.visibility = 'hidden';
+    c.style.position = 'absolute';
     document.body.appendChild(c);
 
     const c2 = document.createElement('canvas');
@@ -39,7 +49,8 @@ export default function({
     c2.height = height;
     c2.width = 1;
     document.body.appendChild(c2);
-    c2.style.display = 'none';
+    c2.style.visibility = 'hidden';
+    c2.style.position = 'absolute';
 
     function makeOtherGradient(){
         const img = ctx2.createImageData(10, height);
@@ -68,38 +79,6 @@ export default function({
         return url;
     }
 
-    function makeGradient(){
-        // const img = ctx.createImageData(width, height);
-        // for (let x=0; x<width; x++){
-        //     for (let y=0; y<height; y++){
-    
-        //         let xVal = (x-margin)/(width-2*margin)*xChannel.max;
-        //         xVal = Math.min(xChannel.max,xVal);
-        //         xVal = Math.max(0,xVal);
-    
-        //         let yVal = (1-(y-margin)/(height-2*margin))*yChannel.max;
-        //         yVal = Math.min(yChannel.max, yVal);
-        //         yVal = Math.max(0, yVal);
-    
-        //         const zVal = mainColor.color[colorSpace][zChannel.name];
-        //         //NOTE: you may want to keep this stable at eg 50 or something.
-
-        //         const {red, green, blue} = convert.getRGB[colorSpace]({
-        //             [xChannel.name]: xVal,
-        //             [yChannel.name]: yVal,
-        //             [zChannel.name]: zVal
-        //         });
-        //         img.data[(y*width + x)*4 +0] = red;
-        //         img.data[(y*width + x)*4 +1] = green;
-        //         img.data[(y*width + x)*4 +2] = blue;
-        //         img.data[(y*width + x)*4 +3] = 255;
-        //     }
-        // }
-        // ctx.putImageData(img,0,0);
-        const url = c.toDataURL();
-        return url;
-    } 
-
     const svg = createSVG('svg',{
         'viewBox': `0 0 ${WW} ${HH}`
     });
@@ -118,7 +97,7 @@ export default function({
     
     const pattern = makePattern();
     const image = pattern.getElementsByTagName('image')[0];
-    image.setAttribute('href',makeGradient());
+    image.setAttribute('href',c.toDataURL());
     const defs = createSVG('defs',{});
 
     const pattern2 = makePattern();
@@ -256,8 +235,9 @@ export default function({
         if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel.name].toFixed(1);
 
         if (COLOR[colorSpace][zChannel.name] !== PREV[colorSpace][zChannel.name]){
-            //TODO if you add back zInit you need to replace here.
-            image.setAttribute('href',makeGradient());
+            const value = COLOR[colorSpace][zChannel.name]/zChannel.max;
+            updateXYGradient(value);
+            image.setAttribute('href',c.toDataURL());
         }
         if (
             COLOR[colorSpace][xChannel.name] !== PREV[colorSpace][xChannel.name] ||

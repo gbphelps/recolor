@@ -1,7 +1,7 @@
 import vertexScript from './shaders/basicVertexShader.glsl';
 import conicGradient from './shaders/conicGradient.glsl';
 import triangleGradient from './shaders/triangleGradient.glsl';
-import hueSaturation from './shaders/hueSaturationGradient.glsl';
+import hueSaturation from './shaders/xyGradient.glsl';
 
 
 function drawVertices(gl, program, positionAttribute) {
@@ -71,7 +71,7 @@ export function genTriangleGradient(c){
 }
 
 
-export function genHueSatGradient(c){
+export function genXYGradient(c, colorSpace){
     const gl = c.getContext('webgl');
     if (!gl) throw new Error("Could not find WebGL context");
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
@@ -84,9 +84,11 @@ export function genHueSatGradient(c){
 
     const u_res = gl.getUniformLocation(program, "u_res");
     const u_z = gl.getUniformLocation(program, "u_z");
+    const u_colorspace = gl.getUniformLocation(program, "u_colorspace");
     
     gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
-    gl.uniform1f(u_z, 50);
+    gl.uniform1i(u_colorspace, colorSpace);
+    gl.uniform1f(u_z, 0);
 
     drawVertices(gl, program, "a_position");
     return {
