@@ -52,7 +52,7 @@ export default function({
     const xyGradient = new XYGradient({
         height,
         width,
-        padding: 0,
+        padding: XY_SLIDER_PADDING,
         colorSpace,
         xChannel,
         yChannel,
@@ -198,8 +198,10 @@ export default function({
             y: COLOR[colorSpace][yChannel],
             z: COLOR[colorSpace][zChannel],
         }
-        const xVal = COLOR[colorSpace][xChannel]/xMax*width;
-        const yVal = (1-COLOR[colorSpace][yChannel]/yMax)*height;
+
+        const xVal = COLOR[colorSpace][xChannel]/xMax*(width - XY_SLIDER_PADDING*2) + XY_SLIDER_PADDING;
+        const yVal = (1-COLOR[colorSpace][yChannel]/yMax)*(height - XY_SLIDER_PADDING*2) + XY_SLIDER_PADDING;
+
         pip.setAttribute('cx',xVal);
         pip.setAttribute('cy',yVal);
         v.setAttribute('x1', xVal);
@@ -234,8 +236,8 @@ export default function({
         let x = e.clientX;
         let y = e.clientY;
         function move(e){
-            const delX = (e.clientX - x)/width * DIM_RATIO * xMax;
-            const delY = (y - e.clientY)/height * DIM_RATIO * yMax;
+            const delX = (e.clientX - x)/(width - 2*XY_SLIDER_PADDING) * DIM_RATIO * xMax;
+            const delY = (y - e.clientY)/(height - 2*XY_SLIDER_PADDING) * DIM_RATIO * yMax;
             const rawY = mainColor.color[colorSpace][yChannel] + delY;
             const rawX = mainColor.color[colorSpace][xChannel] + delX;
 
