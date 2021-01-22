@@ -5,7 +5,7 @@ import hueSaturation from './shaders/xyGradient.glsl';
 import gradient1D from './shaders/gradient1D.glsl';
 
 
-function drawVertices(gl, program, positionAttribute) {
+export function drawVertices(gl, program, positionAttribute) {
     const position = gl.getAttribLocation(program, positionAttribute);
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -23,24 +23,10 @@ function drawVertices(gl, program, positionAttribute) {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
-function clear(gl){
+export function clear(gl){
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-}
-
-export function genConicGradient(canvas){
-    const gl = canvas.getContext('webgl');
-    if (!gl) throw new Error("Could not find WebGL context");
-
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, conicGradient);
-
-    const program = createProgram(gl, vertexShader, fragmentShader);
-
-    clear(gl);
-    gl.useProgram(program);
-    drawVertices(gl, program, 'a_position');
 }
 
 export function genTriangleGradient(c, margin){
@@ -142,7 +128,7 @@ export function gen1Dgradient(c, colorSpace, channelIndex, padding, color){
 
 
 
-function createShader(gl, type, source) {
+export function createShader(gl, type, source) {
     const shader = gl.createShader(type);
     if (!shader) throw new Error('Could not create shader');
 
@@ -157,7 +143,7 @@ function createShader(gl, type, source) {
     throw new Error(`Could not create shader: ${gl.getShaderInfoLog(shader)}`)
 }
 
-function createProgram(gl, vertexShader, fragmentShader) {
+export function createProgram(gl, vertexShader, fragmentShader) {
     var program = gl.createProgram();
     if (!program) throw new Error('Could not create program');
     gl.attachShader(program, vertexShader);
