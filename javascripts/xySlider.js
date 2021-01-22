@@ -76,7 +76,7 @@ export default function({
     const c = document.createElement('canvas');
     c.height = height;
     c.width = width;
-    const {update: updateXY} = genXYGradient(c, COLOR_SPACE[colorSpace], ord);
+    const {update: updateXY} = genXYGradient(c, COLOR_SPACE[colorSpace], ord, 0);
     updateXYGradient = updateXY;
 
     c.style.visibility = 'hidden';

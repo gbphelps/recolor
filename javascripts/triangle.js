@@ -39,7 +39,7 @@ export default function make(target){
 	canvas.width = s + margin*2;
 	canvas.height = Math.ceil(s*ratio + margin*2);
 
-	const {update} = genTriangleGradient(canvas);
+	const {update} = genTriangleGradient(canvas, margin);
 	updateGradient = update;
 
 	const url = canvas.toDataURL();

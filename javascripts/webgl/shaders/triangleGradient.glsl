@@ -3,17 +3,17 @@ varying vec2 v_pos;
 uniform vec2 u_res;
 uniform vec4 u_color;
 uniform float u_side;
+uniform float u_margin;
 
 void main() {
    float sq3 = 1.732050807568877;
    float ratio = sq3/2.0;
-   float margin = 10.0;
    float h = u_side * ratio;
    vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
    vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
 
-   float x = (v_pos.x + 1.0)/2.0 * u_res.x - margin;
-   float y = (1.0 - (v_pos.y + 1.0)/2.0) * u_res.y - margin;
+   float x = (v_pos.x + 1.0)/2.0 * u_res.x - u_margin;
+   float y = (1.0 - (v_pos.y + 1.0)/2.0) * u_res.y - u_margin;
 
    float top = y/h;
    float left = (x*sq3 - y)/h/2.0;

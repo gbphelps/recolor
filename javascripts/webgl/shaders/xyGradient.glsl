@@ -4,6 +4,7 @@ uniform vec2 u_res;
 uniform float u_z;
 uniform int u_colorspace;
 uniform ivec3 u_ord;
+uniform float u_padding;
 
 float floatMod(float a, float b){
     return a - floor(a/b) * b;
@@ -80,19 +81,17 @@ vec3 swizzle(vec3 channels, ivec3 u_ord) {
 }
 
 void main() {
-    float margin = 0.0;
-
-    float x = (v_pos.x + 1.0)/2.0*u_res.x - margin;
+    float x = (v_pos.x + 1.0)/2.0*u_res.x - u_padding;
     x = max(x, 0.0);
-    x = min(x, u_res.x - 2.0*margin);
+    x = min(x, u_res.x - 2.0*u_padding);
     
-    float x_unit = x/(u_res.x - 2.0*margin);
+    float x_unit = x/(u_res.x - 2.0*u_padding);
 
-    float y = (1.0 + v_pos.y)/2.0*u_res.y - margin;
+    float y = (1.0 + v_pos.y)/2.0*u_res.y - u_padding;
     y = max(y, 0.0);
-    y = min(y, u_res.y - 2.0*margin);
+    y = min(y, u_res.y - 2.0*u_padding);
 
-    float y_unit = y/(u_res.y - 2.0*margin);
+    float y_unit = y/(u_res.y - 2.0*u_padding);
 
     vec3 rgb;
 

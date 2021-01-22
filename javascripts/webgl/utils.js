@@ -43,7 +43,7 @@ export function genConicGradient(canvas){
     drawVertices(gl, program, 'a_position');
 }
 
-export function genTriangleGradient(c){
+export function genTriangleGradient(c, margin){
     const gl = c.getContext('webgl');
     if (!gl) throw new Error("Could not find WebGL context");
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
@@ -57,10 +57,12 @@ export function genTriangleGradient(c){
     const u_res = gl.getUniformLocation(program, "u_res");
     const u_color = gl.getUniformLocation(program, "u_color");
     const u_side = gl.getUniformLocation(program, "u_side");
+    const u_margin = gl.getUniformLocation(program, "u_margin");
     
     gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
     gl.uniform4f(u_color, 1, 0, 1, 0);
     gl.uniform1f(u_side, 180);
+    gl.uniform1f(u_margin, margin);
 
     drawVertices(gl, program, "a_position");
     return {
@@ -72,7 +74,7 @@ export function genTriangleGradient(c){
 }
 
 
-export function genXYGradient(c, colorSpace, ord){
+export function genXYGradient(c, colorSpace, ord, padding){
     const gl = c.getContext('webgl');
     if (!gl) throw new Error("Could not find WebGL context");
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
@@ -87,11 +89,13 @@ export function genXYGradient(c, colorSpace, ord){
     const u_z = gl.getUniformLocation(program, "u_z");
     const u_colorspace = gl.getUniformLocation(program, "u_colorspace");
     const u_ord = gl.getUniformLocation(program, "u_ord");
+    const u_padding = gl.getUniformLocation(program, "u_padding");
     
     gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
     gl.uniform1i(u_colorspace, colorSpace);
     gl.uniform1f(u_z, 0);
     gl.uniform3i(u_ord, ...ord);
+    gl.uniform1f(u_padding, padding);
 
     drawVertices(gl, program, "a_position");
     return {
