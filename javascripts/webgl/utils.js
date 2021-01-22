@@ -59,40 +59,6 @@ export function genTriangleGradient(c, margin){
     }
 }
 
-
-export function genXYGradient(c, colorSpace, ord, padding){
-    const gl = c.getContext('webgl');
-    if (!gl) throw new Error("Could not find WebGL context");
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, hueSaturation);
-
-    const program = createProgram(gl, vertexShader, fragmentShader);
-
-    clear(gl);
-    gl.useProgram(program);
-
-    const u_res = gl.getUniformLocation(program, "u_res");
-    const u_z = gl.getUniformLocation(program, "u_z");
-    const u_colorspace = gl.getUniformLocation(program, "u_colorspace");
-    const u_ord = gl.getUniformLocation(program, "u_ord");
-    const u_padding = gl.getUniformLocation(program, "u_padding");
-    
-    gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
-    gl.uniform1i(u_colorspace, colorSpace);
-    gl.uniform1f(u_z, 0);
-    gl.uniform3i(u_ord, ...ord);
-    gl.uniform1f(u_padding, padding);
-
-    drawVertices(gl, program, "a_position");
-    return {
-        update(z){
-            gl.uniform1f(u_z, z);
-            drawVertices(gl, program, "a_position");
-        }
-    }
-}
-
-
 export function gen1Dgradient(c, colorSpace, channelIndex, padding, color){
     const gl = c.getContext('webgl');
     if (!gl) throw new Error("Could not find WebGL context");

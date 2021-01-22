@@ -1,44 +1,13 @@
 import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor from './ColorObject';
-import convert from './colorMethods/index';
-import { genXYGradient, gen1Dgradient } from './webgl/utils';
-
+import { gen1Dgradient } from './webgl/utils';
+import {COLOR_SPACE, CHAN_MAX, COLOR_ORD} from './colorMathConstants';
+import XYGradient from './gradientGenerators/xyGradient';
 
 const SLIDER_PIP_WIDTH = 22;
 const SLIDER_PIP_HEIGHT = 8;
-
-const COLOR_SPACE = {
-    'hsl': 0,
-    'hsv': 1,
-}
-
-const COLOR_ORD = {
-    hsl: {
-        hue: 0,
-        saturation: 1,
-        lightness: 2,
-    },
-    hsv: {
-        hue: 0,
-        saturation: 1,
-        value: 2,
-    }
-}
-
-const CHAN_MAX = {
-    hsl: {
-        hue: 360,
-        saturation: 100,
-        lightness: 100,
-    },
-    hsv: {
-        hue: 360,
-        saturation: 100,
-        value: 100,
-    }
-}
-
+const XY_SLIDER_PADDING = 0;
 
 export default function({
     xChannel,
@@ -56,10 +25,6 @@ export default function({
     const yMax = CHAN_MAX[colorSpace][yChannel];
     const zMax = CHAN_MAX[colorSpace][zChannel];
 
-    const ord = [xChannel, yChannel, zChannel].map(c => COLOR_ORD[colorSpace][c]);
-    let updateXYGradient = () => {
-        throw new Error('You are trying to update a gradient that has not been initialized')
-    };
     let update1DGradient = () => {
         throw new Error('You are trying to update a gradient that has not been initialized')
     }
@@ -72,16 +37,27 @@ export default function({
     const SVG_WIDTH = width + trackWidth + spaceBetween + outerMargin*2;
     const SVG_HEIGHT = outerMargin*2 + height;
 
-    const margin = 0;
-    const c = document.createElement('canvas');
-    c.height = height;
-    c.width = width;
-    const {update: updateXY} = genXYGradient(c, COLOR_SPACE[colorSpace], ord, 0);
-    updateXYGradient = updateXY;
 
-    c.style.visibility = 'hidden';
-    c.style.position = 'absolute';
-    document.body.appendChild(c);
+
+
+    const pattern = makePattern();
+    const image = pattern.getElementsByTagName('image')[0];
+    const defs = createSVG('defs',{});
+    const xySVG = createSVG('rect',{
+        height: height,
+        width: width,
+        rx: XY_SLIDER_PADDING,
+        fill: `url(#${pattern.id})`
+    })
+    const xyGradient = new XYGradient({
+        height,
+        width,
+        padding: 0,
+        colorSpace,
+        xChannel,
+        yChannel,
+        zChannel,
+    })
 
     const c2 = document.createElement('canvas');
     const {update: update1D} = gen1Dgradient(
@@ -99,33 +75,6 @@ export default function({
     c2.style.visibility = 'hidden';
     c2.style.position = 'absolute';
 
-    // function makeOtherGradient(){
-    //     const img = ctx2.createImageData(10, height);
-    //     for (let y=0; y<height; y++) {
-    //         const param = (1-y/height) * zMax;
-
-    //         const color = convert.getRGB[colorSpace]({
-    //             ...mainColor.color[colorSpace],
-    //             [zChannel]: param,
-    //         }) || {
-    //             [zChannel]: 0,
-    //             [xChannel]: 0,
-    //             [yChannel]: 0,
-    //         }
-
-    //         for (let x=0; x<10; x++) {
-    //             const pixel = y*10 + x;
-    //             img.data[pixel*4] = color.red;
-    //             img.data[pixel*4+1] = color.green;
-    //             img.data[pixel*4+2] = color.blue;
-    //             img.data[pixel*4+3] = 255;
-    //         }
-    //     }
-    //     ctx2.putImageData(img,0,0);
-    //     const url = c2.toDataURL();
-    //     return url;
-    // }
-
     const svg = createSVG('svg',{
         'viewBox': `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`
     });
@@ -141,24 +90,10 @@ export default function({
     const body = createSVG('g',{
         transform: `translate(${outerMargin} ${outerMargin})`
     });
-    
-    const pattern = makePattern();
-    const image = pattern.getElementsByTagName('image')[0];
-    image.setAttribute('href',c.toDataURL());
-    const defs = createSVG('defs',{});
 
     const pattern2 = makePattern();
     const image2 = pattern2.getElementsByTagName('image')[0];
     image2.setAttribute('href',c2.toDataURL());
-
-
-
-    const rect = createSVG('rect',{
-        height: height,
-        width: width,
-        rx: margin,
-        fill: `url(#${pattern.id})`
-    })
 
     const pip = createSVG('circle',{
         r: 5,
@@ -280,9 +215,7 @@ export default function({
         if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel].toFixed(1);
 
         if (COLOR[colorSpace][zChannel] !== PREV[colorSpace][zChannel]){
-            const value = COLOR[colorSpace][zChannel]/zMax;
-            updateXYGradient(value);
-            image.setAttribute('href',c.toDataURL());
+            image.setAttribute('href',xyGradient.generate(COLOR));
         }
         if (
             COLOR[colorSpace][xChannel] !== PREV[colorSpace][xChannel] ||
@@ -342,7 +275,7 @@ export default function({
     container.appendChild(inputZ);
     svg.appendChild(defs);
     svg.appendChild(body);
-    body.appendChild(rect);
+    body.appendChild(xySVG);
     body.appendChild(v);
     body.appendChild(h);
     body.appendChild(pip);
