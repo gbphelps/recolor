@@ -1,9 +1,10 @@
 precision mediump float;
 varying vec2 v_pos;
 uniform vec2 u_res;
-uniform float u_z;
 uniform int u_colorspace;
-uniform ivec3 u_ord;
+uniform int u_chan;
+uniform vec3 u_color;
+uniform float u_padding;
 
 float floatMod(float a, float b){
     return a - floor(a/b) * b;
@@ -31,7 +32,7 @@ vec3 rgb_hsl(vec3 hsl){
     }
 }
 
-//HSV u_colorspace == 1
+// //HSV u_colorspace == 1
 vec3 rgb_hsv(vec3 hsv){
 
     float H = hsv.x*6.0;
@@ -63,50 +64,29 @@ vec3 rgb_hsv(vec3 hsv){
 }
 
 
-vec3 swizzle(vec3 channels, ivec3 u_ord) {
-    if (u_ord.x == 0 && u_ord.y == 1 && u_ord.z == 2) {
-        return channels.xyz;
-    } else if (u_ord.x == 0 && u_ord.y == 2 && u_ord.z == 1) {
-        return channels.xzy;
-    } else if (u_ord.x == 1 && u_ord.y == 0 && u_ord.z == 2) {
-        return channels.yxz;
-    } else if (u_ord.x == 1 && u_ord.y == 2 && u_ord.z == 0) {
-        return channels.zxy;
-    } else if (u_ord.x == 2 && u_ord.y == 0 && u_ord.z == 1) {
-        return channels.yzx;
-    } else {
-        return channels.zyx;
-    }
+vec3 assign(vec3 color, int chan, float new_value) {
+  vec3 new_color = color.xyz;
+  if (chan == 0) {
+      new_color.x = new_value;
+  } else if (chan == 1){
+      new_color.y = new_value;
+  } else if (chan == 2) {
+      new_color.z = new_value;
+  }
+  return new_color;
 }
 
 void main() {
-    float margin = 0.0;
+    float val = ((v_pos.y + 1.0)/2.0*u_res.y - u_padding)/(u_res.y-2.0*u_padding);
+    val = min(1.0,val);
+    val = max(0.0,val);
 
-    float x = (v_pos.x + 1.0)/2.0*u_res.x - margin;
-    x = max(x, 0.0);
-    x = min(x, u_res.x - 2.0*margin);
-    
-    float x_unit = x/(u_res.x - 2.0*margin);
-
-    float y = (1.0 + v_pos.y)/2.0*u_res.y - margin;
-    y = max(y, 0.0);
-    y = min(y, u_res.y - 2.0*margin);
-
-    float y_unit = y/(u_res.y - 2.0*margin);
-
-    vec3 rgb;
-
-    //manually swizzle the channels
-    vec3 channels = vec3(x_unit, y_unit, u_z);
- 
-    vec3 newChannels = swizzle(channels, u_ord);
-
+    vec3 new_color = assign(u_color, u_chan, val);
     if (u_colorspace == 0) {
-        rgb = rgb_hsl(newChannels);
+        gl_FragColor = vec4(rgb_hsl(new_color),1);
     } else if (u_colorspace == 1) {
-        rgb = rgb_hsv(newChannels);
+        gl_FragColor = vec4(rgb_hsv(new_color),1);
     } else {
-        rgb = vec3(1.0,0.0,0.0);
+        gl_FragColor = vec4(1,0,0,1);
     }
-    gl_FragColor = vec4(rgb, 1.0);
 }

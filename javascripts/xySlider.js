@@ -2,7 +2,11 @@ import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor from './ColorObject';
 import convert from './colorMethods/index';
-import { genXYGradient } from './webgl/utils';
+import { genXYGradient, gen1Dgradient } from './webgl/utils';
+
+
+const SLIDER_PIP_WIDTH = 22;
+const SLIDER_PIP_HEIGHT = 8;
 
 const COLOR_SPACE = {
     'hsl': 0,
@@ -53,65 +57,77 @@ export default function({
     const zMax = CHAN_MAX[colorSpace][zChannel];
 
     const ord = [xChannel, yChannel, zChannel].map(c => COLOR_ORD[colorSpace][c]);
-    let updateXYGradient = () => {};
+    let updateXYGradient = () => {
+        throw new Error('You are trying to update a gradient that has not been initialized')
+    };
+    let update1DGradient = () => {
+        throw new Error('You are trying to update a gradient that has not been initialized')
+    }
 
     if (!target) target = document.body;
 
     let DIM_RATIO;
     let lastValid;
 
-    const WW = width + trackWidth + spaceBetween + outerMargin*2;
-    const HH = outerMargin*2 + height;
+    const SVG_WIDTH = width + trackWidth + spaceBetween + outerMargin*2;
+    const SVG_HEIGHT = outerMargin*2 + height;
 
     const margin = 0;
     const c = document.createElement('canvas');
-    // const ctx = c.getContext('2d');
     c.height = height;
     c.width = width;
-    const {update} = genXYGradient(c, COLOR_SPACE[colorSpace], ord);
-    updateXYGradient = update;
+    const {update: updateXY} = genXYGradient(c, COLOR_SPACE[colorSpace], ord);
+    updateXYGradient = updateXY;
 
     c.style.visibility = 'hidden';
     c.style.position = 'absolute';
     document.body.appendChild(c);
 
     const c2 = document.createElement('canvas');
-    const ctx2 = c2.getContext('2d');
+    const {update: update1D} = gen1Dgradient(
+        c2, 
+        COLOR_SPACE[colorSpace], 
+        COLOR_ORD[colorSpace][zChannel], 
+        SLIDER_PIP_HEIGHT/2,
+        [0,0,0], 
+    );
+    update1DGradient = update1D;
+
     c2.height = height;
     c2.width = 1;
     document.body.appendChild(c2);
     c2.style.visibility = 'hidden';
     c2.style.position = 'absolute';
 
-    function makeOtherGradient(){
-        const img = ctx2.createImageData(10, height);
-        for (let y=0; y<height; y++) {
-            const param = (1-y/height) * zMax;
+    // function makeOtherGradient(){
+    //     const img = ctx2.createImageData(10, height);
+    //     for (let y=0; y<height; y++) {
+    //         const param = (1-y/height) * zMax;
 
-            const color = convert.getRGB[colorSpace]({
-                ...mainColor.color[colorSpace],
-                [zChannel]: param,
-            }) || {
-                [zChannel]: 0,
-                [xChannel]: 0,
-                [yChannel]: 0,
-            }
+    //         const color = convert.getRGB[colorSpace]({
+    //             ...mainColor.color[colorSpace],
+    //             [zChannel]: param,
+    //         }) || {
+    //             [zChannel]: 0,
+    //             [xChannel]: 0,
+    //             [yChannel]: 0,
+    //         }
 
-            for (let x=0; x<10; x++) {
-                const pixel = y*10 + x;
-                img.data[pixel*4] = color.red;
-                img.data[pixel*4+1] = color.green;
-                img.data[pixel*4+2] = color.blue;
-                img.data[pixel*4+3] = 255;
-            }
-        }
-        ctx2.putImageData(img,0,0);
-        const url = c2.toDataURL();
-        return url;
-    }
+    //         for (let x=0; x<10; x++) {
+    //             const pixel = y*10 + x;
+    //             img.data[pixel*4] = color.red;
+    //             img.data[pixel*4+1] = color.green;
+    //             img.data[pixel*4+2] = color.blue;
+    //             img.data[pixel*4+3] = 255;
+    //         }
+    //     }
+    //     ctx2.putImageData(img,0,0);
+    //     const url = c2.toDataURL();
+    //     return url;
+    // }
 
     const svg = createSVG('svg',{
-        'viewBox': `0 0 ${WW} ${HH}`
+        'viewBox': `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`
     });
 
     Object.assign(svg.style, {
@@ -133,7 +149,7 @@ export default function({
 
     const pattern2 = makePattern();
     const image2 = pattern2.getElementsByTagName('image')[0];
-    image2.setAttribute('href',makeOtherGradient());
+    image2.setAttribute('href',c2.toDataURL());
 
 
 
@@ -199,21 +215,19 @@ export default function({
 
     const inputZ = document.createElement('input');
 
-    const pipWidth = 22;
-    const pipHeight = 8;
     const sliderPip = createSVG('rect',{
-        height: pipHeight,
-        width: pipWidth,
+        height: SLIDER_PIP_HEIGHT,
+        width: SLIDER_PIP_WIDTH,
         stroke: 'white',
         filter: 'url(#shadow)',
-        x: width + spaceBetween + (trackWidth - pipWidth)/2,
+        x: width + spaceBetween + (trackWidth - SLIDER_PIP_WIDTH)/2,
         fill: 'transparent'
     })
 
     sliderPip.addEventListener('mousedown',(e)=>{
         let y = e.clientY;
         function move(e){
-            const delY = (y - e.clientY)/(height-pipHeight)*zMax*DIM_RATIO;
+            const delY = (y - e.clientY)/(height-SLIDER_PIP_HEIGHT)*zMax*DIM_RATIO;
             const yAttempt = mainColor.color[colorSpace][zChannel] + delY;
             let newY = Math.min(zMax, yAttempt);
             newY = Math.max(newY, 0);
@@ -229,7 +243,7 @@ export default function({
     })
 
     mainColor.subscribe((COLOR, PREV) => {
-        const y = (1-(COLOR[colorSpace][zChannel]/zMax))*(height - pipHeight);
+        const y = (1-(COLOR[colorSpace][zChannel]/zMax))*(height - SLIDER_PIP_HEIGHT);
         sliderPip.setAttribute('y',y);
     })
 
@@ -274,8 +288,12 @@ export default function({
             COLOR[colorSpace][xChannel] !== PREV[colorSpace][xChannel] ||
             COLOR[colorSpace][yChannel] !== PREV[colorSpace][yChannel]
         ){
-             //TODO add similar safegaurds here.
-            image2.setAttribute('href',makeOtherGradient());
+            const vecColor = [];
+            Object.keys(COLOR[colorSpace]).forEach(k => {
+                vecColor[COLOR_ORD[colorSpace][k]] = COLOR[colorSpace][k]/CHAN_MAX[colorSpace][k];
+            })
+            update1DGradient(vecColor);
+            image2.setAttribute('href',c2.toDataURL());
         }
     })
 
@@ -332,7 +350,7 @@ export default function({
     defs.appendChild(pattern2);
 
     function setRatio(){
-        DIM_RATIO = HH/svg.getBoundingClientRect().height;
+        DIM_RATIO = SVG_HEIGHT/svg.getBoundingClientRect().height;
     }
     setRatio();
     window.addEventListener('resize', setRatio);
