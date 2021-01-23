@@ -1,10 +1,9 @@
 import vertexScript from './shaders/basicVertexShader.glsl';
-import conicGradient from './shaders/conicGradient.glsl';
 import triangleGradient from './shaders/triangleGradient.glsl';
-import hueSaturation from './shaders/xyGradient.glsl';
 import gradient1D from './shaders/gradient1D.glsl';
 
-
+//TODO turn triangleGradient and gradient1D into classes in /gradientGenerators
+//TODO create a superclass for gradients
 export function drawVertices(gl, program, positionAttribute) {
     const position = gl.getAttribLocation(program, positionAttribute);
     const positionBuffer = gl.createBuffer();
@@ -58,41 +57,6 @@ export function genTriangleGradient(c, margin){
         }
     }
 }
-
-export function gen1Dgradient(c, colorSpace, channelIndex, padding, color){
-    const gl = c.getContext('webgl');
-    if (!gl) throw new Error("Could not find WebGL context");
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, gradient1D);
-
-    const program = createProgram(gl, vertexShader, fragmentShader);
-
-    clear(gl);
-    gl.useProgram(program);
-
-    const u_res = gl.getUniformLocation(program, "u_res");
-    const u_colorspace = gl.getUniformLocation(program, "u_colorspace");
-    const u_chan = gl.getUniformLocation(program, "u_chan");
-    const u_color = gl.getUniformLocation(program, "u_color");
-    const u_padding = gl.getUniformLocation(program, "u_padding");
-
-    gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
-    gl.uniform1i(u_colorspace, colorSpace);
-    gl.uniform1i(u_chan, channelIndex);
-    gl.uniform3f(u_color, ...color);
-    gl.uniform1f(u_padding, padding);
-
-
-    drawVertices(gl, program, "a_position");
-    return {
-        update(color){
-            gl.uniform3f(u_color, ...color);
-            drawVertices(gl, program, "a_position");
-        }
-    }
-}
-
-
 
 export function createShader(gl, type, source) {
     const shader = gl.createShader(type);

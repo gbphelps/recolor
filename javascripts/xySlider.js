@@ -1,9 +1,9 @@
 import createSVG from './createSVG';
 import makePattern from './makePattern';
 import mainColor from './ColorObject';
-import { gen1Dgradient } from './webgl/utils';
-import {COLOR_SPACE, CHAN_MAX, COLOR_ORD} from './colorMathConstants';
+import {CHAN_MAX} from './colorMathConstants';
 import XYGradient from './gradientGenerators/xyGradient';
+import LinearGradient from './gradientGenerators/linearGradient';
 
 const SLIDER_PIP_WIDTH = 22;
 const SLIDER_PIP_HEIGHT = 8;
@@ -24,10 +24,6 @@ export default function({
     const xMax = CHAN_MAX[colorSpace][xChannel];
     const yMax = CHAN_MAX[colorSpace][yChannel];
     const zMax = CHAN_MAX[colorSpace][zChannel];
-
-    let update1DGradient = () => {
-        throw new Error('You are trying to update a gradient that has not been initialized')
-    }
 
     if (!target) target = document.body;
 
@@ -59,22 +55,6 @@ export default function({
         zChannel,
     })
 
-    const c2 = document.createElement('canvas');
-    const {update: update1D} = gen1Dgradient(
-        c2, 
-        COLOR_SPACE[colorSpace], 
-        COLOR_ORD[colorSpace][zChannel], 
-        SLIDER_PIP_HEIGHT/2,
-        [0,0,0], 
-    );
-    update1DGradient = update1D;
-
-    c2.height = height;
-    c2.width = 1;
-    document.body.appendChild(c2);
-    c2.style.visibility = 'hidden';
-    c2.style.position = 'absolute';
-
     const svg = createSVG('svg',{
         'viewBox': `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`
     });
@@ -93,7 +73,13 @@ export default function({
 
     const pattern2 = makePattern();
     const image2 = pattern2.getElementsByTagName('image')[0];
-    image2.setAttribute('href',c2.toDataURL());
+    const linearGradient = new LinearGradient({
+        height,
+        width: 1,
+        colorSpace,
+        channel: zChannel,
+        padding: SLIDER_PIP_HEIGHT/2,
+    });
 
     const pip = createSVG('circle',{
         r: 5,
@@ -223,12 +209,8 @@ export default function({
             COLOR[colorSpace][xChannel] !== PREV[colorSpace][xChannel] ||
             COLOR[colorSpace][yChannel] !== PREV[colorSpace][yChannel]
         ){
-            const vecColor = [];
-            Object.keys(COLOR[colorSpace]).forEach(k => {
-                vecColor[COLOR_ORD[colorSpace][k]] = COLOR[colorSpace][k]/CHAN_MAX[colorSpace][k];
-            })
-            update1DGradient(vecColor);
-            image2.setAttribute('href',c2.toDataURL());
+          const gradient = linearGradient.generate(COLOR);
+          image2.setAttribute('href', gradient);
         }
     })
 
