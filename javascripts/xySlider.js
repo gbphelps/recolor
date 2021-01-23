@@ -3,7 +3,7 @@ import makePattern from './makePattern';
 import mainColor from './ColorObject';
 import {CHAN_MAX} from './colorMathConstants';
 import XYGradient from './gradientGenerators/xyGradient';
-import LinearGradient from './gradientGenerators/linearGradient';
+import linearGradient from './gradientGenerators/linearGradient';
 
 const SLIDER_PIP_WIDTH = 22;
 const SLIDER_PIP_HEIGHT = 8;
@@ -70,7 +70,7 @@ export default function({
 
     const pattern2 = makePattern();
     const image2 = pattern2.getElementsByTagName('image')[0];
-    const linearGradient = new LinearGradient({
+    const getLinearGradient = linearGradient({
         height,
         width: 1,
         colorSpace,
@@ -206,8 +206,7 @@ export default function({
             COLOR[colorSpace][xChannel] !== PREV[colorSpace][xChannel] ||
             COLOR[colorSpace][yChannel] !== PREV[colorSpace][yChannel]
         ){
-          const gradient = linearGradient.generate(COLOR);
-          image2.setAttribute('href', gradient);
+          image2.setAttribute('href', getLinearGradient());
         }
     })
 
