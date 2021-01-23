@@ -33,9 +33,6 @@ export default function({
     const SVG_WIDTH = width + trackWidth + spaceBetween + outerMargin*2;
     const SVG_HEIGHT = outerMargin*2 + height;
 
-
-
-
     const pattern = makePattern();
     const image = pattern.getElementsByTagName('image')[0];
     const defs = createSVG('defs',{});

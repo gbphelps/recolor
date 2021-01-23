@@ -28,36 +28,6 @@ export function clear(gl){
     gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-export function genTriangleGradient(c, margin){
-    const gl = c.getContext('webgl');
-    if (!gl) throw new Error("Could not find WebGL context");
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexScript);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, triangleGradient);
-
-    const program = createProgram(gl, vertexShader, fragmentShader);
-
-    clear(gl);
-    gl.useProgram(program);
-
-    const u_res = gl.getUniformLocation(program, "u_res");
-    const u_color = gl.getUniformLocation(program, "u_color");
-    const u_side = gl.getUniformLocation(program, "u_side");
-    const u_margin = gl.getUniformLocation(program, "u_margin");
-    
-    gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
-    gl.uniform4f(u_color, 1, 0, 1, 0);
-    gl.uniform1f(u_side, 180);
-    gl.uniform1f(u_margin, margin);
-
-    drawVertices(gl, program, "a_position");
-    return {
-        update(color){
-            gl.uniform4f(u_color, color.red/255, color.green/255, color.blue/255, 1);
-            drawVertices(gl, program, "a_position");
-        }
-    }
-}
-
 export function createShader(gl, type, source) {
     const shader = gl.createShader(type);
     if (!shader) throw new Error('Could not create shader');

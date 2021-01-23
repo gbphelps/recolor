@@ -41,10 +41,8 @@ export default class LinearGradient {
     generate(COLOR){
         const vecColor = [];
         Object.keys(COLOR[this.colorSpace]).forEach(k => {
-            console.log(k)
             vecColor[COLOR_ORD[this.colorSpace][k]] = COLOR[this.colorSpace][k]/CHAN_MAX[this.colorSpace][k];
         })
-        console.log(vecColor)
         Object.keys(COLOR[this.colorSpace])
         this.gl.uniform3f(this.u_color, ...vecColor);
         drawVertices(this.gl, this.program, "a_position");

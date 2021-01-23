@@ -1,11 +1,9 @@
 import mainColor from './ColorObject';
 import triFromRGB from './colorMethods/triFromRGB';
-import extrema from './utils/extrema';
 import createSVG from './createSVG';
 import ns from './constants';
+import TriangleGradient from './gradientGenerators/triangleGradient';
 import pureFromHue from './colorMethods/pureFromHue';
-import {genTriangleGradient} from './webgl/utils';
-
 
 const sq3 = Math.sqrt(3);
 let pip;
@@ -24,26 +22,24 @@ const margin = 10;
 const s = 180;
 const h = s * ratio;
 
-let canvas;
-let updateGradient;
 
+const rectWidth = s + margin*2;
+const rectHeight = Math.ceil(s*ratio + margin*2);
+
+const triangleGradient = new TriangleGradient({
+	width: rectWidth,
+	height: rectHeight,
+	side: s,
+	margin,
+})
 
 export default function make(target){
 	const container = document.createElement('div');
 	Object.assign(container.style, {
-		width: 	s + margin*2 + 'px',
-		height: Math.ceil(s*ratio + margin*2) + 'px'
+		width: 	rectWidth + 'px',
+		height: rectHeight + 'px'
 	})
 
-	canvas = document.createElement('canvas');
-	canvas.width = s + margin*2;
-	canvas.height = Math.ceil(s*ratio + margin*2);
-
-	const {update} = genTriangleGradient(canvas, margin);
-	updateGradient = update;
-
-	const url = canvas.toDataURL();
-	
 	const svg = createSVG('g',{});
 	const body = createSVG('g',{});
 	const defs = createSVG('defs',{});
@@ -51,7 +47,7 @@ export default function make(target){
 		height: '100%',
 		width: '100%'
 	})
-	image = createSVG('image',{href: url});
+	image = createSVG('image',{});
 	const clip = createSVG('clipPath',{});
 	const clippath = createSVG('path',{});
 	const r = createSVG('rect',{});
@@ -116,8 +112,8 @@ export default function make(target){
 		A ${margin} ${margin} 0 0 1 ${margin} 0
 	`)
 
-	r.setAttribute('height', canvas.height);
-	r.setAttribute('width', canvas.width);
+	r.setAttribute('height', rectHeight);
+	r.setAttribute('width', rectWidth);
 	r.setAttribute('clip-path', `url(#${clip.id})`);
 	r.setAttribute('fill', `url(#${pattern.id})`);
 	r.setAttribute('filter',"url(#shadow2)");
@@ -130,7 +126,7 @@ export default function make(target){
 
 	const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
 	xT = -s/2/sq3 - margin + hueHeight/2;
-	yT = canvas.width + ( hueHeight - canvas.width)/2;
+	yT = rectWidth + ( hueHeight - rectWidth)/2;
 
 
 	body.setAttribute('transform', `
@@ -283,13 +279,13 @@ function setTriangle(COLOR,PREV){
 		l2.setAttribute('y2', yy1);
 
 		input3.style.left = yy1 + xT + 'px';
-		input3.style.bottom = xx1 + yT - canvas.width + 'px';
+		input3.style.bottom = xx1 + yT - rectWidth + 'px';
 
 		input2.style.left = yy2 + xT + 'px';
-		input2.style.bottom = xx2 + yT - canvas.width + 'px';
+		input2.style.bottom = xx2 + yT - rectWidth + 'px';
 
 		input1.style.left = 0 + xT + 'px';
-		input1.style.bottom = xm + yT - canvas.width + 'px';
+		input1.style.bottom = xm + yT - rectWidth + 'px';
 
 		if (document.activeElement !== input1) input1.value = Math.abs(tri.color * 100).toFixed(1);
 		if (document.activeElement !== input2) input2.value = Math.abs(tri.white * 100).toFixed(1);
@@ -302,9 +298,7 @@ function setTriangle(COLOR,PREV){
 	}
 
 	if (COLOR.hsv.hue !== PREV.hsv.hue){
-		const pure = pureFromHue(COLOR.hsv.hue%360);
-		updateGradient(pure);
-		image.setAttribute('href', canvas.toDataURL());
+		image.setAttribute('href', triangleGradient.generate(COLOR));
 	} 
 
 }
