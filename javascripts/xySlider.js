@@ -1,8 +1,7 @@
 import createSVG from './createSVG';
-import makePattern from './makePattern';
 import mainColor from './ColorObject';
 import {CHAN_MAX} from './colorMathConstants';
-import XYGradient from './gradientGenerators/xyGradient';
+import xyGradient from './gradientGenerators/xyGradient';
 import linearGradient from './gradientGenerators/linearGradient';
 
 const SLIDER_PIP_WIDTH = 22;
@@ -33,16 +32,9 @@ export default function({
     const SVG_WIDTH = width + trackWidth + spaceBetween + outerMargin*2;
     const SVG_HEIGHT = outerMargin*2 + height;
 
-    const pattern = makePattern();
-    const image = pattern.getElementsByTagName('image')[0];
-    const defs = createSVG('defs',{});
-    const xySVG = createSVG('rect',{
-        height: height,
-        width: width,
-        rx: XY_SLIDER_PADDING,
-        fill: `url(#${pattern.id})`
-    })
-    const xyGradient = new XYGradient({
+    // const pattern = makePattern();
+    // const image = pattern.getElementsByTagName('image')[0];
+    const xyGradientPattern = xyGradient({
         height,
         width,
         padding: XY_SLIDER_PADDING,
@@ -50,8 +42,14 @@ export default function({
         xChannel,
         yChannel,
         zChannel,
+    });
+    const defs = createSVG('defs',{});
+    const xySVG = createSVG('rect',{
+        height: height,
+        width: width,
+        rx: XY_SLIDER_PADDING,
+        fill: `url(#${xyGradientPattern.id})`
     })
-
     const svg = createSVG('svg',{
         'viewBox': `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`
     });
@@ -196,10 +194,6 @@ export default function({
         if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel].toFixed(1);
 
         if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel].toFixed(1);
-
-        if (COLOR[colorSpace][zChannel] !== PREV[colorSpace][zChannel]){
-            image.setAttribute('href',xyGradient.generate(COLOR));
-        }
     })
 
     pip.addEventListener('mousedown',e => {
@@ -251,8 +245,8 @@ export default function({
     body.appendChild(v);
     body.appendChild(h);
     body.appendChild(pip);
-    defs.appendChild(pattern);
     defs.appendChild(linearGradientPattern);
+    defs.appendChild(xyGradientPattern);
 
     function setRatio(){
         DIM_RATIO = SVG_HEIGHT/svg.getBoundingClientRect().height;
