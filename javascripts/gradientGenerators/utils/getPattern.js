@@ -61,7 +61,6 @@ export default function getPattern({
             } 
         });
         if (!newUniforms.every(u => u.value === false)) {
-            console.log(`HEY ${pattern.id}`)
             newUniforms.forEach(u => {
                 // return false when you don't want to update.
                 if (u.value === false) return;

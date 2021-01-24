@@ -2,12 +2,11 @@ import mainColor from './ColorObject';
 import triFromRGB from './colorMethods/triFromRGB';
 import createSVG from './createSVG';
 import ns from './constants';
-import TriangleGradient from './gradientGenerators/triangleGradient';
+import triangleGradient from './gradientGenerators/triangleGradient';
 import pureFromHue from './colorMethods/pureFromHue';
 
 const sq3 = Math.sqrt(3);
 let pip;
-let image;
 let l1;
 let l2;
 let l3;
@@ -26,7 +25,7 @@ const h = s * ratio;
 const rectWidth = s + margin*2;
 const rectHeight = Math.ceil(s*ratio + margin*2);
 
-const triangleGradient = new TriangleGradient({
+const pattern = new triangleGradient({
 	width: rectWidth,
 	height: rectHeight,
 	side: s,
@@ -43,11 +42,6 @@ export default function make(target){
 	const svg = createSVG('g',{});
 	const body = createSVG('g',{});
 	const defs = createSVG('defs',{});
-	const pattern = createSVG('pattern',{
-		height: '100%',
-		width: '100%'
-	})
-	image = createSVG('image',{});
 	const clip = createSVG('clipPath',{});
 	const clippath = createSVG('path',{});
 	const r = createSVG('rect',{});
@@ -98,7 +92,6 @@ export default function make(target){
 	svg.appendChild(defs);
 	svg.appendChild(body);
 	defs.appendChild(pattern);
-	pattern.appendChild(image);
 	defs.appendChild(clip);
 	clip.appendChild(clippath);
 
@@ -296,11 +289,6 @@ function setTriangle(COLOR,PREV){
 		l3.setAttribute('x2', xx2);
 		l3.setAttribute('y2',yy2);
 	}
-
-	if (COLOR.hsv.hue !== PREV.hsv.hue){
-		image.setAttribute('href', triangleGradient.generate(COLOR));
-	} 
-
 }
 
 
