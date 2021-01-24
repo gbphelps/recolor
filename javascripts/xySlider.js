@@ -68,9 +68,7 @@ export default function({
         transform: `translate(${outerMargin} ${outerMargin})`
     });
 
-    const pattern2 = makePattern();
-    const image2 = pattern2.getElementsByTagName('image')[0];
-    const getLinearGradient = linearGradient({
+    const linearGradientPattern = linearGradient({
         height,
         width: 1,
         colorSpace,
@@ -168,7 +166,7 @@ export default function({
     const sliderTrack = createSVG('rect',{
         width: trackWidth,
         height: height,
-        fill: `url(#${pattern2.id})`,
+        fill: `url(#${linearGradientPattern.id})`,
         x: width + spaceBetween,
     })
 
@@ -201,12 +199,6 @@ export default function({
 
         if (COLOR[colorSpace][zChannel] !== PREV[colorSpace][zChannel]){
             image.setAttribute('href',xyGradient.generate(COLOR));
-        }
-        if (
-            COLOR[colorSpace][xChannel] !== PREV[colorSpace][xChannel] ||
-            COLOR[colorSpace][yChannel] !== PREV[colorSpace][yChannel]
-        ){
-          image2.setAttribute('href', getLinearGradient());
         }
     })
 
@@ -260,7 +252,7 @@ export default function({
     body.appendChild(h);
     body.appendChild(pip);
     defs.appendChild(pattern);
-    defs.appendChild(pattern2);
+    defs.appendChild(linearGradientPattern);
 
     function setRatio(){
         DIM_RATIO = SVG_HEIGHT/svg.getBoundingClientRect().height;
