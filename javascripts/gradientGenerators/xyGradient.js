@@ -36,7 +36,6 @@ export default function xyGradient({
                 setter: (COLOR, PREV) => {
                     if (COLOR[colorSpace][zChannel] === PREV[colorSpace][zChannel]) return false;
                     const color = COLOR[colorSpace][zChannel]/CHAN_MAX[colorSpace][zChannel];
-                    console.log(colorSpace, color);
                     return color;
                 }
             },
