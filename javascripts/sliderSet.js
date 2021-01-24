@@ -15,8 +15,6 @@ const paramLookup = {
     blue: 'B'
 }
 
-
-
 export default function buildChannels(channels, {
     trackLength = 300,
     trackThickness = 8,

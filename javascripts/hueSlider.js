@@ -6,19 +6,18 @@ import c from './constants';
 
 export default function hueSlider(target){ 
 
-    if (!target) target = document.body;
-
-    const RADIUS = c.hueSlider.radius;
-    const thickness = c.hueSlider.trackThickness;
-    const marg = c.hueSlider.svgMargin;
+if (!target) target = document.body;
+let RADIUS = 100;
 
 
-    const svg = createSVG('svg',{
-        viewBox: `0 0 ${RADIUS*2 + marg} ${RADIUS*2 + marg}`, 
-        height: RADIUS*2 + marg
-    });
+const thickness = c.hueSlider.trackThickness;
+const marg = c.hueSlider.svgMargin;
 
 
+const svg = createSVG('svg',{
+    viewBox: `0 0 ${RADIUS*2 + marg} ${RADIUS*2 + marg}`, 
+    height: RADIUS*2 + marg
+});
 
 c.hueSlider.set(svg);
 
@@ -27,17 +26,11 @@ const mask = createSVG('mask',{});
 
 const maskBG = createSVG('rect',{
     fill: 'white',
-    height: RADIUS*2, 
-    width: RADIUS*2,
 });
 
 const maskCircle = createSVG('circle',{
     fill: 'black',
-    r: RADIUS- thickness, 
-    cx: RADIUS, 
-    cy: RADIUS
 });
-
 
 const pattern = conicGradient({
     height: 400,
@@ -56,9 +49,6 @@ const gHue = createSVG('g',{});
 const hueTrack = createSVG('circle',{
     fill: `url(#${pattern.id})`,
     mask: `url(#${mask.id})`,
-    r: RADIUS,
-    cx: RADIUS, 
-    cy: RADIUS,
 });
 
 const gPip = createSVG('g',{
@@ -86,7 +76,25 @@ svg.appendChild(defs);
 svg.appendChild(gBody);
 
 gPip.setAttribute('transform',`translate(${RADIUS} ${RADIUS})`);
-pipRect.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
+pipRect.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`);
+
+
+function resize(){ 
+    const {height} = target.getBoundingClientRect();
+    svg.setAttribute('viewBox', `0 0 ${height} ${height}`);
+    svg.setAttribute('height', height);
+    RADIUS = (height - marg)/2;
+    maskCircle.setAttribute('r', RADIUS-thickness);
+    maskCircle.setAttribute('cx', RADIUS);
+    maskCircle.setAttribute('cy', RADIUS);
+    maskBG.setAttribute('height', RADIUS*2);
+    maskBG.setAttribute('width', RADIUS*2);
+    hueTrack.setAttribute('r', RADIUS);
+    hueTrack.setAttribute('cx', RADIUS);
+    hueTrack.setAttribute('cy', RADIUS);
+}
+resize();
+window.addEventListener('resize', resize);
 
 
 mainColor.subscribe((COLOR, PREV) => {
@@ -124,6 +132,6 @@ pipRect.addEventListener('mousedown',e=>{
 	document.addEventListener('mousemove', move);
 	document.addEventListener('mouseup',()=>{
 		document.removeEventListener('mousemove', move)
-	},{once:true})
+    },{once:true})
 })
 }
