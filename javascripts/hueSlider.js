@@ -1,10 +1,8 @@
 import mainColor from './ColorObject';
-import ConicGradient from './gradientGenerators/conicGradient';
+import conicGradient from './gradientGenerators/conicGradient';
 import createSVG from './createSVG';
 import c from './constants';
 
-
-const conicGradient = new ConicGradient();
 
 export default function hueSlider(target){ 
 
@@ -40,23 +38,16 @@ const maskCircle = createSVG('circle',{
     cy: RADIUS
 });
 
+
+const pattern = conicGradient({
+    height: 400,
+    width: 400,
+})
+
 mask.appendChild(maskBG);
 mask.appendChild(maskCircle);
 defs.appendChild(mask);
-
-const pattern = createSVG('pattern',{
-    width: '100%', 
-    height: '100%',
-    viewBox: `0 0 ${RADIUS*2} ${RADIUS*2}`,
-});
-
-const gradientImage = createSVG('image', { 
-    height: 2*RADIUS,
-    href: conicGradient.generate(mainColor.color),
-});
-
 defs.appendChild(pattern);
-pattern.appendChild(gradientImage);
 
 const gBody = createSVG('g',{transform: `translate( ${marg/2} ${marg/2})`});
 
@@ -99,8 +90,6 @@ pipRect.setAttribute('transform',`rotate(-90)translate(${-huePipW/2 + RADIUS -th
 
 
 mainColor.subscribe((COLOR, PREV) => {
-    gradientImage.setAttribute('href',conicGradient.generate(COLOR));
-    
     if (COLOR.hsv.hue === PREV.hsv.hue) return;
 	pipRect.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${-huePipW/2 + RADIUS -thickness/2} ${ -huePipH/2})`)
 })
