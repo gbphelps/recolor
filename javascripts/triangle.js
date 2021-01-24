@@ -13,29 +13,29 @@ let l3;
 let input1;
 let input2;
 let input3;
-let xT;
-let yT;
 
 const ratio = sq3 / 2;
 const margin = 10;
-const s = 180;
-const h = s * ratio;
 
-const rectWidth = s + margin * 2;
-const rectHeight = Math.ceil(s * ratio + margin * 2);
+let SIDE = 180;
+let RECT_WIDTH = SIDE + margin * 2;
+let RECT_HEIGHT = Math.ceil(SIDE * ratio + margin * 2);
+let X_TRANS = -SIDE / 2 / sq3 - margin + 100 / 2;
+let Y_TRANS = RECT_WIDTH + (100 - RECT_WIDTH) / 2;
+let TRIANGLE_HEIGHT = SIDE * ratio;
 
-const pattern = new triangleGradient({
-  width: rectWidth,
-  height: rectHeight,
-  side: s,
+const pattern = triangleGradient({
+  width: RECT_WIDTH,
+  height: RECT_HEIGHT,
+  side: SIDE,
   margin,
 });
 
 export default function make(target) {
   const container = document.createElement('div');
   Object.assign(container.style, {
-    width: `${rectWidth}px`,
-    height: `${rectHeight}px`,
+    width: `${RECT_WIDTH}px`,
+    height: `${RECT_HEIGHT}px`,
   });
 
   const svg = createSVG('g', {});
@@ -93,31 +93,12 @@ export default function make(target) {
   defs.appendChild(clip);
   clip.appendChild(clippath);
 
-  clippath.setAttribute('d', `
-    M ${margin} 0 
-    l ${s} 0 
-    a ${margin} ${margin} 0 0 1 ${margin * Math.sin(Math.PI / 3)} ${margin + margin * Math.cos(Math.PI / 3)}
-    l ${-s / 2} ${s * ratio} 
-    a ${margin} ${margin} 0 0 1 ${-margin * 2 * Math.sin(Math.PI / 3)} 0
-    l ${-s / 2} ${-s * ratio}
-    A ${margin} ${margin} 0 0 1 ${margin} 0
-  `);
-
-  r.setAttribute('height', rectHeight);
-  r.setAttribute('width', rectWidth);
   r.setAttribute('clip-path', `url(#${clip.id})`);
   r.setAttribute('fill', `url(#${pattern.id})`);
   r.setAttribute('filter', 'url(#shadow2)');
   const g = createSVG('g', {});
   body.appendChild(g);
   g.appendChild(r);
-
-  const hueHeight = ns.hueSlider.get().getBoundingClientRect().height;
-  xT = -s / 2 / sq3 - margin + hueHeight / 2;
-  yT = rectWidth + (hueHeight - rectWidth) / 2;
-
-  body.setAttribute('transform', `
-  translate(${xT} ${yT})rotate(-90)`);
 
   pip = createSVG('circle', {});
   body.appendChild(l1);
@@ -133,9 +114,40 @@ export default function make(target) {
   pip.setAttribute('vector-effect', 'non-scaling-stroke');
   pip.setAttribute('filter', 'url(#shadow2)');
 
+  function resize() {
+    const { height } = target.getBoundingClientRect();
+    SIDE = height / 2;
+    RECT_WIDTH = SIDE + margin * 2;
+    RECT_HEIGHT = Math.ceil(SIDE * ratio + margin * 2);
+    X_TRANS = -SIDE / 2 / sq3 - margin + height / 2;
+    Y_TRANS = RECT_WIDTH + (height - RECT_WIDTH) / 2;
+    TRIANGLE_HEIGHT = SIDE * ratio;
+
+    clippath.setAttribute('d', `
+    M ${margin} 0 
+    l ${SIDE} 0 
+    a ${margin} ${margin} 0 0 1 ${margin * Math.sin(Math.PI / 3)} ${margin + margin * Math.cos(Math.PI / 3)}
+    l ${-SIDE / 2} ${SIDE * ratio} 
+    a ${margin} ${margin} 0 0 1 ${-margin * 2 * Math.sin(Math.PI / 3)} 0
+    l ${-SIDE / 2} ${-SIDE * ratio}
+    A ${margin} ${margin} 0 0 1 ${margin} 0
+  `);
+
+    r.setAttribute('height', RECT_HEIGHT);
+    r.setAttribute('width', RECT_WIDTH);
+    r.style.outline = '1px solid red';
+    setTriangle(mainColor.color);
+
+    body.setAttribute('transform', `translate(${X_TRANS} ${Y_TRANS})rotate(-90)`);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
   let lastValidTri = null;
 
   mainColor.subscribe(setTriangle);
+
   mainColor.subscribe((COLOR) => {
     lastValidTri = triFromRGB(COLOR.rgb);
   });
@@ -161,22 +173,26 @@ function setPip(e) {
     let xAttempt = pip.cx.baseVal.value + delx;
     let yAttempt = pip.cy.baseVal.value + dely;
 
-    if (yAttempt - margin > s * ratio) {
+    if (yAttempt - margin > SIDE * ratio) {
       // tip of triangle
-      yAttempt = s * ratio + margin;
-      xAttempt = s / 2 + margin;
+      yAttempt = SIDE * ratio + margin;
+      xAttempt = SIDE / 2 + margin;
+      console.log('top');
     }
 
     if ((yAttempt - margin) < 0) {
       yAttempt = margin;
+      console.log('bottom');
     }
 
     if ((xAttempt - margin) < 0) {
       xAttempt = margin;
+      console.log('left');
     }
 
-    if ((xAttempt - margin) > s) {
-      xAttempt = s + margin;
+    if ((xAttempt - margin) > SIDE) {
+      console.log('right');
+      xAttempt = SIDE + margin;
     }
 
     if ((yAttempt - margin) > (xAttempt - margin) * Math.sqrt(3)) {
@@ -187,19 +203,22 @@ function setPip(e) {
       }
     }
 
-    if ((yAttempt - margin) > (xAttempt - margin - s) * -Math.sqrt(3)) {
+    if ((yAttempt - margin) > (xAttempt - margin - SIDE) * -Math.sqrt(3)) {
       if (Math.sqrt(3) * dely > delx) {
-        xAttempt = (yAttempt - margin) / -Math.sqrt(3) + margin + s;
+        xAttempt = (yAttempt - margin) / -Math.sqrt(3) + margin + SIDE;
       } else {
-        yAttempt = (xAttempt - margin - s) * -Math.sqrt(3) + margin;
+        yAttempt = (xAttempt - margin - SIDE) * -Math.sqrt(3) + margin;
       }
     }
 
     const yy = yAttempt - margin;
     const xx = xAttempt - margin;
 
-    const top = yy / h;
-    const left = (xx * Math.sqrt(3) - yy) / h / 2;
+    pip.setAttribute('cy', yy + margin);
+    pip.setAttribute('cx', xx + margin);
+
+    const top = yy / TRIANGLE_HEIGHT;
+    const left = (xx * Math.sqrt(3) - yy) / TRIANGLE_HEIGHT / 2;
 
     const newColor = {
       red: pure.red * top + 255 * left,
@@ -221,20 +240,19 @@ function setPip(e) {
 
 function setTriangle(COLOR, PREV) {
   const tri = triFromRGB(COLOR.rgb);
-  if (
-    COLOR.hsv.saturation !== PREV.hsv.saturation
-	|| COLOR.hsv.value !== PREV.hsv.value
-  ) {
-    const y = tri.color * s * ratio; // most obvious; move as a percentage of s*ratio units away from x axis.
+  if (!PREV || COLOR.hsv.saturation !== PREV.hsv.saturation || COLOR.hsv.value !== PREV.hsv.value) {
+    const y = tri.color * SIDE * ratio;
+    // most obvious; move as a percentage of s*ratio units away from x axis.
+
     const ym = y + margin;
 
     pip.setAttribute('cy', ym);
-    const xP = sq3 / 2 * tri.white * s * ratio;
+    const xP = sq3 / 2 * tri.white * SIDE * ratio;
     // find unit vector with slope perpindicular to sqrt(3), then multiply by s*ratio.
     // this gives a point that is the correct number of units away from the WHITE vertex.
     // Make a line with slope of sqrt(3) intersecting this point using the point-slope formula.
     // Find where this line intersects y = tri.color*s*ratio.
-    const yP = -1 / 2 * tri.white * s * ratio;
+    const yP = -1 / 2 * tri.white * SIDE * ratio;
     const x = (y - yP) / sq3 + xP;
     const xm = x + margin;
     pip.setAttribute('cx', xm);
@@ -244,8 +262,8 @@ function setTriangle(COLOR, PREV) {
     l1.setAttribute('x2', xm);
 
     const mm1 = margin + 3 * margin / sq3;
-    const xx1 = (sq3 * (s + mm1) + 1 / sq3 * (xm) - ym) / (1 / sq3 + sq3);
-    const yy1 = -sq3 * (xx1 - (s + mm1));
+    const xx1 = (sq3 * (SIDE + mm1) + 1 / sq3 * (xm) - ym) / (1 / sq3 + sq3);
+    const yy1 = -sq3 * (xx1 - (SIDE + mm1));
 
     const mm2 = margin - sq3 * margin / 2 - 3 / 2 * margin / sq3;
     const xx2 = (1 / sq3 * xm + ym + sq3 * mm2) / (1 / sq3 + sq3);
@@ -256,14 +274,14 @@ function setTriangle(COLOR, PREV) {
     l2.setAttribute('x2', xx1);
     l2.setAttribute('y2', yy1);
 
-    input3.style.left = `${yy1 + xT}px`;
-    input3.style.bottom = `${xx1 + yT - rectWidth}px`;
+    input3.style.left = `${yy1 + X_TRANS}px`;
+    input3.style.bottom = `${xx1 + Y_TRANS - RECT_WIDTH}px`;
 
-    input2.style.left = `${yy2 + xT}px`;
-    input2.style.bottom = `${xx2 + yT - rectWidth}px`;
+    input2.style.left = `${yy2 + X_TRANS}px`;
+    input2.style.bottom = `${xx2 + Y_TRANS - RECT_WIDTH}px`;
 
-    input1.style.left = `${0 + xT}px`;
-    input1.style.bottom = `${xm + yT - rectWidth}px`;
+    input1.style.left = `${0 + X_TRANS}px`;
+    input1.style.bottom = `${xm + Y_TRANS - RECT_WIDTH}px`;
 
     if (document.activeElement !== input1) input1.value = Math.abs(tri.color * 100).toFixed(1);
     if (document.activeElement !== input2) input2.value = Math.abs(tri.white * 100).toFixed(1);
