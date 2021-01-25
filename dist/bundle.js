@@ -724,32 +724,33 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function conicGradient({
+  height,
+  width,
+}) {
+  return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_1__["default"])({
     height,
     width,
-}){
-    return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_1__["default"])({
-        height,
-        width,
-        script: _webgl_shaders_conicGradient_glsl__WEBPACK_IMPORTED_MODULE_0__["default"],
-        staticUniforms: {},
-        dynamicUniforms: {
-            u_saturation: {
-                type: 'uniform1f',
-                setter: ((COLOR, PREV) => {
-                    if (COLOR.hsl.saturation === PREV.hsl.saturation) return false;
-                    return COLOR.hsl.saturation/100;
-                }),
-            },
-            u_lightness: {
-                type: 'uniform1f',
-                setter: ((COLOR, PREV) => {
-                    if (COLOR.hsl.lightness === PREV.hsl.lightness) return false;
-                    return COLOR.hsl.lightness/100;
-                }),
-            }
-        }
-    })
+    script: _webgl_shaders_conicGradient_glsl__WEBPACK_IMPORTED_MODULE_0__["default"],
+    staticUniforms: {},
+    dynamicUniforms: {
+      u_saturation: {
+        type: 'uniform1f',
+        setter: ((COLOR, PREV) => {
+          if (COLOR.hsl.saturation === PREV.hsl.saturation) return false;
+          return COLOR.hsl.saturation / 100;
+        }),
+      },
+      u_lightness: {
+        type: 'uniform1f',
+        setter: ((COLOR, PREV) => {
+          if (COLOR.hsl.lightness === PREV.hsl.lightness) return false;
+          return COLOR.hsl.lightness / 100;
+        }),
+      },
+    },
+  });
 }
+
 
 /***/ }),
 
@@ -897,78 +898,77 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 function getPattern({
-    height, 
-    width, 
-    staticUniforms, 
-    dynamicUniforms, 
-    script,
-}){
-    const pattern = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('pattern',{
-        height: 1,
-        width: 1,
-        patternUnits: 'objectBoundingBox',
-        patternContentUnits: 'objectBoundingBox',
-    })
-    pattern.id = `GRADIENT_${getPattern.callCounter++}`
-    const image = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('image',{
-       height: 1,
-       width: 1,
-       x:0,
-       y:0,
-       preserveAspectRatio: 'none'
-    })
-    pattern.appendChild(image);
+  height,
+  width,
+  staticUniforms,
+  dynamicUniforms,
+  script,
+}) {
+  const pattern = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('pattern', {
+    height: 1,
+    width: 1,
+    patternUnits: 'objectBoundingBox',
+    patternContentUnits: 'objectBoundingBox',
+  });
+  pattern.id = `GRADIENT_${getPattern.callCounter++}`;
+  const image = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('image', {
+    height: 1,
+    width: 1,
+    x: 0,
+    y: 0,
+    preserveAspectRatio: 'none',
+  });
+  pattern.appendChild(image);
 
-    const canvas = document.createElement('canvas');
-    canvas.height = height;
-    canvas.width = width;
+  const canvas = document.createElement('canvas');
+  canvas.height = height;
+  canvas.width = width;
 
-    const gl = canvas.getContext('webgl');
-    if (!gl) throw new Error("Could not find WebGL context");
+  const gl = canvas.getContext('webgl');
+  if (!gl) throw new Error('Could not find WebGL context');
 
-    const vertexShader = Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["createShader"])(gl, gl.VERTEX_SHADER, _webgl_shaders_basicVertexShader_glsl__WEBPACK_IMPORTED_MODULE_3__["default"]);
-    const fragmentShader = Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["createShader"])(gl, gl.FRAGMENT_SHADER, script);
+  const vertexShader = Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["createShader"])(gl, gl.VERTEX_SHADER, _webgl_shaders_basicVertexShader_glsl__WEBPACK_IMPORTED_MODULE_3__["default"]);
+  const fragmentShader = Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["createShader"])(gl, gl.FRAGMENT_SHADER, script);
 
-    const program = Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["createProgram"])(gl, vertexShader, fragmentShader);
-    gl.useProgram(program);
+  const program = Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["createProgram"])(gl, vertexShader, fragmentShader);
+  gl.useProgram(program);
 
-    const u_res = gl.getUniformLocation(program, "u_res");
-    gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
+  const u_res = gl.getUniformLocation(program, 'u_res');
+  gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
 
-    Object.keys(staticUniforms).forEach((name) => {
-        const {type, value} = staticUniforms[name];
-        const loc = gl.getUniformLocation(program, name);
-        gl[type](loc, ...(Array.isArray(value) ? value : [value]));
-    })
+  Object.keys(staticUniforms).forEach((name) => {
+    const { type, value } = staticUniforms[name];
+    const loc = gl.getUniformLocation(program, name);
+    gl[type](loc, ...(Array.isArray(value) ? value : [value]));
+  });
 
+  _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].subscribe((COLOR, PREV) => {
+    const newUniforms = Object.keys(dynamicUniforms).map((name) => {
+      const { setter, type } = dynamicUniforms[name];
+      const loc = gl.getUniformLocation(program, name);
+      return {
+        value: setter(COLOR, PREV),
+        type,
+        loc,
+      };
+    });
+    if (!newUniforms.every((u) => u.value === false)) {
+      newUniforms.forEach((u) => {
+        // return false when you don't want to update.
+        if (u.value === false) return;
+        gl[u.type](u.loc, ...(Array.isArray(u.value) ? u.value : [u.value]));
+      });
+    }
 
-    _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].subscribe((COLOR, PREV) => {
-        const newUniforms = Object.keys(dynamicUniforms).map((name) => {
-            const {setter, type} = dynamicUniforms[name];
-            const loc = gl.getUniformLocation(program, name);
-            return {
-                value: setter(COLOR, PREV),
-                type,
-                loc,
-            } 
-        });
-        if (!newUniforms.every(u => u.value === false)) {
-            newUniforms.forEach(u => {
-                // return false when you don't want to update.
-                if (u.value === false) return;
-                gl[u.type](u.loc, ...(Array.isArray(u.value) ? u.value : [u.value]));
-            })
-        }
+    Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["drawVertices"])(gl, program, 'a_position');
+    image.setAttribute('href', canvas.toDataURL());
+  });
 
-        Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["drawVertices"])(gl, program, "a_position");
-        image.setAttribute('href', canvas.toDataURL());
-    })
-
-    return pattern;
+  return pattern;
 }
 getPattern.callCounter = 0;
+
 
 /***/ }),
 
