@@ -64,6 +64,7 @@ export default function hueSlider(target) {
   const hueTrack = createSVG('circle', {
     fill: `url(#${pattern.id})`,
     mask: `url(#${mask.id})`,
+    id: 'hue-track',
   });
 
   const gPip = createSVG('g', {
@@ -118,7 +119,7 @@ export default function hueSlider(target) {
     const tx = xRot < 0 ? 'translateX(-100%)' : '';
     const ty = 'translateY(-50%)';
     input.style.transform = `${tx}${ty}`;
-    const offset = (xRot < 0 ? -huePipH - huePipStroke : 0) * 1;
+    const offset = xRot < 0 ? -huePipH - huePipStroke - 8 : 8;
     input.style.left = `${xRot + target.getBoundingClientRect().height / 2 + offset}px`;
     input.style.top = `${yRot + target.getBoundingClientRect().height / 2}px`;
     if (document.activeElement !== input) input.value = COLOR.hsv.hue.toFixed(0);

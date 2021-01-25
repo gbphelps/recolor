@@ -672,16 +672,17 @@ __webpack_require__.r(__webpack_exports__);
 let hueSlider;
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    hueSlider: {
-        svgMargin: 20,
-        radius: 140,
-        trackThickness: 8,
-        set: function(that){ hueSlider = that },
-        get: function(){ return hueSlider }
-    },
-    triangleSlider: {
-    }
+  hueSlider: {
+    svgMargin: 20,
+    radius: 140,
+    trackThickness: 8,
+    set(that) { hueSlider = that; },
+    get() { return hueSlider; },
+  },
+  triangleSlider: {
+  },
 });
+
 
 /***/ }),
 
@@ -1112,6 +1113,7 @@ function hueSlider(target) {
   const hueTrack = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('circle', {
     fill: `url(#${pattern.id})`,
     mask: `url(#${mask.id})`,
+    id: 'hue-track',
   });
 
   const gPip = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('g', {
@@ -1166,7 +1168,7 @@ function hueSlider(target) {
     const tx = xRot < 0 ? 'translateX(-100%)' : '';
     const ty = 'translateY(-50%)';
     input.style.transform = `${tx}${ty}`;
-    const offset = (xRot < 0 ? -huePipH - huePipStroke : 0) * 1;
+    const offset = xRot < 0 ? -huePipH - huePipStroke - 8 : 8;
     input.style.left = `${xRot + target.getBoundingClientRect().height / 2 + offset}px`;
     input.style.top = `${yRot + target.getBoundingClientRect().height / 2}px`;
     if (document.activeElement !== input) input.value = COLOR.hsv.hue.toFixed(0);
@@ -1979,7 +1981,8 @@ function make(target) {
 
   function resize() {
     const { height } = target.getBoundingClientRect();
-    SIDE = height / 2;
+    // TODO maybe do real math and be less lazy about this
+    SIDE = (document.getElementById('hue-track').r.baseVal.value * 1.5) - 20;
     RECT_WIDTH = SIDE + margin * 2;
     RECT_HEIGHT = Math.ceil(SIDE * ratio + margin * 2);
     X_TRANS = -SIDE / 2 / sq3 - margin + height / 2;

@@ -118,7 +118,8 @@ export default function make(target) {
 
   function resize() {
     const { height } = target.getBoundingClientRect();
-    SIDE = height / 2;
+    // TODO maybe do real math and be less lazy about this
+    SIDE = (document.getElementById('hue-track').r.baseVal.value * 1.5) - 20;
     RECT_WIDTH = SIDE + margin * 2;
     RECT_HEIGHT = Math.ceil(SIDE * ratio + margin * 2);
     X_TRANS = -SIDE / 2 / sq3 - margin + height / 2;
