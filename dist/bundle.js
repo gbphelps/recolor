@@ -1052,6 +1052,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 let RADIUS = 100;
+const huePipH = 12;
+const huePipW = 10;
+const huePipStroke = 2;
 
 function hueSlider(target) {
   if (!target) target = document.body;
@@ -1062,6 +1065,21 @@ function hueSlider(target) {
   const svg = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('svg', {
     viewBox: `0 0 ${RADIUS * 2 + marg} ${RADIUS * 2 + marg}`,
     height: RADIUS * 2 + marg,
+  });
+
+  const input = document.createElement('input');
+  input.onblur = () => {
+    input.value = _ColorObject__WEBPACK_IMPORTED_MODULE_0__["default"].color.hsv.hue.toFixed(0);
+  };
+  input.oninput = () => {
+    const v = +input.value;
+    if (isNaN(v)) return;
+    _ColorObject__WEBPACK_IMPORTED_MODULE_0__["default"].set('hsv', { hue: v });
+  };
+
+  Object.assign(input.style, {
+    position: 'absolute',
+    transform: 'translateY(50%)',
   });
 
   _constants__WEBPACK_IMPORTED_MODULE_3__["default"].hueSlider.set(svg);
@@ -1099,8 +1117,6 @@ function hueSlider(target) {
   const gPip = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('g', {
     filter: 'url(#shadow)',
   });
-  const huePipH = 12;
-  const huePipW = 10;
   const pipRect = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('rect', {
     width: huePipW,
     height: huePipH,
@@ -1116,6 +1132,7 @@ function hueSlider(target) {
   gBody.appendChild(gPip);
   gPip.appendChild(pipRect);
 
+  target.appendChild(input);
   target.appendChild(svg);
   svg.appendChild(defs);
   svg.appendChild(gBody);
@@ -1123,7 +1140,6 @@ function hueSlider(target) {
   function resize() {
     const { height } = target.getBoundingClientRect();
     RADIUS = (height - marg) / 2;
-
     svg.setAttribute('viewBox', `0 0 ${height} ${height}`);
     svg.setAttribute('height', height);
     maskCircle.setAttribute('r', RADIUS - thickness);
@@ -1142,7 +1158,18 @@ function hueSlider(target) {
 
   function setPipFromColor(COLOR, PREV) {
     if (PREV && COLOR.hsv.hue === PREV.hsv.hue) return;
-    pipRect.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${-huePipW / 2 + RADIUS - thickness / 2} ${-huePipH / 2})`);
+    const x = -huePipW / 2 + RADIUS - thickness / 2;
+    const y = -huePipH / 2;
+    pipRect.setAttribute('transform', `rotate(${COLOR.hsv.hue - 90})translate(${x} ${y})`);
+    const xRot = Math.sin(COLOR.hsv.hue * Math.PI / 180) * (RADIUS - thickness / 2);
+    const yRot = -Math.cos(COLOR.hsv.hue * Math.PI / 180) * (RADIUS - thickness / 2);
+    const tx = xRot < 0 ? 'translateX(-100%)' : '';
+    const ty = 'translateY(-50%)';
+    input.style.transform = `${tx}${ty}`;
+    const offset = (xRot < 0 ? -huePipH - huePipStroke : 0) * 1;
+    input.style.left = `${xRot + target.getBoundingClientRect().height / 2 + offset}px`;
+    input.style.top = `${yRot + target.getBoundingClientRect().height / 2}px`;
+    if (document.activeElement !== input) input.value = COLOR.hsv.hue.toFixed(0);
   }
 
   _ColorObject__WEBPACK_IMPORTED_MODULE_0__["default"].subscribe(setPipFromColor);
@@ -1858,6 +1885,8 @@ let X_TRANS = -SIDE / 2 / sq3 - margin + 100 / 2;
 let Y_TRANS = RECT_WIDTH + (100 - RECT_WIDTH) / 2;
 let TRIANGLE_HEIGHT = SIDE * ratio;
 
+// todo we need to rebuild this every time and modify the uniforms to be dynamic
+// problem is that ratio of margin to heigth/width will change
 const pattern = Object(_gradientGenerators_triangleGradient__WEBPACK_IMPORTED_MODULE_4__["default"])({
   width: RECT_WIDTH,
   height: RECT_HEIGHT,
@@ -2010,17 +2039,21 @@ function setPip(e) {
       // tip of triangle
       yAttempt = SIDE * ratio + margin;
       xAttempt = SIDE / 2 + margin;
+      console.log('top');
     }
 
     if ((yAttempt - margin) < 0) {
       yAttempt = margin;
+      console.log('bottom');
     }
 
     if ((xAttempt - margin) < 0) {
       xAttempt = margin;
+      console.log('left');
     }
 
     if ((xAttempt - margin) > SIDE) {
+      console.log('right');
       xAttempt = SIDE + margin;
     }
 

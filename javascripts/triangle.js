@@ -24,6 +24,8 @@ let X_TRANS = -SIDE / 2 / sq3 - margin + 100 / 2;
 let Y_TRANS = RECT_WIDTH + (100 - RECT_WIDTH) / 2;
 let TRIANGLE_HEIGHT = SIDE * ratio;
 
+// todo we need to rebuild this every time and modify the uniforms to be dynamic
+// problem is that ratio of margin to heigth/width will change
 const pattern = triangleGradient({
   width: RECT_WIDTH,
   height: RECT_HEIGHT,
@@ -135,7 +137,6 @@ export default function make(target) {
 
     r.setAttribute('height', RECT_HEIGHT);
     r.setAttribute('width', RECT_WIDTH);
-    r.style.outline = '1px solid red';
     setTriangle(mainColor.color);
 
     body.setAttribute('transform', `translate(${X_TRANS} ${Y_TRANS})rotate(-90)`);
