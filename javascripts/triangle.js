@@ -15,7 +15,7 @@ let input2;
 let input3;
 
 const ratio = sq3 / 2;
-const margin = 10;
+const margin = 8;
 
 let SIDE = 180;
 let RECT_WIDTH = SIDE + margin * 2;
@@ -119,7 +119,9 @@ export default function make(target) {
   function resize() {
     const { height } = target.getBoundingClientRect();
     // TODO maybe do real math and be less lazy about this
-    SIDE = (document.getElementById('hue-track').r.baseVal.value * 1.5) - 20;
+    const radius = document.getElementById('hue-track').r.baseVal.value;
+    SIDE = 2 * Math.sin(1 / 3 * Math.PI) * (radius - ns.hueSlider.trackThickness) - 2 * margin - 24;
+
     RECT_WIDTH = SIDE + margin * 2;
     RECT_HEIGHT = Math.ceil(SIDE * ratio + margin * 2);
     X_TRANS = -SIDE / 2 / sq3 - margin + height / 2;
