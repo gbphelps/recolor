@@ -4,6 +4,7 @@ import createSVG from '../../createSVG';
 import vertexScript from '../../webgl/shaders/basicVertexShader.glsl';
 
 export default function getPattern({
+  element,
   height,
   width,
   staticUniforms,
@@ -30,6 +31,8 @@ export default function getPattern({
   canvas.height = height;
   canvas.width = width;
 
+  document.body.appendChild(canvas);
+
   const gl = canvas.getContext('webgl');
   if (!gl) throw new Error('Could not find WebGL context');
 
@@ -41,6 +44,20 @@ export default function getPattern({
 
   const u_res = gl.getUniformLocation(program, 'u_res');
   gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
+
+  function resize() {
+    setTimeout(() => {
+      if (!element) return;
+      const { height: h, width: w } = element.getBoundingClientRect();
+      // canvas.height = w;
+      // canvas.width = h;
+      gl.uniform2f(u_res, h, w);
+      drawVertices(gl, program, 'a_position');
+      image.setAttribute('href', canvas.toDataURL());
+    });
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
   Object.keys(staticUniforms).forEach((name) => {
     const { type, value } = staticUniforms[name];

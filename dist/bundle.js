@@ -847,8 +847,10 @@ function triangleGradient({
   width,
   side,
   margin,
+  element,
 }) {
   return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_2__["default"])({
+    element,
     height,
     width,
     script: _webgl_shaders_triangleGradient_glsl__WEBPACK_IMPORTED_MODULE_1__["default"],
@@ -899,6 +901,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function getPattern({
+  element,
   height,
   width,
   staticUniforms,
@@ -925,6 +928,8 @@ function getPattern({
   canvas.height = height;
   canvas.width = width;
 
+  document.body.appendChild(canvas);
+
   const gl = canvas.getContext('webgl');
   if (!gl) throw new Error('Could not find WebGL context');
 
@@ -936,6 +941,20 @@ function getPattern({
 
   const u_res = gl.getUniformLocation(program, 'u_res');
   gl.uniform2f(u_res, gl.canvas.width, gl.canvas.height);
+
+  function resize() {
+    setTimeout(() => {
+      if (!element) return;
+      const { height: h, width: w } = element.getBoundingClientRect();
+      // canvas.height = w;
+      // canvas.width = h;
+      gl.uniform2f(u_res, h, w);
+      Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["drawVertices"])(gl, program, 'a_position');
+      image.setAttribute('href', canvas.toDataURL());
+    });
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
   Object.keys(staticUniforms).forEach((name) => {
     const { type, value } = staticUniforms[name];
@@ -1889,12 +1908,6 @@ let TRIANGLE_HEIGHT = SIDE * ratio;
 
 // todo we need to rebuild this every time and modify the uniforms to be dynamic
 // problem is that ratio of margin to heigth/width will change
-const pattern = Object(_gradientGenerators_triangleGradient__WEBPACK_IMPORTED_MODULE_4__["default"])({
-  width: RECT_WIDTH,
-  height: RECT_HEIGHT,
-  side: SIDE,
-  margin,
-});
 
 function make(target) {
   const container = document.createElement('div');
@@ -1909,6 +1922,14 @@ function make(target) {
   const clip = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('clipPath', {});
   const clippath = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('path', {});
   const r = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('rect', {});
+
+  const pattern = Object(_gradientGenerators_triangleGradient__WEBPACK_IMPORTED_MODULE_4__["default"])({
+    element: r,
+    width: RECT_WIDTH,
+    height: RECT_HEIGHT,
+    side: SIDE,
+    margin,
+  });
 
   l1 = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('line', {
     stroke: 'white',
@@ -2044,17 +2065,21 @@ function setPip(e) {
       // tip of triangle
       yAttempt = SIDE * ratio + margin;
       xAttempt = SIDE / 2 + margin;
+      console.log('top');
     }
 
     if ((yAttempt - margin) < 0) {
       yAttempt = margin;
+      console.log('bottom');
     }
 
     if ((xAttempt - margin) < 0) {
       xAttempt = margin;
+      console.log('left');
     }
 
     if ((xAttempt - margin) > SIDE) {
+      console.log('right');
       xAttempt = SIDE + margin;
     }
 
@@ -2303,7 +2328,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("precision mediump float;\nvarying vec2 v_pos;\nuniform vec2 u_res;\nuniform vec3 u_color;\nuniform float u_side;\nuniform float u_margin;\n\nvoid main() {\n   float sq3 = 1.732050807568877;\n   float ratio = sq3/2.0;\n   float h = u_side * ratio;\n   vec3 black = vec3(0.0, 0.0, 0.0);\n   vec3 white = vec3(1.0, 1.0, 1.0);\n\n   float x = (v_pos.x + 1.0)/2.0 * u_res.x - u_margin;\n   float y = (1.0 - (v_pos.y + 1.0)/2.0) * u_res.y - u_margin;\n\n   float top = y/h;\n   float left = (x*sq3 - y)/h/2.0;\n   float right = ((x-u_side)*-sq3 -y)/h/2.0;\n\n   \tif (y < sq3*x && y < (x-u_side)*-sq3 && y > 0.0){\n      gl_FragColor = vec4(top*u_color + left*white + right*black, 1.0);\n    } else if (y <= 0.0) {\n \t    gl_FragColor = vec4(x/u_side*white + (1.0-x/u_side)*black, 1.0);\n    } else if (x > u_side/2.0 && y > 0.0){\n      float w = min((-(x-u_side)/2.0 + ratio*y)/u_side,1.0);\n      gl_FragColor = vec4((1.0-w)*white + w*u_color, 1.0);\n    } else {\n      float w = min((x/2.0 + ratio*y)/u_side, 1.0);\n      gl_FragColor = vec4((1.0-w)*black + w*u_color, 1);\n    }\n}\n\n");
+/* harmony default export */ __webpack_exports__["default"] = ("precision mediump float;\nvarying vec2 v_pos;\nuniform vec2 u_res;\nuniform vec3 u_color;\nuniform float u_side;\nuniform float u_margin;\n\nfloat toLine(vec2 slope, vec2 linePoint, vec2 point) {\n  vec2 n = slope/length(slope);\n  vec2 dir = linePoint - point;\n  return length(dir - dot(dir,n)*n);\n}\n\nvoid main() {\n  float sq3 = 1.732050807568877;\n  float ratio = sq3/2.0;\n  float h = u_side * ratio;\n  vec3 black = vec3(0.0, 0.0, 0.0);\n  vec3 white = vec3(1.0, 1.0, 1.0);\n\n  float xm = u_margin/u_res.x;\n  float ym = u_margin/u_res.y;\n\n  float x = (v_pos.x/(1.0-2.0*xm))/2.0;\n  float y = (((1.0 - v_pos.y)/2.0) - ym)/(1.0-2.0*ym)*ratio;\n  \n  vec2 point = vec2(x, y);\n  vec2 y0 = vec2(0.0, ratio);\n  vec2 slope1 = vec2(1.0,sq3);\n  vec2 slope2 = vec2(-1.0,sq3);\n\n  float top = y/ratio;\n  float left = toLine(slope1,y0,point)/ratio;\n  float right = toLine(slope2,y0,point)/ratio;\n\n   \n\n   if (x < -.5) {\n    gl_FragColor = vec4(0,0,1,1);\n   } else if (x > .5){\n     gl_FragColor = vec4(1,0,0,1);\n   } else if (y < 0.0){\n     gl_FragColor = vec4(0,1,1,1);\n   } else if (y > ratio){\n     gl_FragColor = vec4(1,0,1,1);\n   } else if (y > (x + .5)*sq3) {\n      gl_FragColor = vec4(1,1,0,1);\n   } else if (y > (.5 - x)*sq3) {\n      gl_FragColor = vec4(0,1,0,1);\n   } else {\n     gl_FragColor = vec4(\n       left*white + right*black + top*u_color,\n       1.0\n    );\n   }\n\n   \t// if (y < sq3*x && y < (x-u_side)*-sq3 && y > 0.0){\n    //   gl_FragColor = vec4(top*u_color + left*white + right*black, 1.0);\n    // } else if (y <= 0.0) {\n    //   gl_FragColor = vec4(1,0,0,1);\n \t  //   // gl_FragColor = vec4(x/u_side*white + (1.0-x/u_side)*black, 1.0);\n    // } else if (x > u_side/2.0 && y > 0.0){\n    //   gl_FragColor = vec4(1,0,0,1);\n    //   // float w = min((-(x-u_side)/2.0 + ratio*y)/u_side,1.0);\n    //   // gl_FragColor = vec4((1.0-w)*white + w*u_color, 1.0);\n    // } else {\n    //   gl_FragColor = vec4(1,0,0,1);\n    //   // float w = min((x/2.0 + ratio*y)/u_side, 1.0);\n    //   // gl_FragColor = vec4((1.0-w)*black + w*u_color, 1);\n    // }\n}\n\n");
 
 /***/ }),
 

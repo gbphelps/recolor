@@ -26,12 +26,6 @@ let TRIANGLE_HEIGHT = SIDE * ratio;
 
 // todo we need to rebuild this every time and modify the uniforms to be dynamic
 // problem is that ratio of margin to heigth/width will change
-const pattern = triangleGradient({
-  width: RECT_WIDTH,
-  height: RECT_HEIGHT,
-  side: SIDE,
-  margin,
-});
 
 export default function make(target) {
   const container = document.createElement('div');
@@ -46,6 +40,14 @@ export default function make(target) {
   const clip = createSVG('clipPath', {});
   const clippath = createSVG('path', {});
   const r = createSVG('rect', {});
+
+  const pattern = triangleGradient({
+    element: r,
+    width: RECT_WIDTH,
+    height: RECT_HEIGHT,
+    side: SIDE,
+    margin,
+  });
 
   l1 = createSVG('line', {
     stroke: 'white',

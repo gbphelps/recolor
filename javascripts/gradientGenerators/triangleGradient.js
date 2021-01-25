@@ -8,8 +8,10 @@ export default function triangleGradient({
   width,
   side,
   margin,
+  element,
 }) {
   return getPattern({
+    element,
     height,
     width,
     script: fragmentScript,
