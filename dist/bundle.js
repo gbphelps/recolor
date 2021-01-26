@@ -1897,7 +1897,7 @@ let input3;
 const ratio = sq3 / 2;
 const margin = 8;
 
-let SIDE = 180;
+let SIDE = 400;
 let RECT_WIDTH = SIDE + margin * 2;
 let RECT_HEIGHT = Math.ceil(SIDE * ratio + margin * 2);
 let X_TRANS = -SIDE / 2 / sq3 - margin + 100 / 2;
