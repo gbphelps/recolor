@@ -31,8 +31,6 @@ export default function getPattern({
   canvas.height = height;
   canvas.width = width;
 
-  document.body.appendChild(canvas);
-
   const gl = canvas.getContext('webgl');
   if (!gl) throw new Error('Could not find WebGL context');
 
