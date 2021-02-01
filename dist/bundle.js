@@ -726,8 +726,13 @@ __webpack_require__.r(__webpack_exports__);
 function conicGradient({
   height,
   width,
+  element,
 }) {
+  function getDims() {
+    return element.getBoundingClientRect();
+  }
   return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_1__["default"])({
+    getDims,
     height,
     width,
     script: _webgl_shaders_conicGradient_glsl__WEBPACK_IMPORTED_MODULE_0__["default"],
@@ -773,51 +778,53 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 function linearGradient({
-    colorSpace, 
-    channel, 
-    padding, 
-    height, 
+  colorSpace,
+  channel,
+  padding,
+  height,
+  width,
+  element,
+}) {
+  function getDims() {
+    return element.getBoundingClientRect();
+  }
+  return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_3__["default"])({
+    getDims,
+    height,
     width,
-}){
-    return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_3__["default"])({
-        height,
-        width,
-        script: _webgl_shaders_gradient1D_glsl__WEBPACK_IMPORTED_MODULE_1__["default"],
-        staticUniforms: {
-            u_colorspace: {
-                type: 'uniform1i',
-                value: _colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["COLOR_SPACE"][colorSpace], 
-            },
-            u_padding: {
-                type: 'uniform1f',
-                value: padding,
-            },
-            u_chan: {
-                type: 'uniform1i',
-                value: _colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["COLOR_ORD"][colorSpace][channel],
-            }
+    script: _webgl_shaders_gradient1D_glsl__WEBPACK_IMPORTED_MODULE_1__["default"],
+    staticUniforms: {
+      u_colorspace: {
+        type: 'uniform1i',
+        value: _colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["COLOR_SPACE"][colorSpace],
+      },
+      u_padding: {
+        type: 'uniform1f',
+        value: padding,
+      },
+      u_chan: {
+        type: 'uniform1i',
+        value: _colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["COLOR_ORD"][colorSpace][channel],
+      },
+    },
+    dynamicUniforms: {
+      u_color: {
+        type: 'uniform3f',
+        setter: (COLOR, PREV) => {
+          // don't need to update if every other channel in this colorspace is the same.
+          if (Object(_utils_allEqualExcept__WEBPACK_IMPORTED_MODULE_2__["default"])(channel, COLOR[colorSpace], PREV[colorSpace])) {
+            return false;
+          }
+          const vecColor = [];
+          Object.keys(COLOR[colorSpace]).forEach((k) => {
+            vecColor[_colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["COLOR_ORD"][colorSpace][k]] = COLOR[colorSpace][k] / _colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["CHAN_MAX"][colorSpace][k];
+          });
+          return vecColor;
         },
-        dynamicUniforms: {
-            u_color: {
-                type: 'uniform3f',
-                setter: (COLOR, PREV) => {
-                    // don't need to update if every other channel in this colorspace is the same.
-                    if (Object(_utils_allEqualExcept__WEBPACK_IMPORTED_MODULE_2__["default"])(channel, COLOR[colorSpace], PREV[colorSpace])) {
-                        return false;
-                    }
-                    const vecColor = [];
-                    Object.keys(COLOR[colorSpace]).forEach(k => {
-                        vecColor[_colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["COLOR_ORD"][colorSpace][k]] = 
-                        COLOR[colorSpace][k]/_colorMathConstants__WEBPACK_IMPORTED_MODULE_0__["CHAN_MAX"][colorSpace][k];
-                    })
-                    return vecColor;
-                }
-            }
-        },
-    })   
+      },
+    },
+  });
 }
 
 
@@ -849,8 +856,12 @@ function triangleGradient({
   margin,
   element,
 }) {
+  function getDims() {
+    const { height: h, width: w } = element.getBoundingClientRect();
+    return { width: h, height: w };
+  }
   return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_2__["default"])({
-    element,
+    getDims,
     height,
     width,
     script: _webgl_shaders_triangleGradient_glsl__WEBPACK_IMPORTED_MODULE_1__["default"],
@@ -895,13 +906,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ColorObject__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../ColorObject */ "./javascripts/ColorObject.js");
 /* harmony import */ var _createSVG__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../createSVG */ "./javascripts/createSVG.js");
 /* harmony import */ var _webgl_shaders_basicVertexShader_glsl__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../webgl/shaders/basicVertexShader.glsl */ "./javascripts/webgl/shaders/basicVertexShader.glsl");
+/* harmony import */ var _resizeEvents__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../resizeEvents */ "./javascripts/resizeEvents.js");
+
 
 
 
 
 
 function getPattern({
-  element,
+  getDims,
   height,
   width,
   staticUniforms,
@@ -942,17 +955,13 @@ function getPattern({
 
   function resize() {
     setTimeout(() => {
-      if (!element) return;
-      const { height: h, width: w } = element.getBoundingClientRect();
-      // canvas.height = w;
-      // canvas.width = h;
-      gl.uniform2f(u_res, h, w);
+      const { height: h, width: w } = getDims();
+      gl.uniform2f(u_res, w, h);
       Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["drawVertices"])(gl, program, 'a_position');
       image.setAttribute('href', canvas.toDataURL());
     });
   }
-  resize();
-  window.addEventListener('resize', resize);
+  _resizeEvents__WEBPACK_IMPORTED_MODULE_4__["default"].subscribe(resize);
 
   Object.keys(staticUniforms).forEach((name) => {
     const { type, value } = staticUniforms[name];
@@ -981,6 +990,8 @@ function getPattern({
     Object(_webgl_utils__WEBPACK_IMPORTED_MODULE_0__["drawVertices"])(gl, program, 'a_position');
     image.setAttribute('href', canvas.toDataURL());
   });
+
+  // element.setAttribute('fill', `url(#${pattern.id})`);
 
   return pattern;
 }
@@ -1014,8 +1025,13 @@ function xyGradient({
   xChannel,
   yChannel,
   zChannel,
+  element,
 }) {
+  function getDims() {
+    return element.getBoundingClientRect();
+  }
   return Object(_utils_getPattern__WEBPACK_IMPORTED_MODULE_2__["default"])({
+    getDims,
     height,
     width,
     script: _webgl_shaders_xyGradient_glsl__WEBPACK_IMPORTED_MODULE_0__["default"],
@@ -1064,6 +1080,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gradientGenerators_conicGradient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./gradientGenerators/conicGradient */ "./javascripts/gradientGenerators/conicGradient.js");
 /* harmony import */ var _createSVG__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./createSVG */ "./javascripts/createSVG.js");
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./constants */ "./javascripts/constants.js");
+/* harmony import */ var _resizeEvents__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./resizeEvents */ "./javascripts/resizeEvents.js");
+
 
 
 
@@ -1113,25 +1131,26 @@ function hueSlider(target) {
     fill: 'black',
   });
 
-  const pattern = Object(_gradientGenerators_conicGradient__WEBPACK_IMPORTED_MODULE_1__["default"])({
-    height: 400,
-    width: 400,
-  });
-
   mask.appendChild(maskBG);
   mask.appendChild(maskCircle);
   defs.appendChild(mask);
-  defs.appendChild(pattern);
 
   const gBody = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('g', { transform: `translate( ${marg / 2} ${marg / 2})` });
 
   const gHue = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('g', {});
 
   const hueTrack = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('circle', {
-    fill: `url(#${pattern.id})`,
+
     mask: `url(#${mask.id})`,
     id: 'hue-track',
   });
+  const pattern = Object(_gradientGenerators_conicGradient__WEBPACK_IMPORTED_MODULE_1__["default"])({
+    height: 400,
+    width: 400,
+    element: hueTrack,
+  });
+  defs.appendChild(pattern);
+  hueTrack.setAttribute('fill', `url(#${pattern.id})`);
 
   const gPip = Object(_createSVG__WEBPACK_IMPORTED_MODULE_2__["default"])('g', {
     filter: 'url(#shadow)',
@@ -1172,8 +1191,7 @@ function hueSlider(target) {
     gPip.setAttribute('transform', `translate(${RADIUS} ${RADIUS})`);
     setPipFromColor(_ColorObject__WEBPACK_IMPORTED_MODULE_0__["default"].color);
   }
-  resize();
-  window.addEventListener('resize', resize);
+  _resizeEvents__WEBPACK_IMPORTED_MODULE_4__["default"].subscribe(resize);
 
   function setPipFromColor(COLOR, PREV) {
     if (PREV && COLOR.hsv.hue === PREV.hsv.hue) return;
@@ -1233,10 +1251,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ColorObject__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ColorObject */ "./javascripts/ColorObject.js");
 /* harmony import */ var _hueSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./hueSlider */ "./javascripts/hueSlider.js");
 /* harmony import */ var _triangle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./triangle */ "./javascripts/triangle.js");
-/* harmony import */ var _xySlider__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./xySlider */ "./javascripts/xySlider.js");
-/* harmony import */ var _lightnessBlocks__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./lightnessBlocks */ "./javascripts/lightnessBlocks.js");
-/* harmony import */ var _sliderSet__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sliderSet */ "./javascripts/sliderSet.js");
-/* harmony import */ var _makeColorPalette__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./makeColorPalette */ "./javascripts/makeColorPalette.js");
+/* harmony import */ var _resizeEvents__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./resizeEvents */ "./javascripts/resizeEvents.js");
+/* harmony import */ var _xySlider__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./xySlider */ "./javascripts/xySlider.js");
+/* harmony import */ var _lightnessBlocks__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./lightnessBlocks */ "./javascripts/lightnessBlocks.js");
+/* harmony import */ var _sliderSet__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sliderSet */ "./javascripts/sliderSet.js");
+/* harmony import */ var _makeColorPalette__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./makeColorPalette */ "./javascripts/makeColorPalette.js");
+
 
 
 
@@ -1251,25 +1271,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setup() {
-  // makeBlockWithSlider({
-  //     xChannel: 'hue',
-  //     yChannel: 'saturation',
-  //     zChannel: 'lightness',
-  //     colorSpace: 'hsl',
-  //     height: 150,
-  //     width: 350,
-  //     target: document.getElementById('block-sliders')
-  // });
+  _resizeEvents__WEBPACK_IMPORTED_MODULE_3__["default"].init();
 
-  // makeBlockWithSlider({
-  //     xChannel: 'saturation',
-  //     yChannel: 'value',
-  //     zChannel: 'hue',
-  //     colorSpace: 'hsv',
-  //     height: 150,
-  //     width: 150,
-  //     target: document.getElementById('block-sliders')
-  // });
+  Object(_xySlider__WEBPACK_IMPORTED_MODULE_4__["default"])({
+    xChannel: 'hue',
+    yChannel: 'saturation',
+    zChannel: 'lightness',
+    colorSpace: 'hsl',
+    target: document.getElementById('hsl'),
+  });
+
+  Object(_xySlider__WEBPACK_IMPORTED_MODULE_4__["default"])({
+    xChannel: 'saturation',
+    yChannel: 'value',
+    zChannel: 'hue',
+    colorSpace: 'hsv',
+    target: document.getElementById('hsv'),
+  });
 
   Object(_hueSlider__WEBPACK_IMPORTED_MODULE_1__["default"])(document.getElementById('main'));
   Object(_triangle__WEBPACK_IMPORTED_MODULE_2__["default"])(document.getElementById('main'));
@@ -1597,6 +1615,77 @@ module.exports = JSON.parse("{\"aliceblue\":\"#f0f8ff\",\"antiquewhite\":\"#faeb
 
 /***/ }),
 
+/***/ "./javascripts/resizeEvents.js":
+/*!*************************************!*\
+  !*** ./javascripts/resizeEvents.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class ResizeEvents {
+  constructor() {
+    this.subscriptions = [];
+    window.addEventListener('resize', this.resize.bind(this));
+  }
+
+  subscribe(fn) {
+    setTimeout(fn);
+    window.addEventListener('resize', fn);
+  }
+
+  init() {
+    this.resize();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  resize() {
+    const ooo = document.getElementById('ooo');
+    const iii = document.getElementById('iii');
+    const bs = document.getElementById('block-sliders');
+    const top = document.getElementById('top');
+    const main = document.getElementById('main');
+    const hsl = document.getElementById('hsl');
+    const hsv = document.getElementById('hsv');
+
+    const minRatio = 1.6;
+    const maxRatio = 1.8;
+
+    const rect = ooo.getBoundingClientRect();
+    const container = {
+      height: 0,
+      width: 0,
+    };
+    if (rect.width / rect.height > maxRatio) {
+      container.height = rect.height;
+      container.width = rect.height * maxRatio;
+    } else if (rect.width / rect.height < minRatio) {
+      container.width = rect.width;
+      container.height = rect.width / minRatio;
+    } else {
+      container.height = rect.height;
+      container.width = rect.width;
+    }
+    iii.style.height = `${container.height}px`;
+    iii.style.width = `${container.width}px`;
+
+    const topHeight = (container.height - 20) * 0.6;
+    main.style.height = `${topHeight}px`;
+    main.style.width = `${topHeight}px`;
+    top.style.height = `${topHeight}px`;
+    bs.style.height = `${(container.height - 20) * 0.4}px`;
+
+    // hsl.style.width = `${(container.width - 20) * 0.55}px`;
+    // hsv.style.width = `${(container.width - 20) * 0.45}px`;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (new ResizeEvents());
+
+
+/***/ }),
+
 /***/ "./javascripts/sliderSet.js":
 /*!**********************************!*\
   !*** ./javascripts/sliderSet.js ***!
@@ -1611,6 +1700,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ColorObject__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ColorObject */ "./javascripts/ColorObject.js");
 /* harmony import */ var _utils_allEqualExcept__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils/allEqualExcept */ "./javascripts/utils/allEqualExcept.js");
 /* harmony import */ var _colorMethods_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./colorMethods/index */ "./javascripts/colorMethods/index.js");
+/* harmony import */ var _resizeEvents__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./resizeEvents */ "./javascripts/resizeEvents.js");
+
 
 
 
@@ -1680,8 +1771,7 @@ function buildChannels(channels, {
     function resetRatio(){
         DIM_RATIO = WW/container.getBoundingClientRect().width;
     }
-    window.addEventListener('resize', resetRatio);
-    resetRatio();
+    _resizeEvents__WEBPACK_IMPORTED_MODULE_4__["default"].subscribe(resetRatio);
  
     channels.forEach((param,i) => {    
         let maxValue;
@@ -1878,6 +1968,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./constants */ "./javascripts/constants.js");
 /* harmony import */ var _gradientGenerators_triangleGradient__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientGenerators/triangleGradient */ "./javascripts/gradientGenerators/triangleGradient.js");
 /* harmony import */ var _colorMethods_pureFromHue__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./colorMethods/pureFromHue */ "./javascripts/colorMethods/pureFromHue.js");
+/* harmony import */ var _resizeEvents__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./resizeEvents */ "./javascripts/resizeEvents.js");
+
 
 
 
@@ -2026,9 +2118,7 @@ function make(target) {
 
     body.setAttribute('transform', `translate(${X_TRANS} ${Y_TRANS})rotate(-90)`);
   }
-
-  resize();
-  window.addEventListener('resize', resize);
+  _resizeEvents__WEBPACK_IMPORTED_MODULE_6__["default"].subscribe(resize);
 
   let lastValidTri = null;
 
@@ -2436,6 +2526,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _colorMathConstants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./colorMathConstants */ "./javascripts/colorMathConstants.js");
 /* harmony import */ var _gradientGenerators_xyGradient__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gradientGenerators/xyGradient */ "./javascripts/gradientGenerators/xyGradient.js");
 /* harmony import */ var _gradientGenerators_linearGradient__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientGenerators/linearGradient */ "./javascripts/gradientGenerators/linearGradient.js");
+/* harmony import */ var _resizeEvents__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./resizeEvents */ "./javascripts/resizeEvents.js");
+
 
 
 
@@ -2445,14 +2537,19 @@ __webpack_require__.r(__webpack_exports__);
 const SLIDER_PIP_WIDTH = 22;
 const SLIDER_PIP_HEIGHT = 8;
 const XY_SLIDER_PADDING = 0;
+const DIM_RATIO = 1;
+let lastValid;
+let SVG_HEIGHT = 0;
+let SVG_WIDTH = 0;
+let CONTENT_HEIGHT = 0;
+const CONTENT_WIDTH = 0;
+let XY_WIDTH = 0;
 
 function makeXYSlider({
   xChannel,
   yChannel,
   zChannel,
   colorSpace,
-  height = 150,
-  width = 250,
   trackWidth = 20,
   spaceBetween = 10,
   outerMargin = 20,
@@ -2462,54 +2559,44 @@ function makeXYSlider({
   const yMax = _colorMathConstants__WEBPACK_IMPORTED_MODULE_2__["CHAN_MAX"][colorSpace][yChannel];
   const zMax = _colorMathConstants__WEBPACK_IMPORTED_MODULE_2__["CHAN_MAX"][colorSpace][zChannel];
 
+  const container = document.createElement('div');
+  Object.assign(container.style, {
+    position: 'relative',
+    height: '100%',
+    width: '100%',
+  });
+
   if (!target) target = document.body;
 
-  let DIM_RATIO;
-  let lastValid;
-
-  const SVG_WIDTH = width + trackWidth + spaceBetween + outerMargin * 2;
-  const SVG_HEIGHT = outerMargin * 2 + height;
-
-  // const pattern = makePattern();
-  // const image = pattern.getElementsByTagName('image')[0];
+  const xySVG = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('rect', {
+    height: CONTENT_HEIGHT,
+    width: CONTENT_WIDTH,
+    rx: XY_SLIDER_PADDING,
+  });
   const xyGradientPattern = Object(_gradientGenerators_xyGradient__WEBPACK_IMPORTED_MODULE_3__["default"])({
-    height,
-    width,
+    height: 400,
+    width: 400,
     padding: XY_SLIDER_PADDING,
     colorSpace,
     xChannel,
     yChannel,
     zChannel,
+    element: xySVG,
   });
+  xySVG.setAttribute('fill', `url(#${xyGradientPattern.id})`);
   const defs = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('defs', {});
-  const xySVG = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('rect', {
-    height,
-    width,
-    rx: XY_SLIDER_PADDING,
-    fill: `url(#${xyGradientPattern.id})`,
-  });
+
   const svg = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('svg', {
     viewBox: `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`,
   });
 
   Object.assign(svg.style, {
-    height: '192px',
-    width: 'auto',
     display: 'block',
     flexShrink: 0,
   });
 
-
   const body = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('g', {
     transform: `translate(${outerMargin} ${outerMargin})`,
-  });
-
-  const linearGradientPattern = Object(_gradientGenerators_linearGradient__WEBPACK_IMPORTED_MODULE_4__["default"])({
-    height,
-    width: 1,
-    colorSpace,
-    channel: zChannel,
-    padding: SLIDER_PIP_HEIGHT / 2,
   });
 
   const pip = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('circle', {
@@ -2520,11 +2607,10 @@ function makeXYSlider({
   });
 
   const v = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('line', {
-    y1: 0,
-    y2: height,
     stroke: 'white',
     'stroke-width': 0.5,
   });
+
   const inputX = document.createElement('input');
   Object.assign(inputX.style, {
     position: 'absolute',
@@ -2545,8 +2631,6 @@ function makeXYSlider({
   });
 
   const h = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('line', {
-    x1: 0,
-    x2: width,
     stroke: 'white',
     'stroke-width': 0.5,
   });
@@ -2570,14 +2654,13 @@ function makeXYSlider({
     width: SLIDER_PIP_WIDTH,
     stroke: 'white',
     filter: 'url(#shadow)',
-    x: width + spaceBetween + (trackWidth - SLIDER_PIP_WIDTH) / 2,
     fill: 'transparent',
   });
 
   sliderPip.addEventListener('mousedown', (e) => {
     let y = e.clientY;
     function move(e) {
-      const delY = (y - e.clientY) / (height - SLIDER_PIP_HEIGHT)*zMax * DIM_RATIO;
+      const delY = (y - e.clientY) / (CONTENT_HEIGHT - SLIDER_PIP_HEIGHT) * zMax * DIM_RATIO;
       const yAttempt = _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].color[colorSpace][zChannel] + delY;
       let newY = Math.min(zMax, yAttempt);
       newY = Math.max(newY, 0);
@@ -2592,30 +2675,57 @@ function makeXYSlider({
     }, { once: true });
   });
 
-  _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].subscribe((COLOR, PREV) => {
-    const y = (1 - (COLOR[colorSpace][zChannel] / zMax)) * (height - SLIDER_PIP_HEIGHT);
+  function zSubscription(COLOR) {
+    const y = (1 - (COLOR[colorSpace][zChannel] / zMax)) * (CONTENT_HEIGHT - SLIDER_PIP_HEIGHT);
     sliderPip.setAttribute('y', y);
-  });
+  }
+  _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].subscribe(zSubscription);
 
   const sliderTrack = Object(_createSVG__WEBPACK_IMPORTED_MODULE_0__["default"])('rect', {
     width: trackWidth,
-    height,
-    fill: `url(#${linearGradientPattern.id})`,
-    x: width + spaceBetween,
   });
-
+  const linearGradientPattern = Object(_gradientGenerators_linearGradient__WEBPACK_IMPORTED_MODULE_4__["default"])({
+    height: 400,
+    width: 1,
+    colorSpace,
+    channel: zChannel,
+    padding: SLIDER_PIP_HEIGHT / 2,
+    element: sliderTrack,
+  });
+  sliderTrack.setAttribute('fill', `url(#${linearGradientPattern.id})`);
   body.appendChild(sliderTrack);
   body.appendChild(sliderPip);
 
-  _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].subscribe((COLOR, PREV) => {
+  function resize() {
+    const { height, width } = container.getBoundingClientRect();
+    SVG_HEIGHT = height;
+    SVG_WIDTH = width;
+    CONTENT_HEIGHT = SVG_HEIGHT - 2 * outerMargin;
+    XY_WIDTH = SVG_WIDTH - 2 * outerMargin - trackWidth - spaceBetween;
+    xySVG.setAttribute('height', CONTENT_HEIGHT);
+    xySVG.setAttribute('width', XY_WIDTH);
+    sliderTrack.setAttribute('x', XY_WIDTH + spaceBetween);
+    sliderTrack.setAttribute('height', CONTENT_HEIGHT);
+    sliderPip.setAttribute('x', XY_WIDTH + spaceBetween - (SLIDER_PIP_WIDTH - trackWidth) / 2);
+    v.setAttribute('y2', CONTENT_HEIGHT);
+    h.setAttribute('x2', XY_WIDTH);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.style.height = `${height}px`;
+    svg.style.width = `${width}px`;
+    xySubscription(_ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].color);
+    zSubscription(_ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].color);
+  }
+  _resizeEvents__WEBPACK_IMPORTED_MODULE_5__["default"].subscribe(resize);
+
+  function xySubscription(COLOR) {
     lastValid = {
       x: COLOR[colorSpace][xChannel],
       y: COLOR[colorSpace][yChannel],
       z: COLOR[colorSpace][zChannel],
     };
 
-    const xVal = COLOR[colorSpace][xChannel] / xMax*(width - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
-    const yVal = (1 - COLOR[colorSpace][yChannel] / yMax) * (height - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
+    const xVal = COLOR[colorSpace][xChannel] / xMax * (XY_WIDTH - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
+    const yVal = (1 - COLOR[colorSpace][yChannel] / yMax) * (CONTENT_HEIGHT - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
 
     pip.setAttribute('cx', xVal);
     pip.setAttribute('cy', yVal);
@@ -2630,14 +2740,15 @@ function makeXYSlider({
     if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel].toFixed(1);
 
     if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel].toFixed(1);
-  });
+  }
+  _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].subscribe(xySubscription);
 
   pip.addEventListener('mousedown', (e) => {
     let x = e.clientX;
     let y = e.clientY;
     function move(e) {
-      const delX = (e.clientX - x) / (width - 2 * XY_SLIDER_PADDING) * DIM_RATIO * xMax;
-      const delY = (y - e.clientY) / (height - 2 * XY_SLIDER_PADDING) * DIM_RATIO * yMax;
+      const delX = (e.clientX - x) / (XY_WIDTH - 2 * XY_SLIDER_PADDING) * DIM_RATIO * xMax;
+      const delY = (y - e.clientY) / (CONTENT_HEIGHT - 2 * XY_SLIDER_PADDING) * DIM_RATIO * yMax;
       const rawY = _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].color[colorSpace][yChannel] + delY;
       const rawX = _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].color[colorSpace][xChannel] + delX;
 
@@ -2647,6 +2758,7 @@ function makeXYSlider({
       let nX = Math.max(rawX, 0);
       nX = Math.min(nX, xMax);
 
+      console.log(nY, nX);
       _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].set(colorSpace, {
         [xChannel]: nX,
         [yChannel]: nY,
@@ -2662,11 +2774,6 @@ function makeXYSlider({
     }, { once: true });
   });
 
-  const container = document.createElement('div');
-  Object.assign(container.style, {
-    position: 'relative',
-  });
-
   target.appendChild(container);
   container.appendChild(svg);
   container.appendChild(inputX);
@@ -2680,12 +2787,6 @@ function makeXYSlider({
   body.appendChild(pip);
   defs.appendChild(linearGradientPattern);
   defs.appendChild(xyGradientPattern);
-
-  function setRatio() {
-    DIM_RATIO = SVG_HEIGHT / svg.getBoundingClientRect().height;
-  }
-  setRatio();
-  window.addEventListener('resize', setRatio);
 
   Object.assign(inputZ.style, {
     position: 'absolute',

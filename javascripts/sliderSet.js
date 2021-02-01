@@ -2,6 +2,7 @@ import createSVG from './createSVG';
 import mainColor from './ColorObject';
 import allEqualExcept from './utils/allEqualExcept';
 import methods from './colorMethods/index';
+import resizeEvent from './resizeEvents';
 
 
 
@@ -67,8 +68,7 @@ export default function buildChannels(channels, {
     function resetRatio(){
         DIM_RATIO = WW/container.getBoundingClientRect().width;
     }
-    window.addEventListener('resize', resetRatio);
-    resetRatio();
+    resizeEvent.subscribe(resetRatio);
  
     channels.forEach((param,i) => {    
         let maxValue;

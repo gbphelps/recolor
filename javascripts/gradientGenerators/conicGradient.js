@@ -4,8 +4,13 @@ import getPattern from './utils/getPattern';
 export default function conicGradient({
   height,
   width,
+  element,
 }) {
+  function getDims() {
+    return element.getBoundingClientRect();
+  }
   return getPattern({
+    getDims,
     height,
     width,
     script: fragmentScript,

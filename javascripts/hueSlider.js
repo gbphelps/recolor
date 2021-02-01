@@ -2,6 +2,7 @@ import mainColor from './ColorObject';
 import conicGradient from './gradientGenerators/conicGradient';
 import createSVG from './createSVG';
 import c from './constants';
+import resizeEvent from './resizeEvents';
 
 let RADIUS = 100;
 const huePipH = 12;
@@ -47,25 +48,26 @@ export default function hueSlider(target) {
     fill: 'black',
   });
 
-  const pattern = conicGradient({
-    height: 400,
-    width: 400,
-  });
-
   mask.appendChild(maskBG);
   mask.appendChild(maskCircle);
   defs.appendChild(mask);
-  defs.appendChild(pattern);
 
   const gBody = createSVG('g', { transform: `translate( ${marg / 2} ${marg / 2})` });
 
   const gHue = createSVG('g', {});
 
   const hueTrack = createSVG('circle', {
-    fill: `url(#${pattern.id})`,
+
     mask: `url(#${mask.id})`,
     id: 'hue-track',
   });
+  const pattern = conicGradient({
+    height: 400,
+    width: 400,
+    element: hueTrack,
+  });
+  defs.appendChild(pattern);
+  hueTrack.setAttribute('fill', `url(#${pattern.id})`);
 
   const gPip = createSVG('g', {
     filter: 'url(#shadow)',
@@ -106,8 +108,7 @@ export default function hueSlider(target) {
     gPip.setAttribute('transform', `translate(${RADIUS} ${RADIUS})`);
     setPipFromColor(mainColor.color);
   }
-  resize();
-  window.addEventListener('resize', resize);
+  resizeEvent.subscribe(resize);
 
   function setPipFromColor(COLOR, PREV) {
     if (PREV && COLOR.hsv.hue === PREV.hsv.hue) return;

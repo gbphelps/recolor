@@ -1,6 +1,7 @@
 import mainColor from './ColorObject';
 import makeHueSlider from './hueSlider';
 import makeTriangle from './triangle';
+import resizeEvent from './resizeEvents';
 
 import makeBlockWithSlider from './xySlider';
 import makelightnessBlocks from './lightnessBlocks';
@@ -12,25 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setup() {
-  // makeBlockWithSlider({
-  //     xChannel: 'hue',
-  //     yChannel: 'saturation',
-  //     zChannel: 'lightness',
-  //     colorSpace: 'hsl',
-  //     height: 150,
-  //     width: 350,
-  //     target: document.getElementById('block-sliders')
-  // });
+  resizeEvent.init();
 
-  // makeBlockWithSlider({
-  //     xChannel: 'saturation',
-  //     yChannel: 'value',
-  //     zChannel: 'hue',
-  //     colorSpace: 'hsv',
-  //     height: 150,
-  //     width: 150,
-  //     target: document.getElementById('block-sliders')
-  // });
+  makeBlockWithSlider({
+    xChannel: 'hue',
+    yChannel: 'saturation',
+    zChannel: 'lightness',
+    colorSpace: 'hsl',
+    target: document.getElementById('hsl'),
+  });
+
+  makeBlockWithSlider({
+    xChannel: 'saturation',
+    yChannel: 'value',
+    zChannel: 'hue',
+    colorSpace: 'hsv',
+    target: document.getElementById('hsv'),
+  });
 
   makeHueSlider(document.getElementById('main'));
   makeTriangle(document.getElementById('main'));

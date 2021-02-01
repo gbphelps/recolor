@@ -3,18 +3,24 @@ import mainColor from './ColorObject';
 import { CHAN_MAX } from './colorMathConstants';
 import xyGradient from './gradientGenerators/xyGradient';
 import linearGradient from './gradientGenerators/linearGradient';
+import resizeEvent from './resizeEvents';
 
 const SLIDER_PIP_WIDTH = 22;
 const SLIDER_PIP_HEIGHT = 8;
 const XY_SLIDER_PADDING = 0;
+const DIM_RATIO = 1;
+let lastValid;
+let SVG_HEIGHT = 0;
+let SVG_WIDTH = 0;
+let CONTENT_HEIGHT = 0;
+const CONTENT_WIDTH = 0;
+let XY_WIDTH = 0;
 
 export default function makeXYSlider({
   xChannel,
   yChannel,
   zChannel,
   colorSpace,
-  height = 150,
-  width = 250,
   trackWidth = 20,
   spaceBetween = 10,
   outerMargin = 20,
@@ -24,54 +30,44 @@ export default function makeXYSlider({
   const yMax = CHAN_MAX[colorSpace][yChannel];
   const zMax = CHAN_MAX[colorSpace][zChannel];
 
+  const container = document.createElement('div');
+  Object.assign(container.style, {
+    position: 'relative',
+    height: '100%',
+    width: '100%',
+  });
+
   if (!target) target = document.body;
 
-  let DIM_RATIO;
-  let lastValid;
-
-  const SVG_WIDTH = width + trackWidth + spaceBetween + outerMargin * 2;
-  const SVG_HEIGHT = outerMargin * 2 + height;
-
-  // const pattern = makePattern();
-  // const image = pattern.getElementsByTagName('image')[0];
+  const xySVG = createSVG('rect', {
+    height: CONTENT_HEIGHT,
+    width: CONTENT_WIDTH,
+    rx: XY_SLIDER_PADDING,
+  });
   const xyGradientPattern = xyGradient({
-    height,
-    width,
+    height: 400,
+    width: 400,
     padding: XY_SLIDER_PADDING,
     colorSpace,
     xChannel,
     yChannel,
     zChannel,
+    element: xySVG,
   });
+  xySVG.setAttribute('fill', `url(#${xyGradientPattern.id})`);
   const defs = createSVG('defs', {});
-  const xySVG = createSVG('rect', {
-    height,
-    width,
-    rx: XY_SLIDER_PADDING,
-    fill: `url(#${xyGradientPattern.id})`,
-  });
+
   const svg = createSVG('svg', {
     viewBox: `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`,
   });
 
   Object.assign(svg.style, {
-    height: '192px',
-    width: 'auto',
     display: 'block',
     flexShrink: 0,
   });
 
-
   const body = createSVG('g', {
     transform: `translate(${outerMargin} ${outerMargin})`,
-  });
-
-  const linearGradientPattern = linearGradient({
-    height,
-    width: 1,
-    colorSpace,
-    channel: zChannel,
-    padding: SLIDER_PIP_HEIGHT / 2,
   });
 
   const pip = createSVG('circle', {
@@ -82,11 +78,10 @@ export default function makeXYSlider({
   });
 
   const v = createSVG('line', {
-    y1: 0,
-    y2: height,
     stroke: 'white',
     'stroke-width': 0.5,
   });
+
   const inputX = document.createElement('input');
   Object.assign(inputX.style, {
     position: 'absolute',
@@ -107,8 +102,6 @@ export default function makeXYSlider({
   });
 
   const h = createSVG('line', {
-    x1: 0,
-    x2: width,
     stroke: 'white',
     'stroke-width': 0.5,
   });
@@ -132,14 +125,13 @@ export default function makeXYSlider({
     width: SLIDER_PIP_WIDTH,
     stroke: 'white',
     filter: 'url(#shadow)',
-    x: width + spaceBetween + (trackWidth - SLIDER_PIP_WIDTH) / 2,
     fill: 'transparent',
   });
 
   sliderPip.addEventListener('mousedown', (e) => {
     let y = e.clientY;
     function move(e) {
-      const delY = (y - e.clientY) / (height - SLIDER_PIP_HEIGHT)*zMax * DIM_RATIO;
+      const delY = (y - e.clientY) / (CONTENT_HEIGHT - SLIDER_PIP_HEIGHT) * zMax * DIM_RATIO;
       const yAttempt = mainColor.color[colorSpace][zChannel] + delY;
       let newY = Math.min(zMax, yAttempt);
       newY = Math.max(newY, 0);
@@ -154,30 +146,57 @@ export default function makeXYSlider({
     }, { once: true });
   });
 
-  mainColor.subscribe((COLOR, PREV) => {
-    const y = (1 - (COLOR[colorSpace][zChannel] / zMax)) * (height - SLIDER_PIP_HEIGHT);
+  function zSubscription(COLOR) {
+    const y = (1 - (COLOR[colorSpace][zChannel] / zMax)) * (CONTENT_HEIGHT - SLIDER_PIP_HEIGHT);
     sliderPip.setAttribute('y', y);
-  });
+  }
+  mainColor.subscribe(zSubscription);
 
   const sliderTrack = createSVG('rect', {
     width: trackWidth,
-    height,
-    fill: `url(#${linearGradientPattern.id})`,
-    x: width + spaceBetween,
   });
-
+  const linearGradientPattern = linearGradient({
+    height: 400,
+    width: 1,
+    colorSpace,
+    channel: zChannel,
+    padding: SLIDER_PIP_HEIGHT / 2,
+    element: sliderTrack,
+  });
+  sliderTrack.setAttribute('fill', `url(#${linearGradientPattern.id})`);
   body.appendChild(sliderTrack);
   body.appendChild(sliderPip);
 
-  mainColor.subscribe((COLOR, PREV) => {
+  function resize() {
+    const { height, width } = container.getBoundingClientRect();
+    SVG_HEIGHT = height;
+    SVG_WIDTH = width;
+    CONTENT_HEIGHT = SVG_HEIGHT - 2 * outerMargin;
+    XY_WIDTH = SVG_WIDTH - 2 * outerMargin - trackWidth - spaceBetween;
+    xySVG.setAttribute('height', CONTENT_HEIGHT);
+    xySVG.setAttribute('width', XY_WIDTH);
+    sliderTrack.setAttribute('x', XY_WIDTH + spaceBetween);
+    sliderTrack.setAttribute('height', CONTENT_HEIGHT);
+    sliderPip.setAttribute('x', XY_WIDTH + spaceBetween - (SLIDER_PIP_WIDTH - trackWidth) / 2);
+    v.setAttribute('y2', CONTENT_HEIGHT);
+    h.setAttribute('x2', XY_WIDTH);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.style.height = `${height}px`;
+    svg.style.width = `${width}px`;
+    xySubscription(mainColor.color);
+    zSubscription(mainColor.color);
+  }
+  resizeEvent.subscribe(resize);
+
+  function xySubscription(COLOR) {
     lastValid = {
       x: COLOR[colorSpace][xChannel],
       y: COLOR[colorSpace][yChannel],
       z: COLOR[colorSpace][zChannel],
     };
 
-    const xVal = COLOR[colorSpace][xChannel] / xMax*(width - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
-    const yVal = (1 - COLOR[colorSpace][yChannel] / yMax) * (height - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
+    const xVal = COLOR[colorSpace][xChannel] / xMax * (XY_WIDTH - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
+    const yVal = (1 - COLOR[colorSpace][yChannel] / yMax) * (CONTENT_HEIGHT - XY_SLIDER_PADDING * 2) + XY_SLIDER_PADDING;
 
     pip.setAttribute('cx', xVal);
     pip.setAttribute('cy', yVal);
@@ -192,14 +211,15 @@ export default function makeXYSlider({
     if (document.activeElement !== inputY) inputY.value = COLOR[colorSpace][yChannel].toFixed(1);
 
     if (document.activeElement !== inputZ) inputZ.value = COLOR[colorSpace][zChannel].toFixed(1);
-  });
+  }
+  mainColor.subscribe(xySubscription);
 
   pip.addEventListener('mousedown', (e) => {
     let x = e.clientX;
     let y = e.clientY;
     function move(e) {
-      const delX = (e.clientX - x) / (width - 2 * XY_SLIDER_PADDING) * DIM_RATIO * xMax;
-      const delY = (y - e.clientY) / (height - 2 * XY_SLIDER_PADDING) * DIM_RATIO * yMax;
+      const delX = (e.clientX - x) / (XY_WIDTH - 2 * XY_SLIDER_PADDING) * DIM_RATIO * xMax;
+      const delY = (y - e.clientY) / (CONTENT_HEIGHT - 2 * XY_SLIDER_PADDING) * DIM_RATIO * yMax;
       const rawY = mainColor.color[colorSpace][yChannel] + delY;
       const rawX = mainColor.color[colorSpace][xChannel] + delX;
 
@@ -209,6 +229,7 @@ export default function makeXYSlider({
       let nX = Math.max(rawX, 0);
       nX = Math.min(nX, xMax);
 
+      console.log(nY, nX);
       mainColor.set(colorSpace, {
         [xChannel]: nX,
         [yChannel]: nY,
@@ -224,11 +245,6 @@ export default function makeXYSlider({
     }, { once: true });
   });
 
-  const container = document.createElement('div');
-  Object.assign(container.style, {
-    position: 'relative',
-  });
-
   target.appendChild(container);
   container.appendChild(svg);
   container.appendChild(inputX);
@@ -242,12 +258,6 @@ export default function makeXYSlider({
   body.appendChild(pip);
   defs.appendChild(linearGradientPattern);
   defs.appendChild(xyGradientPattern);
-
-  function setRatio() {
-    DIM_RATIO = SVG_HEIGHT / svg.getBoundingClientRect().height;
-  }
-  setRatio();
-  window.addEventListener('resize', setRatio);
 
   Object.assign(inputZ.style, {
     position: 'absolute',

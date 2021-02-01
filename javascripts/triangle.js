@@ -4,6 +4,7 @@ import createSVG from './createSVG';
 import ns from './constants';
 import triangleGradient from './gradientGenerators/triangleGradient';
 import pureFromHue from './colorMethods/pureFromHue';
+import resizeEvent from './resizeEvents';
 
 const sq3 = Math.sqrt(3);
 let pip;
@@ -146,9 +147,7 @@ export default function make(target) {
 
     body.setAttribute('transform', `translate(${X_TRANS} ${Y_TRANS})rotate(-90)`);
   }
-
-  resize();
-  window.addEventListener('resize', resize);
+  resizeEvent.subscribe(resize);
 
   let lastValidTri = null;
 

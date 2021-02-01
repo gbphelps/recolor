@@ -10,8 +10,13 @@ export default function xyGradient({
   xChannel,
   yChannel,
   zChannel,
+  element,
 }) {
+  function getDims() {
+    return element.getBoundingClientRect();
+  }
   return getPattern({
+    getDims,
     height,
     width,
     script: fragmentScript,

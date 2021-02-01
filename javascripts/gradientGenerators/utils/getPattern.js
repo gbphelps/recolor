@@ -2,9 +2,10 @@ import { createShader, createProgram, drawVertices } from '../../webgl/utils';
 import mainColor from '../../ColorObject';
 import createSVG from '../../createSVG';
 import vertexScript from '../../webgl/shaders/basicVertexShader.glsl';
+import resizeEvent from '../../resizeEvents';
 
 export default function getPattern({
-  element,
+  getDims,
   height,
   width,
   staticUniforms,
@@ -45,17 +46,13 @@ export default function getPattern({
 
   function resize() {
     setTimeout(() => {
-      if (!element) return;
-      const { height: h, width: w } = element.getBoundingClientRect();
-      // canvas.height = w;
-      // canvas.width = h;
-      gl.uniform2f(u_res, h, w);
+      const { height: h, width: w } = getDims();
+      gl.uniform2f(u_res, w, h);
       drawVertices(gl, program, 'a_position');
       image.setAttribute('href', canvas.toDataURL());
     });
   }
-  resize();
-  window.addEventListener('resize', resize);
+  resizeEvent.subscribe(resize);
 
   Object.keys(staticUniforms).forEach((name) => {
     const { type, value } = staticUniforms[name];
@@ -84,6 +81,8 @@ export default function getPattern({
     drawVertices(gl, program, 'a_position');
     image.setAttribute('href', canvas.toDataURL());
   });
+
+  // element.setAttribute('fill', `url(#${pattern.id})`);
 
   return pattern;
 }

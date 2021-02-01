@@ -10,8 +10,12 @@ export default function triangleGradient({
   margin,
   element,
 }) {
+  function getDims() {
+    const { height: h, width: w } = element.getBoundingClientRect();
+    return { width: h, height: w };
+  }
   return getPattern({
-    element,
+    getDims,
     height,
     width,
     script: fragmentScript,
