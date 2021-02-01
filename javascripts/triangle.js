@@ -182,21 +182,17 @@ function setPip(e) {
       // tip of triangle
       yAttempt = SIDE * ratio + margin;
       xAttempt = SIDE / 2 + margin;
-      console.log('top');
     }
 
     if ((yAttempt - margin) < 0) {
       yAttempt = margin;
-      console.log('bottom');
     }
 
     if ((xAttempt - margin) < 0) {
       xAttempt = margin;
-      console.log('left');
     }
 
     if ((xAttempt - margin) > SIDE) {
-      console.log('right');
       xAttempt = SIDE + margin;
     }
 

@@ -229,7 +229,6 @@ export default function makeXYSlider({
       let nX = Math.max(rawX, 0);
       nX = Math.min(nX, xMax);
 
-      console.log(nY, nX);
       mainColor.set(colorSpace, {
         [xChannel]: nX,
         [yChannel]: nY,

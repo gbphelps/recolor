@@ -1648,6 +1648,8 @@ class ResizeEvents {
     const main = document.getElementById('main');
     const hsl = document.getElementById('hsl');
     const hsv = document.getElementById('hsv');
+    const lb = document.getElementById('lightness-blocks');
+    const rc = document.getElementById('right-container');
 
     const minRatio = 1.6;
     const maxRatio = 1.8;
@@ -1675,9 +1677,12 @@ class ResizeEvents {
     main.style.width = `${topHeight}px`;
     top.style.height = `${topHeight}px`;
     bs.style.height = `${(container.height - 20) * 0.4}px`;
+    lb.style.width = `${(container.width - 20) * 0.2}px`;
 
-    // hsl.style.width = `${(container.width - 20) * 0.55}px`;
-    // hsv.style.width = `${(container.width - 20) * 0.45}px`;
+    const rightWidth = (container.width - 20) * 0.8;
+    rc.style.width = `${rightWidth}px`;
+    hsl.style.width = `${(rightWidth - 20) * 0.55}px`;
+    hsv.style.width = `${(rightWidth - 20) * 0.45}px`;
   }
 }
 
@@ -2153,21 +2158,17 @@ function setPip(e) {
       // tip of triangle
       yAttempt = SIDE * ratio + margin;
       xAttempt = SIDE / 2 + margin;
-      console.log('top');
     }
 
     if ((yAttempt - margin) < 0) {
       yAttempt = margin;
-      console.log('bottom');
     }
 
     if ((xAttempt - margin) < 0) {
       xAttempt = margin;
-      console.log('left');
     }
 
     if ((xAttempt - margin) > SIDE) {
-      console.log('right');
       xAttempt = SIDE + margin;
     }
 
@@ -2758,7 +2759,6 @@ function makeXYSlider({
       let nX = Math.max(rawX, 0);
       nX = Math.min(nX, xMax);
 
-      console.log(nY, nX);
       _ColorObject__WEBPACK_IMPORTED_MODULE_1__["default"].set(colorSpace, {
         [xChannel]: nX,
         [yChannel]: nY,
