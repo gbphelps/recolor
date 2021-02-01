@@ -2535,17 +2535,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const SLIDER_PIP_WIDTH = 22;
-const SLIDER_PIP_HEIGHT = 8;
-const XY_SLIDER_PADDING = 0;
-const DIM_RATIO = 1;
-let lastValid;
-let SVG_HEIGHT = 0;
-let SVG_WIDTH = 0;
-let CONTENT_HEIGHT = 0;
-const CONTENT_WIDTH = 0;
-let XY_WIDTH = 0;
-
 function makeXYSlider({
   xChannel,
   yChannel,
@@ -2556,6 +2545,17 @@ function makeXYSlider({
   outerMargin = 20,
   target,
 }) {
+  const SLIDER_PIP_WIDTH = 22;
+  const SLIDER_PIP_HEIGHT = 8;
+  const XY_SLIDER_PADDING = 0;
+  const DIM_RATIO = 1;
+  let lastValid;
+  let SVG_HEIGHT = 0;
+  let SVG_WIDTH = 0;
+  let CONTENT_HEIGHT = 0;
+  const CONTENT_WIDTH = 0;
+  let XY_WIDTH = 0;
+
   const xMax = _colorMathConstants__WEBPACK_IMPORTED_MODULE_2__["CHAN_MAX"][colorSpace][xChannel];
   const yMax = _colorMathConstants__WEBPACK_IMPORTED_MODULE_2__["CHAN_MAX"][colorSpace][yChannel];
   const zMax = _colorMathConstants__WEBPACK_IMPORTED_MODULE_2__["CHAN_MAX"][colorSpace][zChannel];
