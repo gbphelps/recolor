@@ -52,7 +52,7 @@ export default function makeLightnessBlocks(
       const block = createSVG('rect', {
         height: size,
         width: size,
-        y: i * (size + m),
+        y: (N - 1 - i) * (size + m),
       });
       block.addEventListener('click', () => {
         const color = mainColor.color[colorSpace];
@@ -83,7 +83,7 @@ export default function makeLightnessBlocks(
           'fill',
           `rgb(${COLOR.rgb.red},${COLOR.rgb.green},${COLOR.rgb.blue})`,
         );
-        frame.setAttribute('y', i * (size + m));
+        frame.setAttribute('y', (N - 1 - i) * (size + m));
         continue;
       }
       const tempChannel = inc * i;
