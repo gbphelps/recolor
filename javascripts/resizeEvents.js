@@ -1,3 +1,5 @@
+const MARGIN = 20;
+
 class ResizeEvents {
   constructor() {
     this.subscriptions = [];
@@ -46,18 +48,21 @@ class ResizeEvents {
     iii.style.height = `${container.height}px`;
     iii.style.width = `${container.width}px`;
 
-    const topHeight = (container.height - 20) * 0.6;
+    const topHeight = (container.height - MARGIN) * 0.6;
     main.style.height = `${topHeight}px`;
     main.style.width = `${topHeight}px`;
     top.style.height = `${topHeight}px`;
-    bs.style.height = `${(container.height - 20) * 0.4}px`;
+    bs.style.height = `${(container.height - MARGIN) * 0.4}px`;
 
-    lb.style.width = `${(container.width - 20) * 0.1}px`;
-    const rightWidth = (container.width - 20) * 0.9;
+    const numBlocks = 21;
+    const blockMargin = 1;
+    const lbWidth = (container.height - 2 * MARGIN - (numBlocks - 1) * blockMargin) / numBlocks * 2 + 3 * MARGIN;
+    lb.style.width = `${lbWidth}px`;
+    const rightWidth = container.width - MARGIN - lbWidth;
 
     rc.style.width = `${rightWidth}px`;
-    hsl.style.width = `${(rightWidth - 20) * 0.55}px`;
-    hsv.style.width = `${(rightWidth - 20) * 0.45}px`;
+    hsl.style.width = `${(rightWidth - MARGIN) * 0.55}px`;
+    hsv.style.width = `${(rightWidth - MARGIN) * 0.45}px`;
   }
 }
 

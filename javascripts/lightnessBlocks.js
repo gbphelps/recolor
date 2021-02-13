@@ -21,7 +21,6 @@ export default function makeLightnessBlocks(
 
   svg.style.height = '100%';
   svg.style.width = 'auto';
-  svg.style.outline = '1px solid lime';
 
   const body = createSVG('g', {
     transform: `translate(${2} ${2})`,
@@ -75,7 +74,6 @@ export default function makeLightnessBlocks(
   makeBlocks();
 
   function setBlocks(COLOR, PREV) {
-    console.log(size);
     const inc = (channel.max / (N - 1));
     const replacementIndex = Math.round(COLOR[colorSpace][channel.name] / inc);
 
@@ -106,11 +104,22 @@ export default function makeLightnessBlocks(
 
   function resize() {
     const { height: parentHeight, width: parentWidth } = target.getBoundingClientRect();
+
+    const newHeight = parentHeight - 2 * MARGIN;
+    size = (newHeight - (m * (N - 1))) / N;
+
+    const fr = parentWidth - size;
+
+    body.setAttribute('transform', `translate(${
+      target.id === 'lightness-blocks-l' ? 2 * fr / 3 : fr / 3
+    } ${MARGIN})`);
+
     Object.assign(svg.style, {
-      height: `${parentHeight}px`,
+      height: `${newHeight}px`,
     });
     svg.setAttribute('viewBox', `0 0 ${parentWidth} ${parentHeight}`);
-    size = (parentHeight - (m * (N - 1))) / N;
+    svg.style.height = `${parentHeight}px`;
+
     makeBlocks(size);
     setBlocks(mainColor.color);
   }
