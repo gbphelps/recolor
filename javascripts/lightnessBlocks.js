@@ -1,113 +1,127 @@
 import mainColor from './ColorObject';
 import createSVG from './createSVG';
 import converter from './colorMethods/index';
+import resizeEvent from './resizeEvents';
 
+const MARGIN = 20;
 
-export default function (colorSpace, channel, target){
-    const W = 510;
-    const N = 16;
-    const m = 1;
-    const w = (W-(m*(N-1)))/N;
-    const wmarg = 10;
-    const hmarg = 10;
+export default function makeLightnessBlocks(
+  colorSpace,
+  channel,
+  target = document.body,
+) {
+  const HEIGHT = 510;
+  const N = 21;
+  const m = 1;
+  let size = (HEIGHT - (m * (N - 1))) / N;
 
-    const dir = "v";
+  const svg = createSVG('svg', {
+    viewBox: `0 0 ${target.getBoundingClientRect().width} ${target.getBoundingClientRect().height}`,
+  });
 
-    if (!target) target = document.body;
+  svg.style.height = '100%';
+  svg.style.width = 'auto';
+  svg.style.outline = '1px solid lime';
 
+  const body = createSVG('g', {
+    transform: `translate(${2} ${2})`,
+  });
+  svg.appendChild(body);
 
-    const [ width, height ] = dir === 'v' ? [w + hmarg*2, W + wmarg*2] : [W + hmarg*2, w + wmarg*2]
-    
+  const frame = createSVG('rect', {
+    height: size,
+    width: size,
 
-    const svg = createSVG('svg',{
-        viewBox: `0 0 ${width} ${height}`
-    })
+    fill: 'transparent',
+    stroke: 'white',
+    'stroke-width': 2,
+    'vector-effect': 'non-scaling-stroke',
+    filter: 'url(#shadow)',
+    rx: 2,
+    ry: 2,
+  });
+  body.appendChild(frame);
 
-    svg.style.height = '100%';
-    svg.style.width = 'auto';
+  let blocks = [];
 
-    const body = createSVG('g',{
-        transform: `translate(${dir === "v" ? hmarg : wmarg} ${dir === "v" ? wmarg : hmarg})`
+  function makeBlocks() {
+    blocks.forEach((block) => {
+      block.parentNode.removeChild(block);
     });
-    svg.appendChild(body);
-
-
-    const blocks = []
-    for (let i=0; i<N; i++){
-        const block = createSVG('rect',{
-            height: w,
-            width: w,
-            [dir === 'v' ? 'y' : 'x']: i * (w + m),
-        })
-        block.addEventListener('click',()=>{
-            mainColor.set(colorSpace,
-                Object.assign(
-                    {},
-                    mainColor.color[colorSpace],
-                    {[channel.name]: i*[channel.max]/(N-1)}
-                )
-            )
-        })
-        body.appendChild(block);
-        blocks.push(block);
+    blocks = [];
+    for (let i = 0; i < N; i++) {
+      const block = createSVG('rect', {
+        height: size,
+        width: size,
+        y: i * (size + m),
+      });
+      block.addEventListener('click', () => {
+        const color = mainColor.color[colorSpace];
+        mainColor.set(colorSpace, {
+          ...color,
+          [channel.name]: i * [channel.max] / (N - 1),
+        });
+      });
+      body.appendChild(block);
+      blocks.push(block);
     }
 
-    const wDel = 0;
-    const frame = createSVG('rect',{
-        height: w + wDel,
-        width: w + wDel,
+    frame.setAttribute('height', size);
+    frame.setAttribute('width', size);
+    const p = frame.parentNode;
+    p.removeChild(frame);
+    p.appendChild(frame);
+  }
+  makeBlocks();
 
-        fill: 'transparent',
-        stroke: 'white',
-        'stroke-width': 2,
-        filter: 'url(#shadow)',
-        rx: 2,
-        ry: 2
-    });
-    body.appendChild(frame);
+  function setBlocks(COLOR, PREV) {
+    console.log(size);
+    const inc = (channel.max / (N - 1));
+    const replacementIndex = Math.round(COLOR[colorSpace][channel.name] / inc);
 
-    mainColor.subscribe((COLOR, PREV) => {
-        const inc = (channel.max/(N-1));
-        const replacementIndex = Math.round(COLOR[colorSpace][channel.name]/inc);
-
-        for (let i=0; i<N; i++){
-            if (i === replacementIndex){
-                blocks[i].setAttribute(
-                    'fill',
-                    `rgb(${COLOR.rgb.red},${COLOR.rgb.green},${COLOR.rgb.blue})`,
-                );
-                frame.setAttribute(dir === 'v' ? 'y' : 'x', i*(w+m) - wDel/2);
-                frame.setAttribute(dir === 'v' ? 'x' : 'y', -wDel/2)
-                continue;
-            }
-            const tempChannel = inc*i;
-            const color = converter.getRGB[colorSpace](
-                Object.assign(
-                    {},
-                    COLOR[colorSpace],
-                    {[channel.name]: tempChannel})
-                );
-            blocks[i].setAttribute(
-                'fill',
-                `rgb(${color.red},${color.green},${color.blue})`,
-            );
-            blocks[i].setAttribute('stroke', 'transparent');
-        }
-    })
-
-    function resize(){
-        Object.assign(svg.style, {
-            height: target.getBoundingClientRect().height + 'px',
-        })
+    for (let i = 0; i < N; i++) {
+      if (i === replacementIndex) {
+        blocks[i].setAttribute(
+          'fill',
+          `rgb(${COLOR.rgb.red},${COLOR.rgb.green},${COLOR.rgb.blue})`,
+        );
+        frame.setAttribute('y', i * (size + m));
+        continue;
+      }
+      const tempChannel = inc * i;
+      const conv = converter.getRGB[colorSpace];
+      const color = conv({
+        ...COLOR[colorSpace],
+        [channel.name]: tempChannel,
+      });
+      blocks[i].setAttribute(
+        'fill',
+        `rgb(${color.red},${color.green},${color.blue})`,
+      );
+      blocks[i].setAttribute('stroke', 'transparent');
     }
-    document.addEventListener('resize', resize);
-    resize();
+  }
 
+  mainColor.subscribe(setBlocks);
+
+  function resize() {
+    const { height: parentHeight, width: parentWidth } = target.getBoundingClientRect();
     Object.assign(svg.style, {
-        border: 'none',
-        borderRadius: 0,
-        boxShadow: 'none',
-        margin: 'none',
-    })
-    target.appendChild(svg);
+      height: `${parentHeight}px`,
+    });
+    svg.setAttribute('viewBox', `0 0 ${parentWidth} ${parentHeight}`);
+    size = (parentHeight - (m * (N - 1))) / N;
+    makeBlocks(size);
+    setBlocks(mainColor.color);
+  }
+  resize();
+  resizeEvent.subscribe(resize);
+
+  Object.assign(svg.style, {
+    border: 'none',
+    borderRadius: 0,
+    boxShadow: 'none',
+    margin: 'none',
+  });
+  target.appendChild(svg);
 }

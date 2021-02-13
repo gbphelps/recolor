@@ -1,10 +1,11 @@
 {
     "extends": "airbnb",
-    "parserOptions": {
-        "ecmaVersion": 8,
-        "sourceType": "module"
+    "env": {
+        "browser": true
     },
     "rules": {
-        "semi": "error"
+        "no-mixed-operators": "off",
+        "no-plusplus": "off",
+        "no-continue": "off"
     }
 }

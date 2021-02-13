@@ -51,9 +51,10 @@ class ResizeEvents {
     main.style.width = `${topHeight}px`;
     top.style.height = `${topHeight}px`;
     bs.style.height = `${(container.height - 20) * 0.4}px`;
-    lb.style.width = `${(container.width - 20) * 0.2}px`;
 
-    const rightWidth = (container.width - 20) * 0.8;
+    lb.style.width = `${(container.width - 20) * 0.1}px`;
+    const rightWidth = (container.width - 20) * 0.9;
+
     rc.style.width = `${rightWidth}px`;
     hsl.style.width = `${(rightWidth - 20) * 0.55}px`;
     hsv.style.width = `${(rightWidth - 20) * 0.45}px`;

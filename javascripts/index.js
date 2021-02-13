@@ -51,10 +51,8 @@ function setup() {
   //     recipient: document.getElementById('rgb-cmyk')
   // });
 
-  // makelightnessBlocks('hsl', {name: 'lightness', max: 100}, document.getElementById('lightness-blocks'));
-  // makelightnessBlocks('hsl', {name: 'saturation', max: 100}, document.getElementById('lightness-blocks'));
-
+  makelightnessBlocks('hsl', { name: 'lightness', max: 100 }, document.getElementById('lightness-blocks-l'));
+  makelightnessBlocks('hsl', { name: 'saturation', max: 100 }, document.getElementById('lightness-blocks-s'));
   // makeColorPalette({ target: document.getElementById('color-palette') });
-
   mainColor.set('rgb', { red: 50, green: 100, blue: 200 });
 }
