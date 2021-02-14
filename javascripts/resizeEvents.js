@@ -68,12 +68,8 @@ class ResizeEvents {
     hsl.style.width = `${(rightWidth - MARGIN) * 0.55}px`;
     hsv.style.width = `${(rightWidth - MARGIN) * 0.45}px`;
 
-    rgbcmyk.style.outline = '1px solid red';
     rgbcmyk.style.width = `${rightWidth - MARGIN - topHeight}px`;
     rgbcmyk.style.height = `${topHeight}px`;
-
-    rgb.style.outline = '1px solid lime';
-    cmyk.style.outline = '1px solid lime';
 
     rgb.style.height = `${(topHeight - MARGIN) * 0.45}`;
     cmyk.style.height = `${(topHeight - MARGIN) * 0.55}`;

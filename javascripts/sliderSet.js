@@ -146,9 +146,15 @@ export default function buildChannels(channels, {
     });
 
     resizeEvent.subscribe(() => {
+      const hFree = HH - trackThickness * channels.length - 2 * MARGIN;
+      const hPadding = hFree / (channels.length - 1);
+      const vPos = MARGIN + (hPadding + trackThickness) * i;
+
       track.setAttribute('width', trackLength);
+      track.setAttribute('y', vPos);
       gradient.setAttribute('x1', pipWidth / 2 + MARGIN);
       gradient.setAttribute('x2', trackLength - pipWidth / 2 + MARGIN);
+      pip.setAttribute('y', vPos);
       pipColorSub(mainColor.color);
     });
 
