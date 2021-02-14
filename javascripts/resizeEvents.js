@@ -27,6 +27,10 @@ class ResizeEvents {
     const lb = document.getElementById('lightness-blocks');
     const rc = document.getElementById('right-container');
 
+    const rgbcmyk = document.getElementById('rgb-cmyk');
+    const rgb = document.getElementById('rgb');
+    const cmyk = document.getElementById('cmyk');
+
     const minRatio = 1.6;
     const maxRatio = 1.8;
 
@@ -63,6 +67,16 @@ class ResizeEvents {
     rc.style.width = `${rightWidth}px`;
     hsl.style.width = `${(rightWidth - MARGIN) * 0.55}px`;
     hsv.style.width = `${(rightWidth - MARGIN) * 0.45}px`;
+
+    rgbcmyk.style.outline = '1px solid red';
+    rgbcmyk.style.width = `${rightWidth - MARGIN - topHeight}px`;
+    rgbcmyk.style.height = `${topHeight}px`;
+
+    rgb.style.outline = '1px solid lime';
+    cmyk.style.outline = '1px solid lime';
+
+    rgb.style.height = `${(topHeight - MARGIN) * 0.45}`;
+    cmyk.style.height = `${(topHeight - MARGIN) * 0.55}`;
   }
 }
 

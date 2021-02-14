@@ -34,22 +34,22 @@ function setup() {
   makeHueSlider(document.getElementById('main'));
   makeTriangle(document.getElementById('main'));
 
-  // buildChannels([
-  //     {type: 'rgb', channel: 'red'},
-  //     {type: 'rgb', channel: 'green'},
-  //     {type: 'rgb', channel: 'blue'},
-  // ],{
-  //     recipient: document.getElementById('rgb-cmyk')
-  // });
+  buildChannels([
+    { type: 'rgb', channel: 'red' },
+    { type: 'rgb', channel: 'green' },
+    { type: 'rgb', channel: 'blue' },
+  ], {
+    recipient: document.getElementById('rgb'),
+  });
 
-  // buildChannels([
-  //     {type: 'cmyk', channel: 'cyan'},
-  //     {type: 'cmyk', channel: 'magenta'},
-  //     {type: 'cmyk', channel: 'yellow'},
-  //     {type: 'cmyk', channel: 'black'},
-  // ], {
-  //     recipient: document.getElementById('rgb-cmyk')
-  // });
+  buildChannels([
+    { type: 'cmyk', channel: 'cyan' },
+    { type: 'cmyk', channel: 'magenta' },
+    { type: 'cmyk', channel: 'yellow' },
+    { type: 'cmyk', channel: 'black' },
+  ], {
+    recipient: document.getElementById('cmyk'),
+  });
 
   makelightnessBlocks('hsl', { name: 'lightness', max: 100 }, document.getElementById('lightness-blocks-l'));
   makelightnessBlocks('hsl', { name: 'saturation', max: 100 }, document.getElementById('lightness-blocks-s'));
